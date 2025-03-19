@@ -11,8 +11,10 @@ import androidx.compose.animation.core.tween
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wordco.clockworkandroid.model.Timer
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
+import com.wordco.clockworkandroid.ui.pages.TimerPage
 
 
 class MainActivity : ComponentActivity() {
@@ -24,7 +26,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(
                 navController = navController,
-                startDestination = "List"
+                startDestination = "Timer"
             ) {
                 composable(route = "List") {
                     ListPage(navController)
@@ -47,7 +49,9 @@ class MainActivity : ComponentActivity() {
                 {
                     NewTaskPage(navController)
                 }
-
+                composable ( route = "Timer" ) {
+                    TimerPage(Timer())
+                }
             }
         }
     }
