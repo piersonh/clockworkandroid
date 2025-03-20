@@ -37,3 +37,30 @@ fun CalImage() = Image(
     contentScale = ContentScale.Fit,
     modifier = Modifier.aspectRatio(0.7f)
 )
+
+@Preview
+@Composable
+fun MarkImage() = Image(
+    painter = painterResource(id = R.drawable.bookmark),
+    contentDescription = "Time",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f)
+)
+
+@Preview
+@Composable
+fun MoonImage() = Image(
+    painter = painterResource(id = R.drawable.moon),
+    contentDescription = "Time",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f)
+)
+
+@Preview
+@Composable
+fun MugImage() = Image(
+    painter = painterResource(id = R.drawable.mug),
+    contentDescription = "Time",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f)
+)

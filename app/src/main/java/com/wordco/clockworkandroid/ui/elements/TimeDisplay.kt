@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.model.Timer
+import com.wordco.clockworkandroid.ui.LATO
 import java.util.Locale
 
 @Composable
@@ -32,7 +33,8 @@ fun TimeDisplay(timer: Timer, modifier: Modifier = Modifier) = Column(
     if (statusText != null) {
         Text(
             text = statusText,
-            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+            style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center),
+            fontFamily = LATO,
         )
     } else {
         Text (
@@ -48,7 +50,8 @@ fun TimeDisplay(timer: Timer, modifier: Modifier = Modifier) = Column(
             if (elapsedTime % 2 == 1 && state == Timer.State.RUNNING) "%02d %02d" else "%02d:%02d",
             timer.getHours(), timer.getMinutesInHour()
         ),
-        style = TextStyle(fontSize = 120.sp, textAlign = TextAlign.Center)
+        style = TextStyle(fontSize = 120.sp, textAlign = TextAlign.Center),
+        fontFamily = LATO,
     )
 }
 
