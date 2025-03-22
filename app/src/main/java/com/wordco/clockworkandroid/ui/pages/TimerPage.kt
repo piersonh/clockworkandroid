@@ -28,6 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.model.Timer
 import com.wordco.clockworkandroid.ui.LATO
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
@@ -35,7 +37,7 @@ import com.wordco.clockworkandroid.ui.elements.TimerControls
 
 
 @Composable
-fun TimerPage(timer: Timer) {
+fun TimerPage(timer: Timer, navController: NavController) {
     val state by timer.state.collectAsState()
     Box(
         modifier =  Modifier
@@ -86,7 +88,11 @@ fun TimerPage(timer: Timer) {
             TimeDisplay(timer, modifier = Modifier)
 
 
-            TimerControls(timer, modifier = Modifier.padding(10.dp).defaultMinSize(minHeight = 200.dp))
+            TimerControls(
+                timer,
+                modifier = Modifier.padding(10.dp).defaultMinSize(minHeight = 200.dp),
+                navController = navController
+            )
         }
     }
 }
@@ -94,12 +100,21 @@ fun TimerPage(timer: Timer) {
 
 @Preview(showBackground = true, backgroundColor = 0xcccccccc)
 @Composable
-private fun TimerPagePreview() = TimerPage(Timer(Timer.State.INIT))
+private fun TimerPagePreview() {
+    val navController = rememberNavController()
+    TimerPage(Timer(Timer.State.INIT), navController)
+}
 
 @Preview
 @Composable
-private fun TimerPagePreview2() = TimerPage(Timer(Timer.State.RUNNING))
+private fun TimerPagePreview2() {
+    val navController = rememberNavController()
+    TimerPage(Timer(Timer.State.RUNNING), navController)
+}
 
 @Preview
 @Composable
-private fun TimerPagePreview3() = TimerPage(Timer(Timer.State.PAUSED))
+private fun TimerPagePreview3(){
+    val navController = rememberNavController()
+    TimerPage(Timer(Timer.State.PAUSED), navController)
+}

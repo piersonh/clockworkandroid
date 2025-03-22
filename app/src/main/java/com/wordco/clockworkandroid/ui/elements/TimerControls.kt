@@ -19,6 +19,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.model.Timer
 import com.wordco.clockworkandroid.ui.LATO
 
@@ -27,6 +29,7 @@ import com.wordco.clockworkandroid.ui.LATO
 fun TimerControls(
     timer: Timer,
     modifier: Modifier = Modifier,
+    navController: NavController
 ) = Column(
     modifier = modifier.aspectRatio(2f),
     horizontalAlignment = Alignment.CenterHorizontally,
@@ -44,7 +47,10 @@ fun TimerControls(
     fun RunningControls() {
         NonterminatingControls(timer, modifier = Modifier.weight(1f))
 
-        RectangleButton({ timer.stopTimer() }, modifier = Modifier.fillMaxSize().weight(1f)) {
+        RectangleButton({
+                            timer.stopTimer()
+                            navController.navigate("TaskCompletionPage")
+                        }, modifier = Modifier.fillMaxSize().weight(1f)) {
             Text("Finish", style = TextStyle(fontSize = 48.sp), fontFamily = LATO)
         }
     }
@@ -57,7 +63,10 @@ fun TimerControls(
 
 
 
-        RectangleButton({ timer.stopTimer() }, modifier = Modifier.fillMaxSize().weight(1f)) {
+        RectangleButton({
+                            timer.stopTimer()
+                            navController.navigate("TaskCompletionPage")
+                        }, modifier = Modifier.fillMaxSize().weight(1f)) {
             Text("Finish", style = TextStyle(fontSize = 48.sp), fontFamily = LATO)
         }
     }
@@ -76,15 +85,24 @@ fun TimerControls(
 
 @Preview()
 @Composable
-private fun ControlButtonsPreviewPaused() = TimerControls(Timer(Timer.State.PAUSED))
+private fun ControlButtonsPreviewPaused() {
+    val navController = rememberNavController()
+    TimerControls(Timer(Timer.State.PAUSED), navController = navController)
+}
 
 @Preview()
 @Composable
-private fun ControlButtonsPreviewRunning() = TimerControls(Timer(Timer.State.RUNNING))
+private fun ControlButtonsPreviewRunning() {
+    val navController = rememberNavController()
+    TimerControls(Timer(Timer.State.RUNNING), navController = navController)
+}
 
 @Preview()
 @Composable
-private fun ControlButtonsPreviewInit() = TimerControls(Timer(Timer.State.INIT))
+private fun ControlButtonsPreviewInit() {
+    val navController = rememberNavController()
+    TimerControls(Timer(Timer.State.INIT), navController = navController)
+}
 
 
 @Composable

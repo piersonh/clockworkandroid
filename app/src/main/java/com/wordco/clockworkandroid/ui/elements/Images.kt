@@ -64,3 +64,19 @@ fun MugImage() = Image(
     contentScale = ContentScale.Fit,
     modifier = Modifier.aspectRatio(0.7f)
 )
+@Preview
+@Composable
+fun ComputerImage() = Image(
+    painter = painterResource(id = R.drawable.computer),
+    contentDescription = "Time",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f)
+)
+@Preview
+@Composable
+fun UserImage() = Image(
+    painter = painterResource(id = R.drawable.user),
+    contentDescription = "Time",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f)
+)

@@ -24,8 +24,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
+import com.wordco.clockworkandroid.model.Status
 import com.wordco.clockworkandroid.model.Task
+import com.wordco.clockworkandroid.model.returnDueDate
 import com.wordco.clockworkandroid.model.timeAsHHMM
 import com.wordco.clockworkandroid.ui.LATO
 
@@ -39,8 +40,27 @@ fun TaskList(tasks: List<Task>) = Column(
         .verticalScroll(rememberScrollState())
 
 ) {
+    Text("STARTED",
+        fontFamily = LATO,
+        fontSize = 25.sp,
+        color = Color.White,
+        modifier = Modifier.padding(horizontal = 20.dp)
+    )
     for (item in tasks) {
-        ListItem(item)
+        if (item.status != Status.SCHEDULED) {
+            StartedListItem(item)
+        }
+    }
+    Text("UPCOMING",
+        fontFamily = LATO,
+        fontSize = 25.sp,
+        color = Color.White,
+        modifier = Modifier.padding(horizontal = 20.dp)
+    )
+    for (item in tasks) {
+        if (item.status == Status.SCHEDULED) {
+            UpcomingListItem(item)
+        }
     }
 }
 
@@ -49,22 +69,27 @@ fun TaskList(tasks: List<Task>) = Column(
 @Composable
 private fun TaskListPrev() = TaskList(
     listOf(
-        Task("Assignment", 2660, 33, 3, Color.Green),
-        Task("Project Plan", 30000, 20, 2, Color.Blue),
-        Task("Homework 100", 100, 5, 3, Color.Red)
+        Task("Assignment", 2660, 60,  33, 3, Color.Green, Status.RUNNING),
+        Task("Project Plan", 30000, 60, 20, 2, Color.Blue, Status.SUSPENDED),
+        Task("Homework 99", 100, 60, System.currentTimeMillis() - 100000000, 3, Color.White, Status.SCHEDULED),
+        Task("Homework 99.5", 100, 60, System.currentTimeMillis(), 3, Color.Cyan, Status.SCHEDULED),
+        Task("Homework -1", 100, 60, 0, 3, Color.Black, Status.SCHEDULED),
+        Task("Homework 100", 100, 60, System.currentTimeMillis() + 22000000, 3, Color.Red, Status.SCHEDULED),
+        Task("Evil Homework 101", 100, 60, System.currentTimeMillis() + 25000000, 3, Color.Magenta, Status.SCHEDULED),
+        Task("Super Homework 102", 100, 60, System.currentTimeMillis() + 111000000, 3, Color.Yellow, Status.SCHEDULED),
     )
 )
 
 
 @Composable
-fun ListItem(task: Task) = Row(
-    horizontalArrangement = Arrangement.spacedBy(5.dp),
+fun StartedListItem(task: Task) = Row(
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier
-        .fillMaxWidth(1f)
+        .fillMaxWidth()
         .clip(shape = RoundedCornerShape(10.dp))
         .background(color = Color(42, 42, 42))
-        .height(40.dp)
+        .height(100.dp)
 ) {
     Box(
         modifier = Modifier
@@ -72,43 +97,145 @@ fun ListItem(task: Task) = Row(
             .fillMaxHeight()
             .width(10.dp)
     )
-    Text(
-        task.name,
-        fontFamily = LATO,
-        fontSize = 23.sp,
-        color = Color.White,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.width(130.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp),
+    modifier = Modifier.padding(2.dp)
     )
+    {
+        Text(
+            task.name,
+            fontFamily = LATO,
+            fontSize = 23.sp,
+            color = Color.White,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
+        )
+        if (task.status == Status.SUSPENDED) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier.height(30.dp),
+
+                ) {
+                MoonImage()
+                Text(
+                    "Suspended",
+                    fontFamily = LATO,
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        } else {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier.height(30.dp),
+
+                ) {
+                StarImage()
+                Text(
+                    "Running",
+                    fontFamily = LATO,
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        )
+        {
+            ClockImage()
+            Text(
+                task.timeAsHHMM(task.workTime),
+                fontFamily = LATO,
+                fontSize = 23.sp,
+                color = Color.White,
+                modifier = Modifier.width(65.dp)
+            )
+            MugImage()
+            Text(
+                task.timeAsHHMM(task.breakTime),
+                fontFamily = LATO,
+                fontSize = 23.sp,
+                color = Color.White,
+                modifier = Modifier.width(65.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun UpcomingListItem(task: Task) = Row(
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    modifier = Modifier
+        .fillMaxWidth()
+        .clip(shape = RoundedCornerShape(10.dp))
+        .background(color = Color(42, 42, 42))
+        .height(100.dp)
+) {
     Box(
         modifier = Modifier
-            .background(color = Color.Black)
+            .background(color = task.color)
             .fillMaxHeight()
-            .width(3.dp)
-            .zIndex(4f)
+            .width(10.dp)
     )
-    ClockImage()
-    Text(
-        task.timeAsHHMM(),
-        fontFamily = LATO,
-        fontSize = 23.sp,
-        color = Color.White,
-        modifier = Modifier.width(65.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier.padding(2.dp)
     )
-    CalImage()
-    Text(
-        task.days.toString(),
-        fontFamily = LATO,
-        fontSize = 23.sp,
-        color = Color.White,
-        modifier = Modifier.width(30.dp)
-    )
-    StarImage()
-    Text(
-        task.difficulty.toString(),
-        fontFamily = LATO,
-        fontSize = 23.sp,
-        color = Color.White,
-        modifier = Modifier.width(30.dp)
-    )
+    {
+        Text(
+            task.name,
+            fontFamily = LATO,
+            fontSize = 23.sp,
+            color = Color.White,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.height(30.dp),
+
+            ) {
+            CalImage()
+            Text(
+                task.returnDueDate(),
+                fontFamily = LATO,
+                fontSize = 20.sp,
+                color = Color.White,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        )
+        {
+            UserImage()
+            Text(
+                task.timeAsHHMM(task.workTime),
+                fontFamily = LATO,
+                fontSize = 23.sp,
+                color = Color.White,
+                modifier = Modifier.width(65.dp)
+            )
+            ComputerImage()
+            Text(
+                task.timeAsHHMM(task.breakTime),
+                fontFamily = LATO,
+                fontSize = 23.sp,
+                color = Color.White,
+                modifier = Modifier.width(65.dp)
+            )
+        }
+    }
 }

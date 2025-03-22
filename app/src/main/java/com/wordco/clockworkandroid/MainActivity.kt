@@ -15,6 +15,7 @@ import com.wordco.clockworkandroid.model.Timer
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TimerPage
+import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 
 
 class MainActivity : ComponentActivity() {
@@ -50,7 +51,10 @@ class MainActivity : ComponentActivity() {
                     NewTaskPage(navController)
                 }
                 composable ( route = "Timer" ) {
-                    TimerPage(Timer())
+                    TimerPage(Timer(), navController = navController)
+                }
+                composable(route = "TaskCompletionPage") {
+                    TaskCompletionPage()
                 }
             }
         }
