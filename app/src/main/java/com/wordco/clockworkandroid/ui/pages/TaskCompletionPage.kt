@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -95,11 +94,7 @@ fun TaskCompletionPage() {
             Button(
                 onClick = { /* TODO: Handle View Details */ },
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
-                modifier = Modifier.fillMaxWidth(0.5f),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = White,
-                    contentColor = White
-                )
+                modifier = Modifier.fillMaxWidth(0.5f)
             ) {
                 Text(
                     text = "View Details",
@@ -110,11 +105,7 @@ fun TaskCompletionPage() {
             Button(
                 onClick = { /* TODO: Handle Continue */ },
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
-                modifier = Modifier.fillMaxWidth(0.7f),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = White,
-                    contentColor = White
-                )
+                modifier = Modifier.fillMaxWidth(0.7f)
             ) {
                 Text(
                     text = "Continue",
