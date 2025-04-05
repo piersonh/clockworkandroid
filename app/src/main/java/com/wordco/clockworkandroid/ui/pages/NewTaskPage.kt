@@ -22,7 +22,9 @@ fun NewTaskPage(controller: NavHostController) = Scaffold(
         ExtendedFloatingActionButton(onClick = { /* TODO: Handle Add Task */ }) { Text("Add Task") }
     },
     modifier = Modifier.fillMaxSize(),
-    content = { Text("New Task Page") }
+    content = {
+        Text("New Task Page")
+    }
 )
 
 
