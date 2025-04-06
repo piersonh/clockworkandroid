@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -25,15 +24,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import kotlin.math.roundToInt
 
-
-// TODO: Add buttons to bring the time and date pickers up
 // TODO: Implement dialogs for time and date pickers
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -44,8 +40,6 @@ fun NewTaskPage(controller: NavHostController) {
     var formattedDate by remember { mutableStateOf("") }
     var difficulty by remember { mutableFloatStateOf(0f) }
     var estimatedCompTime by remember { mutableStateOf("") }
-
-
 
     Scaffold(
         floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
