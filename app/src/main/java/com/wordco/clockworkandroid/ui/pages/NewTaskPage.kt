@@ -36,10 +36,10 @@ import kotlin.math.roundToInt
 @Composable
 fun NewTaskPage(controller: NavHostController) {
     var taskTitle by remember { mutableStateOf("") }
-    var showDialog by remember { mutableStateOf(false) }
     var formattedDate by remember { mutableStateOf("") }
     var difficulty by remember { mutableFloatStateOf(0f) }
     var estimatedCompTime by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
@@ -63,7 +63,7 @@ fun NewTaskPage(controller: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = { /* TODO: Set Formatted Due Date */ }) {
+                Button(onClick = { /* TODO: Implement Calendar date picker */ }) {
                     Text("Due Date")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -87,7 +87,7 @@ fun NewTaskPage(controller: NavHostController) {
                     Text("Estimated Completion Time")
                 }
 
-                // Currently handles the dialog for all buttons.
+                // Currently handles the dialog for the Title button.
                 if (showDialog) {
                     AlertDialog(
                         onDismissRequest = { showDialog = false },
