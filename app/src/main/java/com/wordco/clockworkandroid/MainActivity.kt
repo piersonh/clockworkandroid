@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(
                 navController = navController,
-                startDestination = "Timer"
+                startDestination = "List"
             ) {
                 composable(route = "List") {
                     ListPage(navController)
@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                             animationSpec = tween(150, easing = LinearEasing),
                             towards = AnimatedContentTransitionScope.SlideDirection.Up
                         )
-                    }
+                    },
                 )
                 {
                     NewTaskPage(navController)

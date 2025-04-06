@@ -6,9 +6,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -21,11 +25,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import kotlin.math.roundToInt
+
 
 // TODO: Add buttons to bring the time and date pickers up
 // TODO: Implement dialogs for time and date pickers
@@ -34,9 +40,12 @@ import kotlin.math.roundToInt
 @Composable
 fun NewTaskPage(controller: NavHostController) {
     var taskTitle by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
     var formattedDate by remember { mutableStateOf("") }
     var difficulty by remember { mutableFloatStateOf(0f) }
     var estimatedCompTime by remember { mutableStateOf("") }
+
+
 
     Scaffold(
         floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
@@ -51,10 +60,15 @@ fun NewTaskPage(controller: NavHostController) {
                 modifier = Modifier.fillMaxSize().padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(onClick = { taskTitle = setTaskTitle(taskTitle) }) {
+                Button(
+                    onClick = { showDialog = true },
+                    modifier = Modifier.wrapContentWidth()
+                ) {
                     Text(taskTitle.ifEmpty { "Title" })
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Button(onClick = { /* TODO: Set Formatted Due Date */ }) {
                     Text("Due Date")
                 }
@@ -74,8 +88,29 @@ fun NewTaskPage(controller: NavHostController) {
                 Text( text = "Difficulty: ${difficulty.roundToInt()}")
 
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Button(onClick = { /* TODO: Set Estimated Completion Time in HH:MM format */ }) {
                     Text("Estimated Completion Time")
+                }
+
+                // Currently handles the dialog for all buttons.
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = { Text("Enter Task Title") },
+                        text = {
+                            OutlinedTextField(
+                                value = taskTitle,
+                                onValueChange = { taskTitle = it },
+                                label = { Text("Task Title") }
+                            )
+                        },
+                        confirmButton = {
+                            Button(onClick = { showDialog = false }) {
+                                Text("OK")
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -87,9 +122,4 @@ fun NewTaskPage(controller: NavHostController) {
 fun NewTaskPagePreview() {
     val mockNavController = rememberNavController()
     NewTaskPage(controller = mockNavController)
-}
-
-fun setTaskTitle(taskTitle: String): String {
-    print(taskTitle)
-    return taskTitle
 }
