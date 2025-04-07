@@ -60,7 +60,6 @@ fun NewTaskPage(controller: NavHostController) {
                 ) {
                     Text(taskTitle.ifEmpty { "Title" })
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = { /* TODO: Implement Calendar date picker */ }) {
@@ -76,11 +75,11 @@ fun NewTaskPage(controller: NavHostController) {
                         activeTrackColor = MaterialTheme.colorScheme.secondary,
                         inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
                     ),
-                    steps = 5,
+                    // NOT INCLUDING STARTING AND ENDING STEPS!!!
+                    steps = 3,
                     valueRange = 0f..50f
                 )
                 Text( text = "Difficulty: ${difficulty.roundToInt()}")
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = { /* TODO: Set Estimated Completion Time in HH:MM format */ }) {
