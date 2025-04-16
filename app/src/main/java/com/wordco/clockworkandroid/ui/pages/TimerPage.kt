@@ -43,7 +43,7 @@ fun TimerPage(timer: Timer, navController: NavController) {
         modifier =  Modifier
             .fillMaxWidth()
             .background(color = Color.hsl(256f,0.34f,0.48f))
-            .fillMaxHeight(0.1f)
+            .fillMaxHeight(0.15f)
             .height(
                 WindowInsets.systemBars.getTop(LocalDensity.current).dp )
 
@@ -55,7 +55,6 @@ fun TimerPage(timer: Timer, navController: NavController) {
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-
         ) {
             Row(modifier = Modifier) {
                 Text(text = "Back",
@@ -75,24 +74,31 @@ fun TimerPage(timer: Timer, navController: NavController) {
                     )
                 }
             }
+            
+            Column (
+                verticalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxHeight().weight(1f)
+            ){
+                Text(
+                    text = "Assignment Test Quiz Awesome",
+                    style = TextStyle(fontSize = 48.sp),
+                    modifier = Modifier,
+                    fontFamily = LATO,
+                    textAlign = TextAlign.Center
+                )
+
+                TimeDisplay(timer, modifier = Modifier)
 
 
-            Text(
-                text = "Assignment Test Quiz Awesome",
-                style = TextStyle(fontSize = 48.sp),
-                modifier = Modifier,
-                fontFamily = LATO,
-                textAlign = TextAlign.Center
-            )
-
-            TimeDisplay(timer, modifier = Modifier)
+                TimerControls(
+                    timer,
+                    modifier = Modifier.padding(10.dp).defaultMinSize(minHeight = 200.dp),
+                    navController = navController
+                )
+            }
 
 
-            TimerControls(
-                timer,
-                modifier = Modifier.padding(10.dp).defaultMinSize(minHeight = 200.dp),
-                navController = navController
-            )
         }
     }
 }

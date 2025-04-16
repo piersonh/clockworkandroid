@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             NavHost(
                 navController = navController,
-                startDestination = "Timer"
+                startDestination = "List"
             ) {
                 composable(route = "List") {
                     ListPage(navController)

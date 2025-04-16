@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.model.Status
 import com.wordco.clockworkandroid.model.Task
+import com.wordco.clockworkandroid.model.printDue
 import com.wordco.clockworkandroid.model.returnDueDate
 import com.wordco.clockworkandroid.model.timeAsHHMM
 import com.wordco.clockworkandroid.ui.LATO
@@ -206,7 +207,7 @@ fun UpcomingListItem(task: Task) = Row(
             ) {
             CalImage()
             Text(
-                task.returnDueDate(),
+                task.printDue(),
                 fontFamily = LATO,
                 fontSize = 20.sp,
                 color = Color.White,
