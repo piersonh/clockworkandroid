@@ -3,8 +3,12 @@ package com.wordco.clockworkandroid.model
 import androidx.compose.ui.graphics.Color
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Relation
+import androidx.room.Transaction
 
 val TASKS = listOf(
     Task("Assignment", 2660, 60,  33, 3, Color.Green, Status.RUNNING),
@@ -17,14 +21,49 @@ val TASKS = listOf(
     Task("Super Homework 102", 100, 60, System.currentTimeMillis() + 111000000, 3, Color.Yellow, Status.SCHEDULED),
 )
 
+//@Dao
+//interface TaskDao {
+//    @Query("SELECT * FROM task")
+//    fun getAll(): List<Task>
+//
+//    @Insert
+//    fun insertAll(vararg tasks: Task)
+//
+//    @Delete
+//    fun delete(task: Task)
+//}
+
 @Dao
 interface TaskDao {
-    @Query("SELECT * FROM task")
-    fun getAll(): List<Task>
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertProject(task: Task): Long
 
-    @Insert
-    fun insertAll(vararg tasks: Task)
+    @Transaction
+    @Query("SELECT * FROM task WHERE id = :taskId")
+    suspend fun getProjectWithTasks(taskId: Long): TaskWithSegments
+
+    @Transaction
+    @Query("SELECT * FROM task")
+    fun getProjectsWithTasks(): List<TaskWithSegments>
+}
+
+@Dao
+interface SegmentDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertSegment(segment: Segment): Long
 
     @Delete
-    fun delete(task: Task)
+    suspend fun deleteSegment(segment: Segment)
+
+    @Query("SELECT * FROM segment WHERE taskId = :taskId")
+    suspend fun getSegmentsForTask(taskId: Long): List<Segment>
 }
+
+data class TaskWithSegments(
+    @Embedded val task: Task,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "taskId"
+    )
+    val segments: List<Segment>
+)

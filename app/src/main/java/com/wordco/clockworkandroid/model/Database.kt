@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [Task::class], version = 1)
-@TypeConverters(Converters::class)
+@TypeConverters(TimestampConverter::class, DurationConverter::class)
 abstract class Database : RoomDatabase() {
-    abstract fun taskDao(): TaskDao
+    abstract fun taskDao(): SegmentDao
 }

@@ -19,15 +19,14 @@ enum class Status(i: Int) {
     SCHEDULED(2)
 }
 
-@Entity
+@Entity(tableName = "task")
 data class Task(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val dueDate: Instant?,
     val difficulty: Int,
     val color: Color,
-    val status: Status,
-    val segments: MutableList<Segment>
+    val status: Status
 ) {
     companion object {
         val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm aa")
@@ -90,7 +89,7 @@ fun Task.printDue() : String {
 }
 
 
-class Converters {
+class TimestampConverter {
     @TypeConverter
     fun fromTimestamp(value: Long?): Instant? {
         return value?.let { Instant.ofEpochMilli(it) }
@@ -100,6 +99,4 @@ class Converters {
     fun dateToTimestamp(date: Instant?): Long? {
         return date?.toEpochMilli()
     }
-
-    fun fromDuration(duration: Duration?)
 }
