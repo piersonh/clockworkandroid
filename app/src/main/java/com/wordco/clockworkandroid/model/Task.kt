@@ -6,6 +6,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import androidx.room.TypeConverters
+import com.wordco.clockworkandroid.model.database.ColorConverter
+import com.wordco.clockworkandroid.model.database.TimestampConverter
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -18,10 +21,11 @@ import java.util.Locale
 enum class Status(i: Int) {
     RUNNING(0),
     SUSPENDED(1),
-    SCHEDULED(2)
+    NOT_STARTED(2),
+    COMPLETED(3)
 }
 
-data class Task (
+data class Task(
     @Embedded val taskProperties: TaskProperties,
     @Relation(
         parentColumn = "id",
@@ -40,23 +44,41 @@ data class Task (
     val status: Status
         get() = taskProperties.status
 
-    companion object {
-        val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm aa")
-        val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LL/dd/yyyy hh:mm aa")
+    val workTime: Duration by lazy { Duration.ofMillis(0) }
+    val breakTime: Duration by lazy { Duration.ofMillis(0) }
 
-        fun timeAsHHMM (time: Int) : String {
+    constructor(name: String, dueDate: Instant?, difficulty: Int, color: Color) : this(
+        TaskProperties(0, name, dueDate, difficulty, color, Status.NOT_STARTED),
+        mutableListOf()
+    )
+
+    companion object {
+        val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+        val dateTimeFormatter: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("LL/dd/yyyy hh:mm a")
+
+        fun timeAsHHMM(time: Int): String {
             val hours = time / 3600
             val minutes = (time % 3600) / 60
-            return String.format(Locale.getDefault(), "%02d:%02d", hours , minutes)
+            return String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
+        }
+
+        fun timeAsHHMM(duration: Duration): String {
+            val totalMinutes = duration.toMinutes()
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            return String.format("%02d:%02d", hours, minutes)
         }
     }
 
-    fun printDue() : String {
+    fun formatDue(): String {
         if (dueDate == null) {
             return "Not Scheduled"
         }
 
-        val todayStart = ZonedDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneId.systemDefault()).toInstant()
+        val todayStart =
+            ZonedDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneId.systemDefault())
+                .toInstant()
         val tomorrowStart = todayStart.plus(1, ChronoUnit.DAYS)
         val overmorrowStart = todayStart.plus(2, ChronoUnit.DAYS)
         val yesterdayStart = todayStart.minus(1, ChronoUnit.DAYS)

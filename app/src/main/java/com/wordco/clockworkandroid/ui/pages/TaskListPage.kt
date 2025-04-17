@@ -12,7 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.wordco.clockworkandroid.model.TASKS
+import com.wordco.clockworkandroid.model.database.TASKS
 import com.wordco.clockworkandroid.ui.LATO
 import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 import com.wordco.clockworkandroid.ui.elements.TaskList

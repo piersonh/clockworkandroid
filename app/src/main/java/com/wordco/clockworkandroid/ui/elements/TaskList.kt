@@ -26,8 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.model.Status
 import com.wordco.clockworkandroid.model.Task
-import com.wordco.clockworkandroid.model.printDue
-import com.wordco.clockworkandroid.model.timeAsHHMM
+import com.wordco.clockworkandroid.model.database.TASKS
 import com.wordco.clockworkandroid.ui.LATO
 
 @Composable
@@ -47,7 +46,7 @@ fun TaskList(tasks: List<Task>) = Column(
         modifier = Modifier.padding(horizontal = 20.dp)
     )
     for (item in tasks) {
-        if (item.status != Status.SCHEDULED) {
+        if (item.status != Status.NOT_STARTED) {
             StartedListItem(item)
         }
     }
@@ -58,7 +57,7 @@ fun TaskList(tasks: List<Task>) = Column(
         modifier = Modifier.padding(horizontal = 20.dp)
     )
     for (item in tasks) {
-        if (item.status == Status.SCHEDULED) {
+        if (item.status == Status.NOT_STARTED) {
             UpcomingListItem(item)
         }
     }
@@ -68,16 +67,7 @@ fun TaskList(tasks: List<Task>) = Column(
 @Preview
 @Composable
 private fun TaskListPrev() = TaskList(
-    listOf(
-        Task("Assignment", 2660, 60,  33, 3, Color.Green, Status.RUNNING),
-        Task("Project Plan", 30000, 60, 20, 2, Color.Blue, Status.SUSPENDED),
-        Task("Homework 99", 100, 60, System.currentTimeMillis() - 100000000, 3, Color.White, Status.SCHEDULED),
-        Task("Homework 99.5", 100, 60, System.currentTimeMillis(), 3, Color.Cyan, Status.SCHEDULED),
-        Task("Homework -1", 100, 60, 0, 3, Color.Black, Status.SCHEDULED),
-        Task("Homework 100", 100, 60, System.currentTimeMillis() + 22000000, 3, Color.Red, Status.SCHEDULED),
-        Task("Evil Homework 101", 100, 60, System.currentTimeMillis() + 25000000, 3, Color.Magenta, Status.SCHEDULED),
-        Task("Super Homework 102", 100, 60, System.currentTimeMillis() + 111000000, 3, Color.Yellow, Status.SCHEDULED),
-    )
+    TASKS
 )
 
 
@@ -152,7 +142,7 @@ fun StartedListItem(task: Task) = Row(
         {
             ClockImage()
             Text(
-                task.TimeAsHHMM(task.workTime),
+                Task.timeAsHHMM(task.workTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -206,7 +196,7 @@ fun UpcomingListItem(task: Task) = Row(
             ) {
             CalImage()
             Text(
-                task.printDue(),
+                task.formatDue(),
                 fontFamily = LATO,
                 fontSize = 20.sp,
                 color = Color.White,
