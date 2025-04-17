@@ -152,7 +152,7 @@ fun StartedListItem(task: Task) = Row(
         {
             ClockImage()
             Text(
-                task.timeAsHHMM(task.workTime),
+                task.TimeAsHHMM(task.workTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -160,7 +160,7 @@ fun StartedListItem(task: Task) = Row(
             )
             MugImage()
             Text(
-                task.timeAsHHMM(task.breakTime),
+                Task.timeAsHHMM(task.breakTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -222,7 +222,7 @@ fun UpcomingListItem(task: Task) = Row(
         {
             UserImage()
             Text(
-                task.timeAsHHMM(task.workTime),
+                Task.timeAsHHMM(task.workTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -230,7 +230,7 @@ fun UpcomingListItem(task: Task) = Row(
             )
             ComputerImage()
             Text(
-                task.timeAsHHMM(task.breakTime),
+                Task.timeAsHHMM(task.breakTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
