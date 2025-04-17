@@ -5,37 +5,28 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import java.time.Instant
 import java.time.Duration
+import java.time.Instant
 
 
 @Entity(
-    tableName = "segment",
-    foreignKeys = [ForeignKey(
+    tableName = "segment", foreignKeys = [ForeignKey(
         entity = Task::class,
         parentColumns = ["id"],
         childColumns = ["taskId"],
         onDelete = ForeignKey.CASCADE
     )]
 )
-abstract class Segment(startTime: Instant, duration: Duration?) {
-    @PrimaryKey(autoGenerate = true) val segmentId: Long = 0
-        private set
+data class Segment(
+    @PrimaryKey(autoGenerate = true) val segmentId: Long = 0,
     val taskId: Long,
-    var startTime: Instant = startTime
-        private set
-    @TypeConverters(DurationConverter::class)
-    var duration: Duration? = duration
-        private set
+    @TypeConverters(TimestampConverter::class) var startTime: Instant,
+    @TypeConverters(DurationConverter::class) var duration: Duration?
+) {
 
     fun setEnd(endTime: Instant) {
         duration = Duration.between(startTime, endTime)
     }
-}
-
-
-interface DefaultInstance<out T> {
-    fun new(): T
 }
 
 class DurationConverter {

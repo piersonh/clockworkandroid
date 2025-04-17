@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.model.Status
 import com.wordco.clockworkandroid.model.Task
 import com.wordco.clockworkandroid.model.printDue
-import com.wordco.clockworkandroid.model.returnDueDate
 import com.wordco.clockworkandroid.model.timeAsHHMM
 import com.wordco.clockworkandroid.ui.LATO
 
