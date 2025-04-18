@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -20,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,15 +42,13 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun NewTaskPage(controller: NavHostController) {
     var taskTitle by remember { mutableStateOf("") }
-    var formattedDate by remember { mutableStateOf("") }
     var difficulty by remember { mutableFloatStateOf(0f) }
     var estimatedCompTime by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var getDateCal by remember { mutableStateOf(false) }
     var getTimeEst by remember { mutableStateOf(false) }
-    val currentDateMillis = System.currentTimeMillis()
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = currentDateMillis)
-
+    val datePickerState = rememberDatePickerState()
+    var onTaskDueDate by remember { mutableStateOf<Long?>(null) }
 
     Scaffold(
         floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
@@ -86,7 +86,7 @@ fun NewTaskPage(controller: NavHostController) {
                     ),
                     // NOT INCLUDING STARTING AND ENDING STEPS!!!
                     steps = 3,
-                    valueRange = 0f..25f
+                    valueRange = 0f..5f
                 )
                 Text( text = "Difficulty: ${difficulty.toInt()}")
                 Spacer(modifier = Modifier.height(16.dp))
@@ -118,13 +118,22 @@ fun NewTaskPage(controller: NavHostController) {
                 if (getDateCal){
                     DatePickerDialog(
                         onDismissRequest = { getDateCal = false },
-                        content = {},
                         confirmButton = {
-                            Button(onClick = { getDateCal = false }) {
+                            TextButton(onClick = {
+                                onTaskDueDate = datePickerState.selectedDateMillis
+                                getDateCal = false
+                            }) {
                                 Text("Ok")
                             }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { getDateCal = false}) {
+                                Text("Cancel")
+                            }
                         }
-                    )
+                    ) {
+                        DatePicker(state = datePickerState)
+                    }
                 }
             }
         }
