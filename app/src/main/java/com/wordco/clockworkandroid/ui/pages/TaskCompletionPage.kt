@@ -1,5 +1,4 @@
 package com.wordco.clockworkandroid.ui.pages
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Black
@@ -20,9 +20,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.wordco.clockworkandroid.model.Task
+import com.wordco.clockworkandroid.model.Timer
+import java.util.Locale
 
 @Composable
-fun TaskCompletionPage() {
+fun TaskCompletionPage(navController: NavController, task: MutableState<Task>) {
     Box(
         modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(10.dp), contentAlignment = Alignment.Center
     ) {
@@ -32,7 +36,7 @@ fun TaskCompletionPage() {
         ) {
 
             Text(
-                text = "Task Name",
+                text = task.value.name,
                 style = TextStyle(fontSize = 40.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -50,7 +54,10 @@ fun TaskCompletionPage() {
             Spacer(modifier = Modifier.weight(0.03f))
 
             Text(
-                text = "00:00",
+                text = String.format(
+                    Locale.getDefault(), "%02d:%02d",
+                    task.value.workTime/3600 , (task.value.workTime % 3600) / 60
+                ),
                 style = TextStyle(fontSize = 90.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -66,7 +73,10 @@ fun TaskCompletionPage() {
             )
 
             Text(
-                text = "00:00",
+                 text = String.format(
+                    Locale.getDefault(), "%02d:%02d",
+                    task.value.estimated/3600 , (task.value.estimated % 3600) / 60
+                ),
                 style = TextStyle(fontSize = 34.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -108,7 +118,7 @@ fun TaskCompletionPage() {
             }
 
             Button(
-                onClick = { /* TODO: Handle Continue */ },
+                onClick = { navController.navigate("List") },
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
                 modifier = Modifier.fillMaxWidth(0.7f),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
@@ -126,9 +136,10 @@ fun TaskCompletionPage() {
         }
     }
 }
-
+/*
 @Preview
 @Composable
 fun TaskCompletionPagePreview() {
     TaskCompletionPage()
 }
+*/

@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.ui.pages
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.wordco.clockworkandroid.model.Task
 import com.wordco.clockworkandroid.model.Timer
 import com.wordco.clockworkandroid.ui.LATO
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
@@ -37,19 +40,24 @@ import com.wordco.clockworkandroid.ui.elements.TimerControls
 
 
 @Composable
-fun TimerPage(timer: Timer, navController: NavController) {
+fun TimerPage(timer: Timer, navController: NavController, task: MutableState<Task>) {
     val state by timer.state.collectAsState()
+    timer.setTimer(task.value.workTime)
     Box(
         modifier =  Modifier
             .fillMaxWidth()
-            .background(color = Color.hsl(256f,0.34f,0.48f))
+            .background(color = Color.hsl(256f, 0.34f, 0.48f))
             .fillMaxHeight(0.1f)
             .height(
-                WindowInsets.systemBars.getTop(LocalDensity.current).dp )
+                WindowInsets.systemBars.getTop(LocalDensity.current).dp
+            )
 
     )
     Box(
-        modifier = Modifier.fillMaxSize().safeDrawingPadding().padding(vertical = 20.dp, horizontal = 10.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(vertical = 20.dp, horizontal = 10.dp),
         contentAlignment = Alignment.TopEnd
     ) {
         Column(
@@ -61,8 +69,8 @@ fun TimerPage(timer: Timer, navController: NavController) {
                 Text(text = "Back",
                     style = TextStyle(fontSize = 30.sp),
                     fontFamily = LATO,
-                    color = Color.White
-
+                    color = Color.White,
+                    modifier = Modifier.clickable { navController.navigateUp() }
                 )
                 Spacer(Modifier.weight(1f))
                 if (state == Timer.State.INIT) {
@@ -78,7 +86,7 @@ fun TimerPage(timer: Timer, navController: NavController) {
 
 
             Text(
-                text = "Assignment Test Quiz Awesome",
+                text = task.value.name,
                 style = TextStyle(fontSize = 48.sp),
                 modifier = Modifier,
                 fontFamily = LATO,
@@ -90,7 +98,9 @@ fun TimerPage(timer: Timer, navController: NavController) {
 
             TimerControls(
                 timer,
-                modifier = Modifier.padding(10.dp).defaultMinSize(minHeight = 200.dp),
+                modifier = Modifier
+                    .padding(10.dp)
+                    .defaultMinSize(minHeight = 200.dp),
                 navController = navController
             )
         }
@@ -98,7 +108,7 @@ fun TimerPage(timer: Timer, navController: NavController) {
 }
 
 
-@Preview(showBackground = true, backgroundColor = 0xcccccccc)
+/*@Preview(showBackground = true, backgroundColor = 0xcccccccc)
 @Composable
 private fun TimerPagePreview() {
     val navController = rememberNavController()
@@ -118,3 +128,4 @@ private fun TimerPagePreview3(){
     val navController = rememberNavController()
     TimerPage(Timer(Timer.State.PAUSED), navController)
 }
+*/

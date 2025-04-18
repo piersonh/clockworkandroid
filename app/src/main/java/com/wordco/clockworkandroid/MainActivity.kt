@@ -8,15 +8,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wordco.clockworkandroid.model.Task
 import com.wordco.clockworkandroid.model.Timer
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TimerPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
-
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -24,13 +29,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val curTask = remember { mutableStateOf(Task()) }
             val navController = rememberNavController()
             NavHost(
                 navController = navController,
-                startDestination = "Timer"
+                startDestination = "List",
+                enterTransition = {slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300))},
+                exitTransition =  {slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300))},
+                popExitTransition = {slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300))},
+                popEnterTransition = {slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300))},
+
             ) {
                 composable(route = "List") {
-                    ListPage(navController)
+                    ListPage(navController, curTask)
                 }
                 composable(
                     route = "Add",
@@ -51,12 +62,13 @@ class MainActivity : ComponentActivity() {
                     NewTaskPage(navController)
                 }
                 composable ( route = "Timer" ) {
-                    TimerPage(Timer(), navController = navController)
+                    TimerPage(Timer(), navController = navController, curTask)
                 }
                 composable(route = "TaskCompletionPage") {
-                    TaskCompletionPage()
+                    TaskCompletionPage(navController, curTask)
                 }
             }
         }
     }
 }
+

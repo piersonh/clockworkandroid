@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.reflect.KProperty
+
 
 enum class Status(val status: Int) {
     RUNNING(0),
@@ -13,13 +15,14 @@ enum class Status(val status: Int) {
 }
 
 data class Task(
-    val name: String,
-    val workTime: Int,
-    val breakTime: Int,
-    val due: Long,
-    val difficulty: Int,
-    val color: Color,
-    val status: Status
+    val name: String = "Default",
+    val workTime: Int = 0,
+    val breakTime: Int = 0,
+    val due: Long = 0,
+    val difficulty: Int = 0,
+    val color: Color = Color.Red,
+    val status: Status = Status.SUSPENDED,
+    val estimated: Int = 10
 )
 
 

@@ -1,6 +1,8 @@
 package com.wordco.clockworkandroid.ui.elements
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wordco.clockworkandroid.model.Status
 import com.wordco.clockworkandroid.model.Task
 import com.wordco.clockworkandroid.model.returnDueDate
@@ -31,7 +36,7 @@ import com.wordco.clockworkandroid.model.timeAsHHMM
 import com.wordco.clockworkandroid.ui.LATO
 
 @Composable
-fun TaskList(tasks: List<Task>) = Column(
+fun TaskList(tasks: List<Task>, navController: NavController, curTask: MutableState<Task>) = Column(
     verticalArrangement = Arrangement.spacedBy(5.dp),
     modifier = Modifier
         .padding(5.dp)
@@ -48,7 +53,7 @@ fun TaskList(tasks: List<Task>) = Column(
     )
     for (item in tasks) {
         if (item.status != Status.SCHEDULED) {
-            StartedListItem(item)
+            StartedListItem(item, navController, curTask)
         }
     }
     Text("UPCOMING",
@@ -64,7 +69,7 @@ fun TaskList(tasks: List<Task>) = Column(
     }
 }
 
-
+/*
 @Preview
 @Composable
 private fun TaskListPrev() = TaskList(
@@ -78,11 +83,11 @@ private fun TaskListPrev() = TaskList(
         Task("Evil Homework 101", 100, 60, System.currentTimeMillis() + 25000000, 3, Color.Magenta, Status.SCHEDULED),
         Task("Super Homework 102", 100, 60, System.currentTimeMillis() + 111000000, 3, Color.Yellow, Status.SCHEDULED),
     )
-)
+)*/
 
 
 @Composable
-fun StartedListItem(task: Task) = Row(
+fun StartedListItem(task: Task, navController: NavController, curTask: MutableState<Task>) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier
@@ -90,6 +95,10 @@ fun StartedListItem(task: Task) = Row(
         .clip(shape = RoundedCornerShape(10.dp))
         .background(color = Color(42, 42, 42))
         .height(100.dp)
+        .clickable(onClick = {
+            curTask.value = task
+            navController.navigate("Timer")
+        })
 ) {
     Box(
         modifier = Modifier

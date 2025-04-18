@@ -34,6 +34,9 @@ class Timer(state: State = State.INIT) {
             }
         }
     }
+    fun setTimer(setTime: Int) {
+        _secondsElapsed.update { setTime }
+    }
 
     fun stopTimer() {
         _state.update {State.PAUSED}
