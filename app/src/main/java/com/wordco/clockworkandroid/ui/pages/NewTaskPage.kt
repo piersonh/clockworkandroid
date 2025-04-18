@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.wordco.clockworkandroid.ui.pages
 
 import android.annotation.SuppressLint
@@ -9,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -16,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -28,9 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import kotlin.math.roundToInt
 
-// TODO: Implement dialogs for time and date pickers
+// TODO: Implement dialogs for time pickers
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -40,6 +44,11 @@ fun NewTaskPage(controller: NavHostController) {
     var difficulty by remember { mutableFloatStateOf(0f) }
     var estimatedCompTime by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
+    var getDateCal by remember { mutableStateOf(false) }
+    var getTimeEst by remember { mutableStateOf(false) }
+    val currentDateMillis = System.currentTimeMillis()
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = currentDateMillis)
+
 
     Scaffold(
         floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
@@ -62,7 +71,7 @@ fun NewTaskPage(controller: NavHostController) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = { /* TODO: Implement Calendar date picker */ }) {
+                Button(onClick = { getDateCal = true }) {
                     Text("Due Date")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -77,9 +86,9 @@ fun NewTaskPage(controller: NavHostController) {
                     ),
                     // NOT INCLUDING STARTING AND ENDING STEPS!!!
                     steps = 3,
-                    valueRange = 0f..50f
+                    valueRange = 0f..25f
                 )
-                Text( text = "Difficulty: ${difficulty.roundToInt()}")
+                Text( text = "Difficulty: ${difficulty.toInt()}")
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = { /* TODO: Set Estimated Completion Time in HH:MM format */ }) {
@@ -101,6 +110,18 @@ fun NewTaskPage(controller: NavHostController) {
                         confirmButton = {
                             Button(onClick = { showDialog = false }) {
                                 Text("OK")
+                            }
+                        }
+                    )
+                }
+
+                if (getDateCal){
+                    DatePickerDialog(
+                        onDismissRequest = { getDateCal = false },
+                        content = {},
+                        confirmButton = {
+                            Button(onClick = { getDateCal = false }) {
+                                Text("Ok")
                             }
                         }
                     )
