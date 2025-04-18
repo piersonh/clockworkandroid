@@ -11,11 +11,13 @@ import androidx.compose.animation.core.tween
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.wordco.clockworkandroid.model.TaskRegistryViewModel
 import com.wordco.clockworkandroid.model.Timer
+import com.wordco.clockworkandroid.model.database.TaskRegistry
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
-import com.wordco.clockworkandroid.ui.pages.TimerPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
+import com.wordco.clockworkandroid.ui.pages.TimerPage
 
 
 class MainActivity : ComponentActivity() {
@@ -23,6 +25,16 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val db = TaskRegistry.getDatabase(applicationContext)
+        val taskDao = db.taskDao()
+        val taskRegistryViewModel = TaskRegistryViewModel(taskDao)
+//        CoroutineScope(Dispatchers.IO).launch {
+//            taskDao.insertTask(TASKS[1])
+//            db.clearAllTables()
+//        }
+        //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -31,7 +43,7 @@ class MainActivity : ComponentActivity() {
                 startDestination = "List"
             ) {
                 composable(route = "List") {
-                    ListPage(navController)
+                    ListPage(navController, taskRegistryViewModel)
                 }
                 composable(
                     route = "Add",
@@ -51,7 +63,7 @@ class MainActivity : ComponentActivity() {
                 {
                     NewTaskPage(navController)
                 }
-                composable ( route = "Timer" ) {
+                composable(route = "Timer") {
                     TimerPage(Timer(), navController = navController)
                 }
                 composable(route = "TaskCompletionPage") {

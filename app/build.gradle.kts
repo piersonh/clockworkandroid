@@ -17,6 +17,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments.putAll(mapOf(
+                    "room.exportSchema" to "false" // TODO: use proper schema exporting
+                ))
+            }
+        }
     }
 
     buildTypes {

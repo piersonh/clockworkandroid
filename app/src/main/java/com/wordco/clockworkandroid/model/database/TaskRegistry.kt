@@ -15,6 +15,8 @@ import androidx.room.TypeConverters
 import com.wordco.clockworkandroid.model.Segment
 import com.wordco.clockworkandroid.model.Task
 import com.wordco.clockworkandroid.model.TaskProperties
+import com.wordco.clockworkandroid.model.TaskRegistryViewModel
+import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 
 val TASKS = listOf(
@@ -29,6 +31,7 @@ val TASKS = listOf(
 )
 
 
+
 @Database(entities = [TaskProperties::class, Segment::class], version = 1)
 @TypeConverters(
     TimestampConverter::class,
@@ -37,6 +40,7 @@ val TASKS = listOf(
     ColorConverter::class
 )
 abstract class TaskRegistry : RoomDatabase() {
+    abstract fun taskDao() : TaskDao
     abstract fun propertiesDao(): TaskPropertiesDao
     abstract fun segmentDao(): SegmentDao
 
@@ -61,20 +65,46 @@ abstract class TaskRegistry : RoomDatabase() {
 
 
 @Dao
-interface TaskPropertiesDao {
+interface TaskDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(taskProperties: TaskProperties): Long
+    suspend fun insertTaskProperties(taskProperties: TaskProperties): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSegment(segment: Segment): Long
 
     @Transaction
-    @Query("SELECT * FROM task_properties WHERE id = :taskId")
-    suspend fun getTask(taskId: Long): Task
+    suspend fun insertTask(task: Task) {
+        val taskId = insertTaskProperties(task.taskProperties)
+
+        for (segment in task.segments) {
+            val segmentToInsert = segment.copy(taskId = taskId)
+            insertSegment(segmentToInsert)
+
+        }
+    }
 
     @Transaction
     @Query("SELECT * FROM task_properties")
-    fun getAllTasks(): List<Task>
+    fun getAllTasks(): Flow<List<Task>>
+}
+
+
+@Dao
+interface TaskPropertiesDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTaskProperties(taskProperties: TaskProperties): Long
+
+    @Transaction
+    @Query("SELECT * FROM task_properties WHERE id = :taskId")
+    suspend fun getTaskProperties(taskId: Long): Task
+
+    @Transaction
+    @Query("SELECT * FROM task_properties")
+    fun getAllTasksProperties(): List<Task>
 
     @Delete
-    suspend fun delete(taskProperties: TaskProperties)
+    suspend fun deleteTaskProperties(taskProperties: TaskProperties)
 }
 
 @Dao

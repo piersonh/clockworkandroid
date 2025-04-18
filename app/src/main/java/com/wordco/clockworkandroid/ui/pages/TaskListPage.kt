@@ -12,13 +12,15 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import com.wordco.clockworkandroid.model.Task
+import com.wordco.clockworkandroid.model.TaskRegistryViewModel
 import com.wordco.clockworkandroid.model.database.TASKS
 import com.wordco.clockworkandroid.ui.LATO
 import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 import com.wordco.clockworkandroid.ui.elements.TaskList
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListPage(controller: NavHostController) = Scaffold(
+fun ListPage(controller: NavHostController, taskRegistryViewModel: TaskRegistryViewModel) = Scaffold(
     topBar = {
         TopAppBar(
             title = { Text("Task Sessions", fontFamily = LATO) }
@@ -38,6 +40,6 @@ fun ListPage(controller: NavHostController) = Scaffold(
         )
     )
     {
-        TaskList(TASKS)
+        TaskList(taskRegistryViewModel)
     }
 }

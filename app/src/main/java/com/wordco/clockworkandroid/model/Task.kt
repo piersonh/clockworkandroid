@@ -57,12 +57,6 @@ data class Task(
         val dateTimeFormatter: DateTimeFormatter =
             DateTimeFormatter.ofPattern("LL/dd/yyyy hh:mm a")
 
-        fun timeAsHHMM(time: Int): String {
-            val hours = time / 3600
-            val minutes = (time % 3600) / 60
-            return String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
-        }
-
         fun timeAsHHMM(duration: Duration): String {
             val totalMinutes = duration.toMinutes()
             val hours = totalMinutes / 60
@@ -107,31 +101,4 @@ data class TaskProperties(
     @TypeConverters(ColorConverter::class) val color: Color,
     @TypeConverters(TimestampConverter::class) val status: Status
 )
-
-/*
-fun Task.returnDueDate() : String {
-    if (due == 0.toLong()) {
-        return "Not Scheduled"
-    }
-
-    val now = System.currentTimeMillis()
-    val timezone = TimeZone.getDefault()
-    val daylight = if (timezone.useDaylightTime() && timezone.inDaylightTime(Date(now))) {
-        3600000
-    } else {
-        0
-    }
-    val dayStart = now - (now % 86400000) - timezone.rawOffset - daylight
-
-    return when (due - dayStart) {
-        in -86400000..0 -> "Yesterday " + SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(due)
-        in 0..86400000 -> "Today " + SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(due)
-        in 86400001..172800000 -> "Tomorrow " + SimpleDateFormat("hh:mm aa", Locale.getDefault()).format(due)
-        else -> SimpleDateFormat("LL/dd/yyyy hh:mm aa", Locale.getDefault()).format(due)
-    }
-}
-*/
-
-
-
 

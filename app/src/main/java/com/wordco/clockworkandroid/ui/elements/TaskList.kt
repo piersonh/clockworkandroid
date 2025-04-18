@@ -16,21 +16,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.model.Status
 import com.wordco.clockworkandroid.model.Task
-import com.wordco.clockworkandroid.model.database.TASKS
+import com.wordco.clockworkandroid.model.TaskRegistryViewModel
 import com.wordco.clockworkandroid.ui.LATO
 
+
+// TODO: make lazy columns work
 @Composable
-fun TaskList(tasks: List<Task>) = Column(
+fun TaskList(viewModel: TaskRegistryViewModel) = Column(
     verticalArrangement = Arrangement.spacedBy(5.dp),
     modifier = Modifier
         .padding(5.dp)
@@ -39,7 +42,9 @@ fun TaskList(tasks: List<Task>) = Column(
         .verticalScroll(rememberScrollState())
 
 ) {
-    Text("STARTED",
+    val tasks by viewModel.allEntries.collectAsState()
+    Text(
+        "STARTED",
         fontFamily = LATO,
         fontSize = 25.sp,
         color = Color.White,
@@ -50,7 +55,8 @@ fun TaskList(tasks: List<Task>) = Column(
             StartedListItem(item)
         }
     }
-    Text("UPCOMING",
+    Text(
+        "UPCOMING",
         fontFamily = LATO,
         fontSize = 25.sp,
         color = Color.White,
@@ -64,11 +70,10 @@ fun TaskList(tasks: List<Task>) = Column(
 }
 
 
-@Preview
-@Composable
-private fun TaskListPrev() = TaskList(
-    TASKS
-)
+//@Preview
+//@Composable
+//private fun TaskListPrev() = TaskList(
+//)
 
 
 @Composable
@@ -87,8 +92,9 @@ fun StartedListItem(task: Task) = Row(
             .fillMaxHeight()
             .width(10.dp)
     )
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp),
-    modifier = Modifier.padding(2.dp)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier.padding(2.dp)
     )
     {
         Text(
@@ -176,7 +182,8 @@ fun UpcomingListItem(task: Task) = Row(
             .fillMaxHeight()
             .width(10.dp)
     )
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp),
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp),
         modifier = Modifier.padding(2.dp)
     )
     {
