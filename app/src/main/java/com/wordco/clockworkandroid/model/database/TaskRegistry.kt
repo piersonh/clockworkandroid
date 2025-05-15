@@ -33,7 +33,7 @@ val TASKS = listOf(
 
 
 
-@Database(entities = [TaskProperties::class, Segment::class], version = 1)
+@Database(entities = [TaskProperties::class, Segment::class, Marker::class], version = 2)
 @TypeConverters(
     TimestampConverter::class,
     DurationConverter::class,

@@ -32,6 +32,11 @@ data class Task(
         entityColumn = "taskId"
     )
     val segments: List<Segment>,
+
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "taskId"
+    )
     val markers: List<Marker>
 ) {
     val name: String
