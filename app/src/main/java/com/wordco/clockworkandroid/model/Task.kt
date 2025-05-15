@@ -31,7 +31,8 @@ data class Task(
         parentColumn = "id",
         entityColumn = "taskId"
     )
-    val segments: List<Segment>
+    val segments: List<Segment>,
+    val markers: List<Marker>
 ) {
     val name: String
         get() = taskProperties.name
@@ -49,6 +50,7 @@ data class Task(
 
     constructor(name: String, dueDate: Instant?, difficulty: Int, color: Color) : this(
         TaskProperties(0, name, dueDate, difficulty, color, Status.NOT_STARTED),
+        mutableListOf(),
         mutableListOf()
     )
 
@@ -61,7 +63,7 @@ data class Task(
             val totalMinutes = duration.toMinutes()
             val hours = totalMinutes / 60
             val minutes = totalMinutes % 60
-            return String.format("%02d:%02d", hours, minutes)
+            return String.format(Locale.getDefault(),"%02d:%02d", hours, minutes)
         }
     }
 

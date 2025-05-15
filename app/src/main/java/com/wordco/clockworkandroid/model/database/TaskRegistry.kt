@@ -12,6 +12,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.room.TypeConverters
+import com.wordco.clockworkandroid.model.Marker
 import com.wordco.clockworkandroid.model.Segment
 import com.wordco.clockworkandroid.model.Task
 import com.wordco.clockworkandroid.model.TaskProperties
@@ -43,6 +44,7 @@ abstract class TaskRegistry : RoomDatabase() {
     abstract fun taskDao() : TaskDao
     abstract fun propertiesDao(): TaskPropertiesDao
     abstract fun segmentDao(): SegmentDao
+    abstract fun markerDao(): MarkerDao
 
     companion object {
         @Volatile
@@ -73,6 +75,9 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSegment(segment: Segment): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMarker(marker: Marker): Long
+
     @Transaction
     suspend fun insertTask(task: Task) {
         val taskId = insertTaskProperties(task.taskProperties)
@@ -80,6 +85,12 @@ interface TaskDao {
         for (segment in task.segments) {
             val segmentToInsert = segment.copy(taskId = taskId)
             insertSegment(segmentToInsert)
+
+        }
+
+        for (marker in task.markers) {
+            val markerToInsert = marker.copy(taskId = taskId)
+            insertMarker(markerToInsert)
 
         }
     }
@@ -117,6 +128,19 @@ interface SegmentDao {
 
     @Query("SELECT * FROM segment WHERE taskId = :taskId")
     suspend fun getSegmentsForTask(taskId: Long): List<Segment>
+}
+
+
+@Dao
+interface MarkerDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMarker(marker: Marker): Long
+
+    @Delete
+    suspend fun deleteMarker(marker: Marker)
+
+    @Query("SELECT * FROM marker WHERE taskId = :taskId")
+    suspend fun getMarkersForTask(taskId: Long): List<Marker>
 }
 
 
