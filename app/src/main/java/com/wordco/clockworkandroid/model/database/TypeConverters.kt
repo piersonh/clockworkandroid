@@ -3,6 +3,7 @@ package com.wordco.clockworkandroid.model.database
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
+import com.wordco.clockworkandroid.model.Segment
 import com.wordco.clockworkandroid.model.Status
 import java.time.Duration
 import java.time.Instant
@@ -40,6 +41,18 @@ class TaskStatusConverter {
     @TypeConverter
     fun toTaskStatus(status: Int?): Status? {
         return status?.let { Status.entries[it] }
+    }
+}
+
+class SegmentVariantConverter {
+    @TypeConverter
+    fun fromSegmentVariant(variant: Segment.Variant?): Int? {
+        return variant?.ordinal
+    }
+
+    @TypeConverter
+    fun toSegmentVariant(variant: Int?): Segment.Variant? {
+        return variant?.let { Segment.Variant.entries[it] }
     }
 }
 
