@@ -80,7 +80,7 @@ interface TaskDao {
 
     @Transaction
     suspend fun insertTask(task: Task) {
-        val taskId = insertTaskProperties(task.taskProperties)
+        val taskId = insertTaskProperties(task.taskProperties).toInt()
 
         for (segment in task.segments) {
             val segmentToInsert = segment.copy(taskId = taskId)

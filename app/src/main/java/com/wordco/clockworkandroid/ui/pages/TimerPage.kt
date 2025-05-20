@@ -64,7 +64,7 @@ fun TimerPage(timer: Timer, navController: NavController) {
 
                 )
                 Spacer(Modifier.weight(1f))
-                if (state == Timer.State.INIT) {
+                if (state == Timer.State.IDLE) {
                     Text(
                         text = "Edit",
                         style = TextStyle(fontSize = 30.sp),
@@ -108,7 +108,7 @@ fun TimerPage(timer: Timer, navController: NavController) {
 @Composable
 private fun TimerPagePreview() {
     val navController = rememberNavController()
-    TimerPage(Timer(Timer.State.INIT), navController)
+    TimerPage(Timer(Timer.State.IDLE), navController)
 }
 
 @Preview

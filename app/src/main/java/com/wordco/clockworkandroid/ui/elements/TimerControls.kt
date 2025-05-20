@@ -74,7 +74,7 @@ fun TimerControls(
     val state by timer.state.collectAsState()
 
     when (state) {
-        Timer.State.INIT -> InitControls()
+        Timer.State.IDLE -> InitControls()
         Timer.State.RUNNING -> RunningControls()
         Timer.State.PAUSED,Timer.State.SUSPENDED -> PausedControls()
         else -> throw RuntimeException("Additional State Controls Not Implemented")
@@ -101,7 +101,7 @@ private fun ControlButtonsPreviewRunning() {
 @Composable
 private fun ControlButtonsPreviewInit() {
     val navController = rememberNavController()
-    TimerControls(Timer(Timer.State.INIT), navController = navController)
+    TimerControls(Timer(Timer.State.IDLE), navController = navController)
 }
 
 

@@ -22,8 +22,8 @@ import java.time.Instant
     indices = [Index(value = ["taskId"])]
 )
 data class Segment(
-    @PrimaryKey(autoGenerate = true) val segmentId: Long = 0,
-    val taskId: Long,
+    @PrimaryKey(autoGenerate = true) val segmentId: Int = 0,
+    val taskId: Int,
     @TypeConverters(SegmentVariantConverter::class) var variant: Variant,
     @TypeConverters(TimestampConverter::class) var startTime: Instant,
     @TypeConverters(DurationConverter::class) var duration: Duration?
@@ -37,4 +37,6 @@ data class Segment(
     fun setEnd(endTime: Instant) {
         duration = Duration.between(startTime, endTime)
     }
+
+    fun setEndNow() = setEnd(Instant.now())
 }

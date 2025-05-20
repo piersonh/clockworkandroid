@@ -19,8 +19,8 @@ import java.time.Instant
     indices = [Index(value = ["taskId"])]
 )
 data class Marker (
-    @PrimaryKey(autoGenerate = true) val segmentId: Long = 0,
-    val taskId: Long,
+    @PrimaryKey(autoGenerate = true) val segmentId: Int = 0,
+    val taskId: Int,
     @TypeConverters(TimestampConverter::class) var startTime: Instant,
     var label: String
 )

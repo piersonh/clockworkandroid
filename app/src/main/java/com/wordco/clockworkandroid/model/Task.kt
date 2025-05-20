@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import androidx.room.TypeConverters
 import com.wordco.clockworkandroid.model.database.ColorConverter
+import com.wordco.clockworkandroid.model.database.TaskRegistry
 import com.wordco.clockworkandroid.model.database.TimestampConverter
 import java.time.Duration
 import java.time.Instant
@@ -18,11 +19,11 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
-enum class Status(i: Int) {
-    RUNNING(0),
-    SUSPENDED(1),
-    NOT_STARTED(2),
-    COMPLETED(3)
+// Possible states the tasks can be serialized in
+enum class Status {
+    NOT_STARTED,
+    SUSPENDED,
+    COMPLETED
 }
 
 data class Task(
@@ -31,13 +32,13 @@ data class Task(
         parentColumn = "id",
         entityColumn = "taskId"
     )
-    val segments: List<Segment>,
+    val segments: MutableList<Segment>,
 
     @Relation(
         parentColumn = "id",
         entityColumn = "taskId"
     )
-    val markers: List<Marker>
+    val markers: MutableList<Marker>
 ) {
     val name: String
         get() = taskProperties.name
@@ -95,6 +96,26 @@ data class Task(
                 zonedDueDate.format(dateTimeFormatter)
             }
         }
+    }
+
+    private fun newSegment(variant: Segment.Variant) {
+        if (segments.isNotEmpty()) {
+            segments.last().setEndNow()
+        }
+
+        val newSegment = Segment(
+            // FIXME
+            //  When database classes (TaskProperties, Segment, Marker) are instantiated,
+            //  their id's are set to 0 and THEY MIGHT NOT BE CORRECTED UNTIL THEY ARE RELOADED
+            taskId = taskProperties.id,
+            variant = variant,
+            startTime = Instant.now(),
+            duration = null
+        )
+
+        segments.add(newSegment)
+
+        TaskRegistry.segment
     }
 }
 

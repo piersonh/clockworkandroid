@@ -16,20 +16,18 @@ class UnloadedTimerException: Exception("The timer does not have a task loaded")
 class Timer private constructor(task: Task) {
 
     enum class State {
-        INIT, RUNNING, PAUSED, SUSPENDED, FINISHED
+        IDLE,       // When the timer is loaded with a new task
+        RUNNING,    // When the timer is executing a loaded task
+        PAUSED,     // When the timer has paused a loaded task
+        SUSPENDED   // When the timer is loaded with or suspends a loaded task
     }
 
+    // On instantiation, the task can either be new or suspended
+    // PAUSED tasks cannot be unloaded (therefor then cannot be loaded)
+    // COMPLETED tasks cannot be loaded into the timer
     private val _state = MutableStateFlow(
-
-        // At the moment of writing, there is a status property in TaskProperties
-        // It might be a better idea to pull from that instead of determining the execution
-        // state of the task by judging its segments
-        // Additionally, there is no logic to deal with a finished state
-        // There should never be a case where we will load a task that is running or paused, but
-        // I am not sure about finished tasks
-
         if (task.segments.isEmpty()) {
-            State.INIT
+            State.IDLE
         } else {
             State.SUSPENDED
         }
@@ -38,7 +36,7 @@ class Timer private constructor(task: Task) {
     val state: StateFlow<State> = _state
 
 
-    // Singleton pattern
+    // Singleton pattern (kinda)
     // Current working model: there should be a single timer e.g. stopwatch in the entire app.
     // Tasks (more specifically execution history) are loaded into the timer
     // At the time of writing, the timer page is responsible for displaying task properties.
@@ -92,7 +90,7 @@ class Timer private constructor(task: Task) {
     private val scope = CoroutineScope(Dispatchers.Default) // Or any appropriate dispatcher
 
     private fun startTimer() {
-        if (timerJob?.isActive == true) return // Prevent starting multiple times
+        if (timerJob?.isActive == true) return // We should probably raise an exception here
 
         _state.update {State.RUNNING}
 
