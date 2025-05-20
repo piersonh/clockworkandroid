@@ -3,7 +3,9 @@
 package com.wordco.clockworkandroid.ui.pages
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -26,15 +28,19 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.wordco.clockworkandroid.ui.elements.InfiniteCircularList
 
 // TODO: Implement dialogs for time pickers
 
@@ -43,12 +49,15 @@ import androidx.navigation.compose.rememberNavController
 fun NewTaskPage(controller: NavHostController) {
     var taskTitle by remember { mutableStateOf("") }
     var difficulty by remember { mutableFloatStateOf(0f) }
-    var estimatedCompTime by remember { mutableStateOf("") }
+    //Svar estimatedCompTime by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var getDateCal by remember { mutableStateOf(false) }
     var getTimeEst by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     var onTaskDueDate by remember { mutableStateOf<Long?>(null) }
+
+    var hour by remember { mutableIntStateOf(0) }
+    var minute by remember { mutableIntStateOf(0) }
 
     Scaffold(
         floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
@@ -71,7 +80,9 @@ fun NewTaskPage(controller: NavHostController) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = { getDateCal = true }) {
+                Button(onClick = { getDateCal = true },
+                    modifier = Modifier.wrapContentWidth()
+                ) {
                     Text("Due Date")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -86,16 +97,16 @@ fun NewTaskPage(controller: NavHostController) {
                     ),
                     // NOT INCLUDING STARTING AND ENDING STEPS!!!
                     steps = 3,
-                    valueRange = 0f..5f
+                    valueRange = 0f..25f
                 )
-                Text( text = "Difficulty: ${difficulty.toInt()}")
+                Text( text = "Difficulty: ${(difficulty / (25f / 4)).toInt() + 1}")
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(onClick = { /* TODO: Set Estimated Completion Time in HH:MM format */ }) {
+                Button(onClick = { getTimeEst = true }) {
                     Text("Estimated Completion Time")
                 }
 
-                // Currently handles the dialog for the Title button.
+
                 if (showDialog) {
                     AlertDialog(
                         onDismissRequest = { showDialog = false },
@@ -114,7 +125,6 @@ fun NewTaskPage(controller: NavHostController) {
                         }
                     )
                 }
-
                 if (getDateCal){
                     DatePickerDialog(
                         onDismissRequest = { getDateCal = false },
@@ -133,6 +143,38 @@ fun NewTaskPage(controller: NavHostController) {
                         }
                     ) {
                         DatePicker(state = datePickerState)
+                    }
+                }
+                if (getTimeEst){
+                    Row (
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        // List of hours
+                        InfiniteCircularList(
+                            width = 200.dp,
+                            itemHeight = 70.dp,
+                            items = (0..24).toList(),
+                            initialItem = hour,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 23.sp),
+                            textColor = Color.LightGray,
+                            selectedTextColor = Color.Black,
+                            onItemSelected = { i, item ->
+                                hour = item
+                            }
+                        )
+                        InfiniteCircularList(
+                            width = 200.dp,
+                            itemHeight = 70.dp,
+                            items = (0..59).toList(),
+                            initialItem = minute,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 23.sp),
+                            textColor = Color.LightGray,
+                            selectedTextColor = Color.Black,
+                            onItemSelected = { i, item ->
+                                minute = item
+                            }
+                        )
                     }
                 }
             }
