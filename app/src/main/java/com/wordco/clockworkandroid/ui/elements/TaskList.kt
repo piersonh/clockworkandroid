@@ -25,15 +25,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.model.Status
-import com.wordco.clockworkandroid.model.Task
-import com.wordco.clockworkandroid.model.TaskRegistryViewModel
-import com.wordco.clockworkandroid.ui.LATO
+import com.wordco.clockworkandroid.data.model.Task.Status
+import com.wordco.clockworkandroid.data.model.Task
+import com.wordco.clockworkandroid.ui.TaskViewModel
+import com.wordco.clockworkandroid.ui.theme.LATO
+import com.wordco.clockworkandroid.util.formatDue
+import com.wordco.clockworkandroid.util.asHHMM
 
 
 // TODO: make lazy columns work
 @Composable
-fun TaskList(viewModel: TaskRegistryViewModel) = Column(
+fun TaskList(viewModel: TaskViewModel) = Column(
     verticalArrangement = Arrangement.spacedBy(5.dp),
     modifier = Modifier
         .padding(5.dp)
@@ -148,7 +150,7 @@ fun StartedListItem(task: Task) = Row(
         {
             ClockImage()
             Text(
-                Task.timeAsHHMM(task.workTime),
+                task.workTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -156,7 +158,7 @@ fun StartedListItem(task: Task) = Row(
             )
             MugImage()
             Text(
-                Task.timeAsHHMM(task.breakTime),
+                task.breakTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -219,7 +221,7 @@ fun UpcomingListItem(task: Task) = Row(
         {
             UserImage()
             Text(
-                Task.timeAsHHMM(task.workTime),
+                task.workTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,
@@ -227,7 +229,7 @@ fun UpcomingListItem(task: Task) = Row(
             )
             ComputerImage()
             Text(
-                Task.timeAsHHMM(task.breakTime),
+                task.breakTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = Color.White,

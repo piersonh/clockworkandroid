@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.model
+package com.wordco.clockworkandroid.domain
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,7 @@ class Timer(state: State = State.INIT) {
     fun startTimer() {
         if (timerJob?.isActive == true) return // Prevent starting multiple times
 
-        _state.update {State.RUNNING}
+        _state.update { State.RUNNING }
 
         timerJob = scope.launch {
             while (true) {
@@ -36,7 +36,7 @@ class Timer(state: State = State.INIT) {
     }
 
     fun stopTimer() {
-        _state.update {State.PAUSED}
+        _state.update { State.PAUSED }
         timerJob?.cancel()
     }
 

@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun RectangleButton(
-    onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable() (RowScope.() -> Unit)
+    onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable (RowScope.() -> Unit)
 ) = Button(
     onClick = onClick,
     modifier = modifier,

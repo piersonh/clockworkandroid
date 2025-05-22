@@ -1,12 +1,12 @@
-package com.wordco.clockworkandroid.model
+package com.wordco.clockworkandroid.data.model
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.wordco.clockworkandroid.model.database.DurationConverter
-import com.wordco.clockworkandroid.model.database.TimestampConverter
+import com.wordco.clockworkandroid.data.local.DurationConverter
+import com.wordco.clockworkandroid.data.local.TimestampConverter
 import java.time.Duration
 import java.time.Instant
 

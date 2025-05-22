@@ -1,14 +1,15 @@
-package com.wordco.clockworkandroid.model
+package com.wordco.clockworkandroid.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wordco.clockworkandroid.model.database.TaskDao
+import com.wordco.clockworkandroid.data.local.TaskDao
+import com.wordco.clockworkandroid.data.model.Task
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TaskRegistryViewModel(private val taskDao: TaskDao) : ViewModel() {
+class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
 
     val allEntries: StateFlow<List<Task>> =
         taskDao.getAllTasks()

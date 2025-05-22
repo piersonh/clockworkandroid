@@ -12,8 +12,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.model.Timer
-import com.wordco.clockworkandroid.ui.LATO
+import com.wordco.clockworkandroid.domain.Timer
+import com.wordco.clockworkandroid.ui.theme.LATO
 import java.util.Locale
 
 @Composable

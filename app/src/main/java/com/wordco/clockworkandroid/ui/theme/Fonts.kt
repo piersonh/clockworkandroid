@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.ui
+package com.wordco.clockworkandroid.ui.theme
 
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
