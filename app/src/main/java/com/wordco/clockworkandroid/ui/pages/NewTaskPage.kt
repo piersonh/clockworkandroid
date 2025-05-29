@@ -49,7 +49,7 @@ import com.wordco.clockworkandroid.ui.elements.InfiniteCircularList
 fun NewTaskPage(controller: NavHostController) {
     var taskTitle by remember { mutableStateOf("") }
     var difficulty by remember { mutableFloatStateOf(0f) }
-    //Svar estimatedCompTime by remember { mutableStateOf("") }
+    //var estimatedCompTime by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var getDateCal by remember { mutableStateOf(false) }
     var getTimeEst by remember { mutableStateOf(false) }
@@ -83,15 +83,15 @@ fun NewTaskPage(controller: NavHostController) {
                 Button(onClick = { getDateCal = true },
                     modifier = Modifier.wrapContentWidth()
                 ) {
-                    Text("Due Date")
+                    Text("Due Date: $onTaskDueDate")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Slider(
-                    value = difficulty,
-                    onValueChange = { difficulty = it },
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.secondary,
+                        value = difficulty,
+                        onValueChange = { difficulty = it },
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.secondary,
                         activeTrackColor = MaterialTheme.colorScheme.secondary,
                         inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
                     ),
