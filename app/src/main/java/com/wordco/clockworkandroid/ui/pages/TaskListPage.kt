@@ -1,14 +1,17 @@
 package com.wordco.clockworkandroid.ui.pages
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
@@ -23,7 +26,8 @@ import com.wordco.clockworkandroid.ui.elements.TaskList
 fun ListPage(controller: NavHostController, curTask : MutableState<Task>) = Scaffold(
     topBar = {
         TopAppBar(
-            title = { Text("Task Sessions", fontFamily = LATO) }
+            title = { Text("Task Sessions", fontFamily = LATO, color = MaterialTheme.colorScheme.onPrimary)},
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
 
         )
     },
@@ -37,7 +41,7 @@ fun ListPage(controller: NavHostController, curTask : MutableState<Task>) = Scaf
     Box(
         modifier = Modifier.padding(
             PaddingValues(top = innerPadding.calculateTopPadding())
-        )
+        ).background(color = MaterialTheme.colorScheme.primary)
     )
     {
         TaskList(TASKS, controller, curTask)

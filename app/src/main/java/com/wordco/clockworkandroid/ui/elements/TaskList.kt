@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.ui.elements
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,16 +15,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -40,7 +37,7 @@ fun TaskList(tasks: List<Task>, navController: NavController, curTask: MutableSt
     verticalArrangement = Arrangement.spacedBy(5.dp),
     modifier = Modifier
         .padding(5.dp)
-        .background(color = Color.DarkGray)
+        .background(color = MaterialTheme.colorScheme.primary)
         .fillMaxSize()
         .verticalScroll(rememberScrollState())
 
@@ -48,7 +45,7 @@ fun TaskList(tasks: List<Task>, navController: NavController, curTask: MutableSt
     Text("STARTED",
         fontFamily = LATO,
         fontSize = 25.sp,
-        color = Color.White,
+        color = MaterialTheme.colorScheme.onPrimary,
         modifier = Modifier.padding(horizontal = 20.dp)
     )
     for (item in tasks) {
@@ -59,12 +56,12 @@ fun TaskList(tasks: List<Task>, navController: NavController, curTask: MutableSt
     Text("UPCOMING",
         fontFamily = LATO,
         fontSize = 25.sp,
-        color = Color.White,
+        color = MaterialTheme.colorScheme.onPrimary,
         modifier = Modifier.padding(horizontal = 20.dp)
     )
     for (item in tasks) {
         if (item.status == Status.SCHEDULED) {
-            UpcomingListItem(item)
+            UpcomingListItem(item,navController, curTask)
         }
     }
 }
@@ -93,7 +90,7 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
     modifier = Modifier
         .fillMaxWidth()
         .clip(shape = RoundedCornerShape(10.dp))
-        .background(color = Color(42, 42, 42))
+        .background(color = MaterialTheme.colorScheme.primaryContainer)
         .height(100.dp)
         .clickable(onClick = {
             curTask.value = task
@@ -114,7 +111,7 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
             task.name,
             fontFamily = LATO,
             fontSize = 23.sp,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
@@ -130,7 +127,7 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
                     "Suspended",
                     fontFamily = LATO,
                     fontSize = 20.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -147,7 +144,7 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
                     "Running",
                     fontFamily = LATO,
                     fontSize = 20.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -164,7 +161,7 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
                 task.timeAsHHMM(task.workTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
             MugImage()
@@ -172,7 +169,7 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
                 task.timeAsHHMM(task.breakTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
         }
@@ -180,14 +177,18 @@ fun StartedListItem(task: Task, navController: NavController, curTask: MutableSt
 }
 
 @Composable
-fun UpcomingListItem(task: Task) = Row(
+fun UpcomingListItem(task: Task, navController: NavController, curTask: MutableState<Task>) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier
         .fillMaxWidth()
         .clip(shape = RoundedCornerShape(10.dp))
-        .background(color = Color(42, 42, 42))
+        .background(color = MaterialTheme.colorScheme.primaryContainer)
         .height(100.dp)
+        .clickable(onClick = {
+            curTask.value = task
+            navController.navigate("Timer")
+        })
 ) {
     Box(
         modifier = Modifier
@@ -203,7 +204,7 @@ fun UpcomingListItem(task: Task) = Row(
             task.name,
             fontFamily = LATO,
             fontSize = 23.sp,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
@@ -218,7 +219,7 @@ fun UpcomingListItem(task: Task) = Row(
                 task.returnDueDate(),
                 fontFamily = LATO,
                 fontSize = 20.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -234,7 +235,7 @@ fun UpcomingListItem(task: Task) = Row(
                 task.timeAsHHMM(task.workTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
             ComputerImage()
@@ -242,7 +243,7 @@ fun UpcomingListItem(task: Task) = Row(
                 task.timeAsHHMM(task.breakTime),
                 fontFamily = LATO,
                 fontSize = 23.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
         }
