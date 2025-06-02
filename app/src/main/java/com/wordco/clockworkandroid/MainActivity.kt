@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
         //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
 
+
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
             val navController = rememberNavController()
