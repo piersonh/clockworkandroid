@@ -5,42 +5,41 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.wordco.clockworkandroid.data.model.Marker
-import com.wordco.clockworkandroid.data.model.Segment
-import com.wordco.clockworkandroid.data.model.Task
-import com.wordco.clockworkandroid.data.model.TaskProperties
-import kotlinx.coroutines.flow.Flow
+import com.wordco.clockworkandroid.data.local.entities.MarkerEntity
+import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
+import com.wordco.clockworkandroid.data.local.entities.TaskEntity
+import com.wordco.clockworkandroid.data.local.entities.TaskWithExecutionDataObject
 
 @Dao
 interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTaskProperties(taskProperties: TaskProperties): Long
+    suspend fun insertTask(taskEntity: TaskEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSegment(segment: Segment): Long
+    suspend fun insertSegments(segments: List<SegmentEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMarker(marker: Marker): Long
+    suspend fun insertMarkers(markers: List<MarkerEntity>)
+
+//    @Transaction
+//    suspend fun insertTask(task: Task) {
+//        val taskId = insertTaskProperties(task.taskProperties)
+//
+//        for (segment in task.segments) {
+//            val segmentToInsert = segment.copy(taskId = taskId)
+//            insertSegment(segmentToInsert)
+//
+//        }
+//
+//        for (marker in task.markers) {
+//            val markerToInsert = marker.copy(taskId = taskId)
+//            insertMarker(markerToInsert)
+//
+//        }
+//    }
 
     @Transaction
-    suspend fun insertTask(task: Task) {
-        val taskId = insertTaskProperties(task.taskProperties)
-
-        for (segment in task.segments) {
-            val segmentToInsert = segment.copy(taskId = taskId)
-            insertSegment(segmentToInsert)
-
-        }
-
-        for (marker in task.markers) {
-            val markerToInsert = marker.copy(taskId = taskId)
-            insertMarker(markerToInsert)
-
-        }
-    }
-
-    @Transaction
-    @Query("SELECT * FROM task_properties")
-    fun getAllTasks(): Flow<List<Task>>
+    @Query("SELECT * FROM TaskEntity")
+    suspend fun getTasksWithExecutionData() : List<TaskWithExecutionDataObject>
 }

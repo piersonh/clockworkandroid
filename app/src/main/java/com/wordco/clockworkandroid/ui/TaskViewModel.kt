@@ -1,35 +1,26 @@
 package com.wordco.clockworkandroid.ui
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wordco.clockworkandroid.data.local.TaskDao
-import com.wordco.clockworkandroid.data.model.Task
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.launch
 
-class TaskViewModel(private val taskDao: TaskDao) : ViewModel() {
+class TaskViewModel (
+    private val taskRepository: TaskRepository
+) : ViewModel() {
 
-    val allEntries: StateFlow<List<Task>> =
-        taskDao.getAllTasks()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList<Task>()
-            )
+    private lateinit var tasks : List<Task>
 
-    fun insertTask(task: Task) {
+    var taskList by mutableStateOf<List<Task>>(emptyList())
+        private set
+
+    init {
         viewModelScope.launch {
-            taskDao.insertTask(task)
-        }
-    }
-
-    fun insertTasks(vararg tasks: Task) {
-        viewModelScope.launch {
-            for (task in tasks) {
-                taskDao.insertTask(task)
-            }
+            tasks = taskRepository.getTasks()
         }
     }
 }

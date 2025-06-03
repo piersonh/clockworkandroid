@@ -3,7 +3,7 @@ package com.wordco.clockworkandroid.data.local
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
-import com.wordco.clockworkandroid.data.model.Task.Status
+import com.wordco.clockworkandroid.domain.model.Task.Status
 import java.time.Duration
 import java.time.Instant
 

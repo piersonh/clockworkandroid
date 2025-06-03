@@ -5,11 +5,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.wordco.clockworkandroid.data.model.Marker
-import com.wordco.clockworkandroid.data.model.Segment
-import com.wordco.clockworkandroid.data.model.TaskProperties
+import com.wordco.clockworkandroid.data.local.entities.MarkerEntity
+import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
+import com.wordco.clockworkandroid.data.local.entities.TaskEntity
 
-@Database(entities = [TaskProperties::class, Segment::class, Marker::class], version = 2)
+@Database(
+    entities = [
+        TaskEntity::class,
+        SegmentEntity::class,
+        MarkerEntity::class
+               ],
+    version = 2)
 @TypeConverters(
     TimestampConverter::class,
     DurationConverter::class,
@@ -18,9 +24,6 @@ import com.wordco.clockworkandroid.data.model.TaskProperties
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
-    abstract fun propertiesDao(): TaskPropertiesDao
-    abstract fun segmentDao(): SegmentDao
-    abstract fun markerDao(): MarkerDao
 
     companion object {
         @Volatile

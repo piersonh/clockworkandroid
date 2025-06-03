@@ -1,6 +1,6 @@
 package com.wordco.clockworkandroid.util
 
-import com.wordco.clockworkandroid.data.model.Task
+import com.wordco.clockworkandroid.domain.model.Task
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime

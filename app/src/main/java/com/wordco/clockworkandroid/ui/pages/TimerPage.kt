@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.wordco.clockworkandroid.domain.Timer
+import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.ui.theme.LATO
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
 import com.wordco.clockworkandroid.ui.elements.TimerControls

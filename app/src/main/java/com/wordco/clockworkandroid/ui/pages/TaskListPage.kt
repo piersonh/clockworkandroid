@@ -18,7 +18,10 @@ import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 import com.wordco.clockworkandroid.ui.elements.TaskList
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListPage(controller: NavHostController, taskViewModel: TaskViewModel) = Scaffold(
+fun ListPage (
+    controller: NavHostController,
+    taskViewModel: TaskViewModel
+) = Scaffold(
     topBar = {
         TopAppBar(
             title = { Text("Task Sessions", fontFamily = LATO) }

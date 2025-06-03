@@ -12,8 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.data.local.AppDatabase
+import com.wordco.clockworkandroid.data.repository.TaskRepositoryImpl
+import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.ui.TaskViewModel
-import com.wordco.clockworkandroid.domain.Timer
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
@@ -28,7 +29,8 @@ class MainActivity : ComponentActivity() {
 
         val db = AppDatabase.getDatabase(applicationContext)
         val taskDao = db.taskDao()
-        val taskViewModel = TaskViewModel(taskDao)
+        val taskRepository = TaskRepositoryImpl(taskDao)
+        val taskViewModel = TaskViewModel(taskRepository)
 
         //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
 

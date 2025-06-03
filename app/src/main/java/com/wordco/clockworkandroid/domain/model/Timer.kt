@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.domain
+package com.wordco.clockworkandroid.domain.model
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

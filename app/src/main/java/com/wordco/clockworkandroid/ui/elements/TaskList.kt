@@ -25,8 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.data.model.Task.Status
-import com.wordco.clockworkandroid.data.model.Task
+import com.wordco.clockworkandroid.domain.model.Task.Status
+import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.theme.LATO
 import com.wordco.clockworkandroid.util.formatDue
@@ -44,7 +44,7 @@ fun TaskList(viewModel: TaskViewModel) = Column(
         .verticalScroll(rememberScrollState())
 
 ) {
-    val tasks by viewModel.allEntries.collectAsState()
+    val tasks = viewModel.taskList
     Text(
         "STARTED",
         fontFamily = LATO,

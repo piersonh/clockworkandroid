@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.data.model
+package com.wordco.clockworkandroid.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -10,17 +10,16 @@ import com.wordco.clockworkandroid.data.local.TimestampConverter
 import java.time.Duration
 import java.time.Instant
 
-
 @Entity(
-    tableName = "segment", foreignKeys = [ForeignKey(
-        entity = TaskProperties::class,
-        parentColumns = ["id"],
+    foreignKeys = [ForeignKey(
+        entity = TaskEntity::class,
+        parentColumns = ["taskId"],
         childColumns = ["taskId"],
         onDelete = ForeignKey.CASCADE
     )],
     indices = [Index(value = ["taskId"])]
 )
-data class Segment(
+data class SegmentEntity (
     @PrimaryKey(autoGenerate = true) val segmentId: Long = 0,
     val taskId: Long,
     @TypeConverters(TimestampConverter::class) var startTime: Instant,
