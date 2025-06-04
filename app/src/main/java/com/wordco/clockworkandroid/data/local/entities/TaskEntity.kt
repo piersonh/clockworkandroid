@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.wordco.clockworkandroid.data.local.ColorConverter
 import com.wordco.clockworkandroid.data.local.TimestampConverter
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import java.time.Instant
 
 @Entity
@@ -16,5 +16,5 @@ data class TaskEntity(
     @TypeConverters(TimestampConverter::class) val dueDate: Instant?,
     val difficulty: Int,
     @TypeConverters(ColorConverter::class) val color: Color,
-    @TypeConverters(TimestampConverter::class) val status: Task.Status
+    @TypeConverters(TimestampConverter::class) val status: ExecutionStatus
 )

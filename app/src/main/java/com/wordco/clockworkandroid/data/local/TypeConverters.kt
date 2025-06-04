@@ -3,7 +3,7 @@ package com.wordco.clockworkandroid.data.local
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
-import com.wordco.clockworkandroid.domain.model.Task.Status
+import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import java.time.Duration
 import java.time.Instant
 
@@ -33,13 +33,13 @@ class DurationConverter {
 
 class TaskStatusConverter {
     @TypeConverter
-    fun fromTaskStatus(status: Status?): Int? {
+    fun fromTaskStatus(status: ExecutionStatus?): Int? {
         return status?.ordinal
     }
 
     @TypeConverter
-    fun toTaskStatus(status: Int?): Status? {
-        return status?.let { Status.entries[it] }
+    fun toTaskStatus(status: Int?): ExecutionStatus? {
+        return status?.let { ExecutionStatus.entries[it] }
     }
 }
 

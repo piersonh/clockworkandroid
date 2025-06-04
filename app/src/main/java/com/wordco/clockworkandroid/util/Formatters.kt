@@ -1,7 +1,7 @@
 package com.wordco.clockworkandroid.util
 
-import com.wordco.clockworkandroid.domain.model.Task
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -21,8 +21,8 @@ fun Duration.asHHMM(): String {
     return String.format(Locale.getDefault(),"%02d:%02d", hours, minutes)
 }
 
-fun Task.formatDue(): String {
-    if (dueDate == null) {
+fun Instant?.asTaskDueFormat(): String {
+    if (this == null) {
         return "Not Scheduled"
     }
 
@@ -33,10 +33,10 @@ fun Task.formatDue(): String {
     val overmorrowStart = todayStart.plus(2, ChronoUnit.DAYS)
     val yesterdayStart = todayStart.minus(1, ChronoUnit.DAYS)
 
-    val zonedDueDate = ZonedDateTime.ofInstant(dueDate, ZoneId.systemDefault())
+    val zonedDueDate = ZonedDateTime.ofInstant(this, ZoneId.systemDefault())
     val formattedDueTime = zonedDueDate.format(TIME_FORMATER)
 
-    return when (dueDate) {
+    return when (this) {
         in yesterdayStart..todayStart -> "Yesterday $formattedDueTime"
         in todayStart..tomorrowStart -> "Today $formattedDueTime"
         in tomorrowStart..overmorrowStart -> "Tomorrow $formattedDueTime"
