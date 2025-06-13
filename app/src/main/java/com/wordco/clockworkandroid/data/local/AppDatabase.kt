@@ -32,7 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context.applicationContext, AppDatabase::class.java, "clockwork_db"
+                    context, AppDatabase::class.java, "clockwork_db"
                 )
                     // .fallbackToDestructiveMigration() // Only for development - clears database on schema change
                     // .addMigrations(MIGRATION_1_2) // Add your migration strategies here

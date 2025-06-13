@@ -20,47 +20,7 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 fun TaskList (
     taskViewModel: TaskViewModel
 ) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier
-            .padding(5.dp)
-            .background(color = Color.DarkGray)
-            .fillMaxSize()
-    ) {
-        item {
-            Text(
-                "STARTED",
-                fontFamily = LATO,
-                fontSize = 25.sp,
-                color = Color.White,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-        }
 
-        items(
-            taskViewModel.startedTaskList,
-            key={task -> task.taskId}
-        ) {
-            StartedListItem(it)
-        }
-
-        item {
-            Text(
-                "UPCOMING",
-                fontFamily = LATO,
-                fontSize = 25.sp,
-                color = Color.White,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-        }
-
-        items(
-            taskViewModel.upcomingTaskList,
-            key={task -> task.taskId}
-        ) {
-            UpcomingTaskUIListItem(it)
-        }
-    }
 }
 
 

@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.ui
 
-import com.wordco.clockworkandroid.domain.model.Task
 import java.time.Instant
 import java.time.Period
 
@@ -11,6 +10,7 @@ class UpcomingTaskListItemComparator : Comparator<UpcomingTaskListItem> {
         // Tasks with no due date
         // Tasks due after 24 hours
 
+        // TODO: RENAME (24HoursFromNow)
         val hoursFromNow = Instant.now().plus(Period.ofDays(1))
 
         return if (task1.dueDate == task2.dueDate) {

@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -27,10 +28,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = AppDatabase.getDatabase(applicationContext)
-        val taskDao = db.taskDao()
-        val taskRepository = TaskRepositoryImpl(taskDao)
-        val taskViewModel = TaskViewModel(taskRepository)
+        val taskViewModel : TaskViewModel by viewModels { TaskViewModel.Factory }
 
         //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
 
