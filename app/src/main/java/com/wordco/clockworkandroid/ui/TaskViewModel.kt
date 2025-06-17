@@ -4,21 +4,18 @@ package com.wordco.clockworkandroid.ui
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.wordco.clockworkandroid.ClockWorkApp
+import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.ui.mapper.toStartedTaskListItem
 import com.wordco.clockworkandroid.ui.mapper.toUpcomingTaskListItem
-import com.wordco.clockworkandroid.util.DummyData
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 class TaskViewModel (
     private val taskRepository: TaskRepository
@@ -85,7 +82,7 @@ class TaskViewModel (
                 val application = checkNotNull(extras[APPLICATION_KEY])
 
                 return TaskViewModel(
-                    (application as ClockWorkApp).taskRepository
+                    MainApplication.taskRepository
                 ) as T
             }
         }

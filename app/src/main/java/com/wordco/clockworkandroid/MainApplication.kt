@@ -6,11 +6,15 @@ import com.wordco.clockworkandroid.data.local.TaskDao
 import com.wordco.clockworkandroid.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 
-class ClockWorkApp : Application() {
+class MainApplication : Application() {
 
-    lateinit var db: AppDatabase
-    lateinit var taskDao: TaskDao
-    lateinit var taskRepository: TaskRepository
+    companion object {
+        lateinit var db: AppDatabase
+        lateinit var taskDao: TaskDao
+        lateinit var taskRepository: TaskRepository
+    }
+
+
 
     override fun onCreate() {
         super.onCreate()
