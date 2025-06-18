@@ -9,6 +9,7 @@ import com.wordco.clockworkandroid.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.data.local.entities.TaskEntity
 import com.wordco.clockworkandroid.data.local.entities.TaskWithExecutionDataObject
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
@@ -41,5 +42,5 @@ interface TaskDao {
 
     @Transaction
     @Query("SELECT * FROM TaskEntity")
-    suspend fun getTasksWithExecutionData() : List<TaskWithExecutionDataObject>
+    fun getTasksWithExecutionData() : Flow<List<TaskWithExecutionDataObject>>
 }

@@ -7,6 +7,8 @@ import com.wordco.clockworkandroid.data.mapper.toTask
 import com.wordco.clockworkandroid.data.mapper.toTaskEntity
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class TaskRepositoryImpl (
     private val taskDao: TaskDao
@@ -17,7 +19,10 @@ class TaskRepositoryImpl (
         taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
     }
 
-    override suspend fun getTasks(): List<Task> {
-        return taskDao.getTasksWithExecutionData().map { it.toTask() }
+    override suspend fun getTasks(): Flow<List<Task>> {
+        return taskDao.getTasksWithExecutionData()
+            .map { taskList ->
+                taskList.map { it.toTask() }
+            }
     }
 }

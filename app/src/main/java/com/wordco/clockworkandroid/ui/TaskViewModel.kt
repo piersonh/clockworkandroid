@@ -1,12 +1,11 @@
 package com.wordco.clockworkandroid.ui
 
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.wordco.clockworkandroid.MainApplication
@@ -21,14 +20,14 @@ class TaskViewModel (
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
-    private lateinit var tasks : List<Task>
+    private lateinit var tasks : LiveData<List<Task>>
 
     // mutableStateListOf??
-    var upcomingTaskList by mutableStateOf<List<UpcomingTaskListItem>>(emptyList())
-        private set
+    lateinit var upcomingTaskList : LiveData<List<UpcomingTaskListItem>>
+        //private set
 
-    var startedTaskList by mutableStateOf<List<StartedTaskListItem>>(emptyList())
-        private set
+    lateinit var startedTaskList : LiveData<List<StartedTaskListItem>>
+        //private set
 
     init {
         viewModelScope.launch {
@@ -36,13 +35,13 @@ class TaskViewModel (
 //                taskRepository.insertTask(task)
 //            }
 
-            tasks = taskRepository.getTasks()
+            tasks = taskRepository.getTasks().asLiveData()
             setupTaskList()
 
 //            taskRepository.insertTask(
 //                Task(
 //                    taskId = 0,
-//                    name = "DYNAMIC TEST 3",
+//                    name = "DYNAMIC TEST 4",
 //                    dueDate = Instant.parse("2023-01-01T18:29:04Z"),
 //                    difficulty = 1,
 //                    color = Color(3, 169, 244, 255),
@@ -57,17 +56,21 @@ class TaskViewModel (
     private fun setupTaskList() {
         val comparator = UpcomingTaskListItemComparator()
 
-        upcomingTaskList = tasks
-            .filter { task -> task.status == ExecutionStatus.NOT_STARTED }
-            .map{task -> task.toUpcomingTaskListItem()}
+        upcomingTaskList = tasks.map {
+            it.filter { task -> task.status == ExecutionStatus.NOT_STARTED }
+            .map { task -> task.toUpcomingTaskListItem() }
             .sortedWith(comparator)
+        }
 
         // TODO: Should probably have a different section of the page for running tasks
-        startedTaskList = tasks
-            .filter { task -> task.status == ExecutionStatus.RUNNING ||
+        startedTaskList = tasks.map {
+            it.filter { task ->
+            task.status == ExecutionStatus.RUNNING ||
                     task.status == ExecutionStatus.SUSPENDED ||
-                    task.status == ExecutionStatus.PAUSED }
+                    task.status == ExecutionStatus.PAUSED
+            }
             .map { task -> task.toStartedTaskListItem() }
+        }
     }
 
     companion object {
@@ -78,10 +81,11 @@ class TaskViewModel (
                 modelClass: Class<T>,
                 extras: CreationExtras
             ): T {
-                // Get the Application object from extras
-                val application = checkNotNull(extras[APPLICATION_KEY])
+                // For when the data objects belong to the app instance
+                //val application = checkNotNull(extras[APPLICATION_KEY])
 
                 return TaskViewModel(
+                    // (application as MainApplication).taskRepository
                     MainApplication.taskRepository
                 ) as T
             }

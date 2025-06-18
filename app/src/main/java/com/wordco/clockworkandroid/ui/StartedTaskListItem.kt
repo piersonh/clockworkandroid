@@ -11,5 +11,4 @@ class StartedTaskListItem(
     val color: Color,
     val workTime: Duration,
     val breakTime: Duration
-) {
-}
+)

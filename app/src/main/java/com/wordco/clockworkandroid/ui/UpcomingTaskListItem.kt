@@ -12,6 +12,4 @@ class UpcomingTaskListItem(
     val color: Color,
     val userEstimate: Duration,
     val appEstimate: Duration
-) {
-
-}
+)
