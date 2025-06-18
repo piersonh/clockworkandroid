@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.ui.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,17 +11,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.wordco.clockworkandroid.model.TASKS
+import com.wordco.clockworkandroid.model.Task
+import com.wordco.clockworkandroid.ui.LATO
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 import com.wordco.clockworkandroid.ui.elements.StartedListItem
@@ -40,7 +47,8 @@ fun ListPage (
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Task Sessions", fontFamily = LATO) }
+                title = { Text("Task Sessions", fontFamily = LATO, color = MaterialTheme.colorScheme.onPrimary)},
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
 
             )
         },
@@ -54,7 +62,7 @@ fun ListPage (
         Box(
             modifier = Modifier.padding(
                 PaddingValues(top = innerPadding.calculateTopPadding())
-            )
+            ).background(color = MaterialTheme.colorScheme.primary)
         )
         {
             LazyColumn(
