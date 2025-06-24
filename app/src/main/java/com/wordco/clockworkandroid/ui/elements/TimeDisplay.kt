@@ -20,9 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.ui.theme.LATO
-import com.wordco.clockworkandroid.model.Timer
-import com.wordco.clockworkandroid.ui.LATO
-import com.wordco.clockworkandroid.ui.ROBOTO
+import com.wordco.clockworkandroid.ui.theme.ROBOTO
 import java.util.Locale
 
 @Composable

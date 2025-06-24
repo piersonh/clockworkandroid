@@ -27,11 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.domain.model.Timer
-import com.wordco.clockworkandroid.model.Task
-import com.wordco.clockworkandroid.model.Timer
-import com.wordco.clockworkandroid.ui.LATO
+import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
 import com.wordco.clockworkandroid.ui.elements.TimerControls
@@ -40,9 +37,18 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimerPage(timer: Timer, navController: NavController, task: MutableState<Task>) {
+fun TimerPage(
+    timer: Timer,
+    navController: NavController,
+    task: MutableState<Task?>)
+{
     val state by timer.state.collectAsState()
-    timer.setTimer(task.value.workTime)
+
+    // FIXME
+    timer.setTimer(
+        task.value?.workTime?.toMillis()?.toInt()?:0
+    )
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
@@ -80,33 +86,37 @@ fun TimerPage(timer: Timer, navController: NavController, task: MutableState<Tas
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.TopEnd
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .padding(top = 50.dp)
-                ) {
-                Text(
-                    text = task.value.name,
-                    style = TextStyle(fontSize = 48.sp),
-                    modifier = Modifier,
-                    fontFamily = LATO,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-
-                TimeDisplay(timer, modifier = Modifier)
-
-
-                TimerControls(
-                    timer,
+            // FIXME: make it not this way
+            task.value?.let {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(10.dp)
-                        .defaultMinSize(minHeight = 200.dp),
-                    navController = navController
-                )
-            }
+                        .background(color = MaterialTheme.colorScheme.primaryContainer)
+                        .padding(top = 50.dp)
+                ) {
+                    Text(
+                        // FIXME
+                        text = task.value!!.name,
+                        style = TextStyle(fontSize = 48.sp),
+                        modifier = Modifier,
+                        fontFamily = LATO,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+
+                    TimeDisplay(timer, modifier = Modifier)
+
+
+                    TimerControls(
+                        timer,
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .defaultMinSize(minHeight = 200.dp),
+                        navController = navController
+                    )
+                }
+            } ?: Text("ERROR: NO TASK SELECTED")
         }
     }
 }

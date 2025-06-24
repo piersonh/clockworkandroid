@@ -17,10 +17,4 @@ data class Task(
 
     val workTime: Duration by lazy { Duration.ofMillis(0) }
     val breakTime: Duration by lazy { Duration.ofMillis(0) }
-
-//    constructor(name: String, dueDate: Instant?, difficulty: Int, color: Color) : this(
-//        0, name, dueDate, difficulty, color, Status.NOT_STARTED,
-//        mutableListOf(),
-//        mutableListOf()
-//    )
 }
