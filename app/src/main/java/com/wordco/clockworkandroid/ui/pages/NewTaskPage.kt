@@ -13,7 +13,13 @@ import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun NewTaskPage(controller: NavHostController) = Scaffold(
-    floatingActionButton = { FloatingNavButton("Back", controller, "list") }
+    floatingActionButton = {
+        FloatingNavButton(
+            "Back",
+            controller,
+            "list"
+        )
+    }
 ) {
     Text("PLACEHOLDER TEST", modifier = Modifier.fillMaxSize())
     Button(

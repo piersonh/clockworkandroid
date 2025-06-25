@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.wordco.clockworkandroid.domain.model.Timer
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
 import com.wordco.clockworkandroid.ui.elements.TimerControls
@@ -40,13 +39,13 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 fun TimerPage(
     timer: Timer,
     navController: NavController,
-    task: MutableState<Task?>)
-{
+    taskViewModel: TaskViewModel
+) {
     val state by timer.state.collectAsState()
 
     // FIXME
     timer.setTimer(
-        task.value?.workTime?.toMillis()?.toInt()?:0
+        taskViewModel.currentTask!!.workTime.toMillis().toInt()
     )
 
     Scaffold(
@@ -78,8 +77,8 @@ fun TimerPage(
                 }
             )
         }
-    ) {
-        innerPadding -> Box(
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -87,36 +86,34 @@ fun TimerPage(
             contentAlignment = Alignment.TopEnd
         ) {
             // FIXME: make it not this way
-            task.value?.let {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+            Column(
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .padding(top = 50.dp)
+            ) {
+                Text(
+                    // FIXME
+                    text = taskViewModel.currentTask!!.name,
+                    style = TextStyle(fontSize = 48.sp),
+                    modifier = Modifier,
+                    fontFamily = LATO,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+
+                TimeDisplay(timer, modifier = Modifier)
+
+
+                TimerControls(
+                    timer,
                     modifier = Modifier
-                        .background(color = MaterialTheme.colorScheme.primaryContainer)
-                        .padding(top = 50.dp)
-                ) {
-                    Text(
-                        // FIXME
-                        text = task.value!!.name,
-                        style = TextStyle(fontSize = 48.sp),
-                        modifier = Modifier,
-                        fontFamily = LATO,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    TimeDisplay(timer, modifier = Modifier)
-
-
-                    TimerControls(
-                        timer,
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .defaultMinSize(minHeight = 200.dp),
-                        navController = navController
-                    )
-                }
-            } ?: Text("ERROR: NO TASK SELECTED")
+                        .padding(10.dp)
+                        .defaultMinSize(minHeight = 200.dp),
+                    navController = navController
+                )
+            }
         }
     }
 }

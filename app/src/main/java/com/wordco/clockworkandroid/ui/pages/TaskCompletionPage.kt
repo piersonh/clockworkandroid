@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -21,11 +20,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.util.asHHMM
 
 @Composable
-fun TaskCompletionPage(navController: NavController, task: MutableState<Task?>) {
+fun TaskCompletionPage(
+    navController: NavController,
+    taskViewModel: TaskViewModel
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -33,120 +35,117 @@ fun TaskCompletionPage(navController: NavController, task: MutableState<Task?>) 
         contentAlignment = Alignment.Center
 
     ) {
-        // FIXME: make it not this way
-        task.value?.let {
-            Column(
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(all = 10.dp)
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(all = 10.dp)
+        ) {
+
+            Text(
+                // FIXME
+                text = taskViewModel.currentTask!!.name,
+                style = TextStyle(fontSize = 40.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Spacer(modifier = Modifier.weight(0.004f))
+
+            Text(
+                text = "Completed!",
+                style = TextStyle(fontSize = 26.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Spacer(modifier = Modifier.weight(0.03f))
+
+            Text(
+                // FIXME
+                text = taskViewModel.currentTask!!.workTime.asHHMM(),
+                style = TextStyle(fontSize = 90.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Spacer(modifier = Modifier.weight(0.03f))
+
+            Text(
+                text = "You estimated",
+                style = TextStyle(fontSize = 26.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Text(
+                // TODO: app estimation
+                text = "TODO",
+                style = TextStyle(fontSize = 34.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Spacer(modifier = Modifier.weight(0.03f))
+
+            Text(
+                text = "--% overestimate",
+                style = TextStyle(fontSize = 26.sp),
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+
+            Spacer(modifier = Modifier.weight(0.01f))
+
+            Text(
+                text = "--% improvement from recent averages",
+                style = TextStyle(fontSize = 26.sp), maxLines = 2,
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.weight(0.03f))
+
+
+            Button(
+                onClick = { /* TODO: Handle View Details */ },
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
+                modifier = Modifier.fillMaxWidth(0.5f),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = White
+                )
             ) {
-
                 Text(
-                    // FIXME
-                    text = task.value!!.name,
-                    style = TextStyle(fontSize = 40.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    text = "View Details",
+                    style = TextStyle(fontSize = 24.sp),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-
-                Spacer(modifier = Modifier.weight(0.004f))
-
-                Text(
-                    text = "Completed!",
-                    style = TextStyle(fontSize = 26.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Spacer(modifier = Modifier.weight(0.03f))
-
-                Text(
-                    // FIXME
-                    text = task.value!!.workTime.asHHMM(),
-                    style = TextStyle(fontSize = 90.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Spacer(modifier = Modifier.weight(0.03f))
-
-                Text(
-                    text = "You estimated",
-                    style = TextStyle(fontSize = 26.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Text(
-                    // TODO: app estimation
-                    text = "TODO",
-                    style = TextStyle(fontSize = 34.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Spacer(modifier = Modifier.weight(0.03f))
-
-                Text(
-                    text = "--% overestimate",
-                    style = TextStyle(fontSize = 26.sp),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-
-                Spacer(modifier = Modifier.weight(0.01f))
-
-                Text(
-                    text = "--% improvement from recent averages",
-                    style = TextStyle(fontSize = 26.sp), maxLines = 2,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-                Spacer(modifier = Modifier.weight(0.03f))
-
-
-                Button(
-                    onClick = { /* TODO: Handle View Details */ },
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
-                    modifier = Modifier.fillMaxWidth(0.5f),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = White
-                    )
-                ) {
-                    Text(
-                        text = "View Details",
-                        style = TextStyle(fontSize = 24.sp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Button(
-                    onClick = { navController.navigate("List") },
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
-                    modifier = Modifier.fillMaxWidth(0.7f),
-                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = White
-                    )
-                ) {
-                    Text(
-                        text = "Continue",
-                        style = TextStyle(fontSize = 40.sp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(0.04f))
             }
-        } ?: Text("ERROR: NO TASK SELECTED")
+
+            Button(
+                onClick = { navController.navigate("List") },
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
+                modifier = Modifier.fillMaxWidth(0.7f),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = White
+                )
+            ) {
+                Text(
+                    text = "Continue",
+                    style = TextStyle(fontSize = 40.sp),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(0.04f))
+        }
 
     }
 }

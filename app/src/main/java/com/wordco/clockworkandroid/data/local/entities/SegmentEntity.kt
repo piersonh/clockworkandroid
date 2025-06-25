@@ -22,6 +22,8 @@ import java.time.Instant
 data class SegmentEntity (
     @PrimaryKey(autoGenerate = true) val segmentId: Long = 0,
     val taskId: Long,
+    // TODO change the type converters to a mapper where the entity classes use
+    //  database native types
     @TypeConverters(TimestampConverter::class) var startTime: Instant,
     @TypeConverters(DurationConverter::class) var duration: Duration?
 ) {

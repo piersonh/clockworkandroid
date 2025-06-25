@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -29,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 import com.wordco.clockworkandroid.ui.elements.StartedListItem
@@ -40,8 +38,7 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 @Composable
 fun ListPage(
     controller: NavHostController,
-    taskViewModel: TaskViewModel,
-    curTask: MutableState<Task?>
+    taskViewModel: TaskViewModel
 ) {
     val startedTaskList by taskViewModel.startedTaskList.observeAsState()
     val upcomingTaskList by taskViewModel.upcomingTaskList.observeAsState()
@@ -109,7 +106,7 @@ fun ListPage(
                                 .height(100.dp)
                                 // TODO: Remove curtask and make routing per task
                                 .clickable(onClick = {
-                                    curTask.value = it,
+                                    taskViewModel.onTaskClick(it.taskId)
                                     controller.navigate("Timer")
                                 })
                         )
@@ -141,7 +138,7 @@ fun ListPage(
                                 .height(100.dp)
                                 // TODO: Remove curtask and make routing per task
                                 .clickable(onClick = {
-                                    curTask.value = it,
+                                    taskViewModel.onTaskClick(it.taskId)
                                     controller.navigate("Timer")
                                 })
                         )

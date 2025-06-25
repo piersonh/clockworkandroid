@@ -11,7 +11,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
@@ -19,12 +18,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.ui.TaskViewModel
-import com.wordco.clockworkandroid.domain.model.Task
-import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.pages.TimerPage
+import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -32,15 +30,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val taskViewModel : TaskViewModel by viewModels { TaskViewModel.Factory }
+        val taskViewModel: TaskViewModel by viewModels { TaskViewModel.Factory }
 
         //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
 
 
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
-            ClockworkTheme{
-                val curTask: MutableState<Task?> = remember { mutableStateOf(null) }
+            ClockworkTheme {
+                remember { mutableStateOf(null) }
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
@@ -72,7 +70,7 @@ class MainActivity : ComponentActivity() {
 
                     ) {
                     composable(route = "List") {
-                        ListPage(navController, taskViewModel, curTask)
+                        ListPage(navController, taskViewModel)
                     }
                     composable(
                         route = "Add",
@@ -93,10 +91,10 @@ class MainActivity : ComponentActivity() {
                         NewTaskPage(navController)
                     }
                     composable(route = "Timer") {
-                        TimerPage(Timer(), navController = navController, curTask)
+                        TimerPage(Timer(), navController = navController, taskViewModel)
                     }
                     composable(route = "TaskCompletionPage") {
-                        TaskCompletionPage(navController, curTask)
+                        TaskCompletionPage(navController, taskViewModel)
                     }
                 }
             }

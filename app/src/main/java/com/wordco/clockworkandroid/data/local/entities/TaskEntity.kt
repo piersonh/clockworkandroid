@@ -13,6 +13,8 @@ import java.time.Instant
 data class TaskEntity(
     @PrimaryKey(autoGenerate = true) val taskId: Long = 0,
     val name: String,
+    // TODO change the type converters to a mapper where the entity classes use
+    //  database native types
     @TypeConverters(TimestampConverter::class) val dueDate: Instant?,
     val difficulty: Int,
     @TypeConverters(ColorConverter::class) val color: Color,

@@ -20,6 +20,8 @@ import java.time.Instant
 data class MarkerEntity (
     @PrimaryKey(autoGenerate = true) val markerId: Long = 0,
     val taskId: Long,
+    // TODO change the type converters to a mapper where the entity classes use
+    //  database native types
     @TypeConverters(TimestampConverter::class) var startTime: Instant,
     var label: String
 )
