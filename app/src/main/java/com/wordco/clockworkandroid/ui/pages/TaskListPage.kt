@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
@@ -47,16 +49,8 @@ fun ListPage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Task Sessions",
-                        fontFamily = LATO,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                title = { Text("Task Sessions", fontFamily = LATO, color = MaterialTheme.colorScheme.onPrimary)},
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
 
             )
         },
@@ -79,7 +73,7 @@ fun ListPage(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier
                     .padding(5.dp)
-                    .background(color = Color.DarkGray)
+                    .background(color = MaterialTheme.colorScheme.primary)
                     .fillMaxSize()
             ) {
                 item {
@@ -87,7 +81,7 @@ fun ListPage(
                         "STARTED",
                         fontFamily = LATO,
                         fontSize = 25.sp,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }
@@ -102,7 +96,7 @@ fun ListPage(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(shape = RoundedCornerShape(10.dp))
-                                .background(color = Color(42, 42, 42))
+                                .background(color = MaterialTheme.colorScheme.primaryContainer)
                                 .height(100.dp)
                                 // TODO: Remove curtask and make routing per task
                                 .clickable(onClick = {
@@ -119,7 +113,7 @@ fun ListPage(
                         "UPCOMING",
                         fontFamily = LATO,
                         fontSize = 25.sp,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }
@@ -134,7 +128,7 @@ fun ListPage(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(shape = RoundedCornerShape(10.dp))
-                                .background(color = Color(42, 42, 42))
+                                .background(color = MaterialTheme.colorScheme.primaryContainer)
                                 .height(100.dp)
                                 // TODO: Remove curtask and make routing per task
                                 .clickable(onClick = {
