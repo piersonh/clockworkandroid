@@ -10,11 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +48,7 @@ fun StartedListItem(
             task.name,
             fontFamily = LATO,
             fontSize = 23.sp,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
@@ -63,7 +64,7 @@ fun StartedListItem(
                     "Suspended",
                     fontFamily = LATO,
                     fontSize = 20.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -80,7 +81,7 @@ fun StartedListItem(
                     "Running",
                     fontFamily = LATO,
                     fontSize = 20.sp,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -97,7 +98,7 @@ fun StartedListItem(
                 task.workTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
             MugImage()
@@ -105,7 +106,7 @@ fun StartedListItem(
                 task.breakTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
         }
