@@ -5,10 +5,14 @@ import com.wordco.clockworkandroid.data.local.AppDatabase
 import com.wordco.clockworkandroid.data.local.TaskDao
 import com.wordco.clockworkandroid.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainApplication : Application() {
 
     // originally were instance fields, not sure if this is better or worse
+
     companion object {
         lateinit var db: AppDatabase
         lateinit var taskDao: TaskDao
@@ -19,6 +23,9 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         db = AppDatabase.getDatabase(applicationContext)
+//        CoroutineScope(Dispatchers.IO).launch {
+//            db.clearAllTables()
+//        }
         taskDao = db.taskDao()
         taskRepository = TaskRepositoryImpl(taskDao)
     }

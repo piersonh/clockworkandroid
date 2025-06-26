@@ -37,10 +37,6 @@ class TaskViewModel(
 
     init {
         viewModelScope.launch {
-//            for (task in DummyData.TASKS) {
-//                taskRepository.insertTask(task)
-//            }
-
             tasks = taskRepository.getTasks().asLiveData()
             setupTaskList()
 
@@ -56,6 +52,10 @@ class TaskViewModel(
 //                    markers = emptyList()
 //                )
 //            )
+//
+//            for (task in DummyData.TASKS) {
+//                taskRepository.insertTask(task)
+//            }
         }
     }
 
