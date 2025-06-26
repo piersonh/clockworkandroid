@@ -5,21 +5,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.wordco.clockworkandroid.model.TaskRegistryViewModel
-import com.wordco.clockworkandroid.model.Timer
-import com.wordco.clockworkandroid.model.database.TASKS
-import com.wordco.clockworkandroid.model.database.TaskRegistry
+import com.wordco.clockworkandroid.domain.model.Timer
+import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.pages.TimerPage
-
+import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -27,50 +30,75 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = TaskRegistry.getDatabase(applicationContext)
-        val taskDao = db.taskDao()
-        val taskRegistryViewModel = TaskRegistryViewModel(taskDao)
-//        CoroutineScope(Dispatchers.IO).launch {
-//            taskDao.insertTask(TASKS[1])
-//            db.clearAllTables()
-//        }
+        val taskViewModel: TaskViewModel by viewModels { TaskViewModel.Factory }
+
         //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
 
-        enableEdgeToEdge()
+
+        enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
-            val navController = rememberNavController()
-            NavHost(
-                navController = navController,
-                startDestination = "List"
-            ) {
-                composable(route = "List") {
-                    ListPage(navController, taskRegistryViewModel)
-                }
-                composable(
-                    route = "Add",
+            ClockworkTheme {
+                remember { mutableStateOf(null) }
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = "List",
                     enterTransition = {
-                        slideIntoContainer(
-                            animationSpec = tween(150, easing = LinearEasing),
-                            towards = AnimatedContentTransitionScope.SlideDirection.Up
+                        slideInHorizontally(
+                            initialOffsetX = { it },
+                            animationSpec = tween(300)
                         )
                     },
                     exitTransition = {
-                        slideOutOfContainer(
-                            animationSpec = tween(150, easing = LinearEasing),
-                            towards = AnimatedContentTransitionScope.SlideDirection.Up
+                        slideOutHorizontally(
+                            targetOffsetX = { -it },
+                            animationSpec = tween(300)
                         )
+                    },
+                    popExitTransition = {
+                        slideOutHorizontally(
+                            targetOffsetX = { it },
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideInHorizontally(
+                            initialOffsetX = { -it },
+                            animationSpec = tween(300)
+                        )
+                    },
+
+                    ) {
+                    composable(route = "List") {
+                        ListPage(navController, taskViewModel)
                     }
-                )
-                {
-                    NewTaskPage(navController)
-                }
-                composable(route = "Timer") {
-                    TimerPage(Timer(), navController = navController)
-                }
-                composable(route = "TaskCompletionPage") {
-                    TaskCompletionPage()
+                    composable(
+                        route = "Add",
+                        enterTransition = {
+                            slideIntoContainer(
+                                animationSpec = tween(150, easing = LinearEasing),
+                                towards = AnimatedContentTransitionScope.SlideDirection.Up
+                            )
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(
+                                animationSpec = tween(150, easing = LinearEasing),
+                                towards = AnimatedContentTransitionScope.SlideDirection.Up
+                            )
+                        }
+                    )
+                    {
+                        NewTaskPage(navController)
+                    }
+                    composable(route = "Timer") {
+                        TimerPage(Timer(), navController = navController, taskViewModel)
+                    }
+                    composable(route = "TaskCompletionPage") {
+                        TaskCompletionPage(navController, taskViewModel)
+                    }
                 }
             }
         }
     }
 }
+

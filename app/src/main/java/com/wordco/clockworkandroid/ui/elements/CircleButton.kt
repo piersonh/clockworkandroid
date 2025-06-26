@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CircleButton(onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable() (RowScope.() -> Unit)) = Button(
+fun CircleButton(onClick: () -> Unit, modifier: Modifier = Modifier, content: @Composable (RowScope.() -> Unit)) = Button(
     onClick = onClick,
     shape = CircleShape,
     modifier = modifier.aspectRatio(1f),

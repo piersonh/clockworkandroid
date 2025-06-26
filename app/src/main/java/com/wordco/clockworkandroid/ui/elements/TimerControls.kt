@@ -21,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.wordco.clockworkandroid.model.Timer
-import com.wordco.clockworkandroid.ui.LATO
+import com.wordco.clockworkandroid.domain.model.Timer
+import com.wordco.clockworkandroid.ui.theme.LATO
 
 
-@Composable()
+@Composable
 fun TimerControls(
     timer: Timer,
     modifier: Modifier = Modifier,
@@ -76,28 +76,28 @@ fun TimerControls(
     when (state) {
         Timer.State.IDLE -> InitControls()
         Timer.State.RUNNING -> RunningControls()
-        Timer.State.PAUSED,Timer.State.SUSPENDED -> PausedControls()
+        Timer.State.PAUSED, Timer.State.SUSPENDED -> PausedControls()
         else -> throw RuntimeException("Additional State Controls Not Implemented")
     }
 }
 
 
 
-@Preview()
+@Preview
 @Composable
 private fun ControlButtonsPreviewPaused() {
     val navController = rememberNavController()
     TimerControls(Timer(Timer.State.PAUSED), navController = navController)
 }
 
-@Preview()
+@Preview
 @Composable
 private fun ControlButtonsPreviewRunning() {
     val navController = rememberNavController()
     TimerControls(Timer(Timer.State.RUNNING), navController = navController)
 }
 
-@Preview()
+@Preview
 @Composable
 private fun ControlButtonsPreviewInit() {
     val navController = rememberNavController()

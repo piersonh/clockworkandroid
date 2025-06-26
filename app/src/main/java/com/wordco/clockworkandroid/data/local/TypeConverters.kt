@@ -1,10 +1,9 @@
-package com.wordco.clockworkandroid.model.database
+package com.wordco.clockworkandroid.data.local
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
-import com.wordco.clockworkandroid.model.Segment
-import com.wordco.clockworkandroid.model.Status
+import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import java.time.Duration
 import java.time.Instant
 
@@ -34,25 +33,13 @@ class DurationConverter {
 
 class TaskStatusConverter {
     @TypeConverter
-    fun fromTaskStatus(status: Status?): Int? {
+    fun fromTaskStatus(status: ExecutionStatus?): Int? {
         return status?.ordinal
     }
 
     @TypeConverter
-    fun toTaskStatus(status: Int?): Status? {
-        return status?.let { Status.entries[it] }
-    }
-}
-
-class SegmentVariantConverter {
-    @TypeConverter
-    fun fromSegmentVariant(variant: Segment.Variant?): Int? {
-        return variant?.ordinal
-    }
-
-    @TypeConverter
-    fun toSegmentVariant(variant: Int?): Segment.Variant? {
-        return variant?.let { Segment.Variant.entries[it] }
+    fun toTaskStatus(status: Int?): ExecutionStatus? {
+        return status?.let { ExecutionStatus.entries[it] }
     }
 }
 
