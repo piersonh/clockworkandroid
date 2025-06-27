@@ -19,7 +19,13 @@ class TaskRepositoryImpl (
         taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
     }
 
-    override suspend fun getTasks(): Flow<List<Task>> {
+    override fun getTask(taskId: Long): Flow<Task> {
+        return taskDao.getTaskWithExecutionData(taskId).map {
+            it.toTask()
+        }
+    }
+
+    override fun getTasks(): Flow<List<Task>> {
         return taskDao.getTasksWithExecutionData()
             .map { taskList ->
                 taskList.map { it.toTask() }

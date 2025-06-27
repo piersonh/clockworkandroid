@@ -26,9 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.wordco.clockworkandroid.ui.TaskViewModel
-import com.wordco.clockworkandroid.ui.elements.FloatingNavButton
 import com.wordco.clockworkandroid.ui.elements.StartedListItem
 import com.wordco.clockworkandroid.ui.elements.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.ui.theme.LATO
@@ -36,7 +34,7 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListPage(
-    controller: NavHostController,
+    onTaskClick: (Long) -> Unit,
     taskViewModel: TaskViewModel
 ) {
     val startedTaskList by taskViewModel.startedTaskList.observeAsState()
@@ -46,16 +44,22 @@ fun ListPage(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Task Sessions", fontFamily = LATO, color = MaterialTheme.colorScheme.onPrimary)},
+                title = {
+                    Text(
+                        "Task Sessions",
+                        fontFamily = LATO,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
 
             )
         },
         floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton = {
-            FloatingNavButton("Add", controller, "Add")
-
-        },
+//        floatingActionButton = {
+//            FloatingNavButton("Add", controller, "Add")
+//
+//        },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Box(
@@ -96,10 +100,11 @@ fun ListPage(
                                 .background(color = MaterialTheme.colorScheme.primaryContainer)
                                 .height(100.dp)
                                 // TODO: Remove curtask and make routing per task
-                                .clickable(onClick = {
-                                    taskViewModel.onTaskClick(it.taskId)
-                                    controller.navigate("Timer")
-                                })
+                                //.clickable(onClick = {
+                                //    taskViewModel.onTaskClick(it.taskId)
+                                //    controller.navigate(PageRoutes.TimerPage.route+"/${it.taskId}")
+                                //})
+                                .clickable(onClick = { onTaskClick(it.taskId) })
                         )
                     }
                 }
@@ -128,10 +133,11 @@ fun ListPage(
                                 .background(color = MaterialTheme.colorScheme.primaryContainer)
                                 .height(100.dp)
                                 // TODO: Remove curtask and make routing per task
-                                .clickable(onClick = {
-                                    taskViewModel.onTaskClick(it.taskId)
-                                    controller.navigate("Timer")
-                                })
+//                                .clickable(onClick = {
+//                                    taskViewModel.onTaskClick(it.taskId)
+//                                    controller.navigate(PageRoutes.TimerPage.route+"/${it.taskId}")
+//                                })
+                                .clickable(onClick = {onTaskClick(it.taskId)})
                         )
                     }
                 }

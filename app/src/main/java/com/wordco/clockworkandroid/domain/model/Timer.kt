@@ -9,12 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class Timer(state: State = State.INIT) {
-    enum class State {
-        INIT, RUNNING, PAUSED, SUSPENDED, FINISHED
-    }
-    private val _state = MutableStateFlow(state)
-    val state: StateFlow<State> = _state
+class Timer() {
+
+    private val _isRunning = MutableStateFlow(false)
+    val isRunning: StateFlow<Boolean> = _isRunning
 
     private val _secondsElapsed = MutableStateFlow(0)
     val secondsElapsed: StateFlow<Int> = _secondsElapsed
@@ -25,7 +23,7 @@ class Timer(state: State = State.INIT) {
     fun startTimer() {
         if (timerJob?.isActive == true) return // Prevent starting multiple times
 
-        _state.update { State.RUNNING }
+        _isRunning.update { true }
 
         timerJob = scope.launch {
             while (true) {
@@ -39,20 +37,13 @@ class Timer(state: State = State.INIT) {
     }
 
     fun stopTimer() {
-        _state.update { State.PAUSED }
+        _isRunning.update { false }
         timerJob?.cancel()
     }
 
-    fun resetTimer() {
-        stopTimer()
-        _secondsElapsed.value = 0
-    }
+//    fun resetTimer() {
+//        stopTimer()
+//        _secondsElapsed.value = 0
+//    }
 
-    fun getHours() : Int {
-        return _secondsElapsed.value / 3600
-    }
-
-    fun getMinutesInHour() : Int {
-        return (_secondsElapsed.value % 3600) / 60
-    }
 }

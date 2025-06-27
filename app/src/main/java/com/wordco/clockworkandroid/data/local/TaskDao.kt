@@ -40,6 +40,12 @@ interface TaskDao {
 //        }
 //    }
 
+
+    @Transaction
+    @Query("SELECT * FROM TaskEntity WHERE taskId == :taskId")
+    fun getTaskWithExecutionData(taskId: Long) : Flow<TaskWithExecutionDataObject>
+
+
     @Transaction
     @Query("SELECT * FROM TaskEntity")
     fun getTasksWithExecutionData() : Flow<List<TaskWithExecutionDataObject>>

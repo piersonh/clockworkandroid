@@ -13,11 +13,13 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.wordco.clockworkandroid.domain.model.Timer
+import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskViewModel
+import com.wordco.clockworkandroid.ui.TimerViewModel
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
@@ -30,70 +32,85 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // FIXME: Change to TaskListViewModel and instantiate like the timerVM
         val taskViewModel: TaskViewModel by viewModels { TaskViewModel.Factory }
-
-        //taskRegistryViewModel.insertTasks(*TASKS.toTypedArray())
-
 
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
             ClockworkTheme {
-                remember { mutableStateOf(null) }
+                remember { mutableStateOf(null) } // FIXME: what this is?
                 val navController = rememberNavController()
-                NavHost(
+                NavHost (
                     navController = navController,
-                    startDestination = "List",
+                    startDestination = PageRoutes.TaskListPage.route,
                     enterTransition = {
                         slideInHorizontally(
-                            initialOffsetX = { it },
-                            animationSpec = tween(300)
+                            initialOffsetX = { it }, animationSpec = tween(300)
                         )
                     },
                     exitTransition = {
                         slideOutHorizontally(
-                            targetOffsetX = { -it },
-                            animationSpec = tween(300)
+                            targetOffsetX = { -it }, animationSpec = tween(300)
                         )
                     },
                     popExitTransition = {
                         slideOutHorizontally(
-                            targetOffsetX = { it },
-                            animationSpec = tween(300)
+                            targetOffsetX = { it }, animationSpec = tween(300)
                         )
                     },
                     popEnterTransition = {
                         slideInHorizontally(
-                            initialOffsetX = { -it },
-                            animationSpec = tween(300)
+                            initialOffsetX = { -it }, animationSpec = tween(300)
                         )
                     },
-
-                    ) {
-                    composable(route = "List") {
-                        ListPage(navController, taskViewModel)
+                ) {
+                    composable(PageRoutes.TaskListPage.route) {
+                        ListPage (
+                            onTaskClick = {
+                                taskId ->
+                                navController.navigate(
+                                    PageRoutes.TimerPage.createRoute(
+                                        taskId = taskId
+                                    )
+                                )
+                            },
+                            taskViewModel
+                        )
                     }
                     composable(
-                        route = "Add",
+                        PageRoutes.NewTaskPage.route,
                         enterTransition = {
-                            slideIntoContainer(
+                            slideIntoContainer (
                                 animationSpec = tween(150, easing = LinearEasing),
                                 towards = AnimatedContentTransitionScope.SlideDirection.Up
                             )
-                        },
-                        exitTransition = {
+                        }, exitTransition = {
                             slideOutOfContainer(
                                 animationSpec = tween(150, easing = LinearEasing),
                                 towards = AnimatedContentTransitionScope.SlideDirection.Up
                             )
                         }
-                    )
-                    {
+                    ) {
                         NewTaskPage(navController)
                     }
-                    composable(route = "Timer") {
-                        TimerPage(Timer(), navController = navController, taskViewModel)
+                    composable(
+                        route = PageRoutes.TimerPage.route,
+                        arguments = PageRoutes.TimerPage.navArguments
+                    ) {
+                        navBackStackEntry ->
+                        val timerViewModel: TimerViewModel = viewModel(
+                            navBackStackEntry,
+                            factory = TimerViewModel.Factory
+                        )
+                        TimerPage(
+                            timerViewModel,
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
                     }
-                    composable(route = "TaskCompletionPage") {
+                    // FIXME: Use new page routes
+                    composable(PageRoutes.TaskCompletionPage.route + "/{taskId}") {
                         TaskCompletionPage(navController, taskViewModel)
                     }
                 }
