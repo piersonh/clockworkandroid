@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.ui.pages
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -16,9 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +25,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TopAppBar
@@ -58,6 +53,7 @@ import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
+import com.wordco.clockworkandroid.ui.elements.DateTimePickerDialog
 import com.wordco.clockworkandroid.util.asTaskDueFormat
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -73,10 +69,11 @@ fun NewTaskPage(
     var taskName by remember { mutableStateOf("Homework") }
     var colorSliderPos by remember { mutableFloatStateOf(0f) }
     var difficulty by remember { mutableFloatStateOf(0f) }
-    var isDatePickerShown by remember { mutableStateOf(false) }
-    var date: Instant? by remember { mutableStateOf(null) } // not scheduled by default
-    val datePickerState = rememberDatePickerState()
-    val timePickerState = rememberTimePickerState(
+    var isDateTimePickerShown by remember { mutableStateOf(false) }
+    var dueDateTime: Instant? by remember { mutableStateOf(null) } // not scheduled by default
+    val dueDatePickerState = rememberDatePickerState()
+    val dueTimePickerState = rememberTimePickerState()
+    val estTimePickerState = rememberTimePickerState(
         initialHour = 0,
         initialMinute = 0,
         is24Hour = true,
@@ -161,8 +158,9 @@ fun NewTaskPage(
                             .padding(4.dp)
                             .background(
                                 Color.hsv(
-                                    colorSliderPos * 360, 1f, 1f),
-                                    RoundedCornerShape(50.dp)
+                                    colorSliderPos * 360, 1f, 1f
+                                ),
+                                RoundedCornerShape(50.dp)
                             )
                             .border(
                                 5.dp,
@@ -223,11 +221,11 @@ fun NewTaskPage(
                     disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
-                value = date.asTaskDueFormat(),
+                value = dueDateTime.asTaskDueFormat(),
                 enabled = false,
                 modifier = Modifier
                     .combinedClickable(
-                        onClick = { isDatePickerShown = true })
+                        onClick = { isDateTimePickerShown = true })
                     .fillMaxWidth(),
                 label = {
                     Text(
@@ -240,14 +238,14 @@ fun NewTaskPage(
                 singleLine = true,
                 readOnly = true,
                 trailingIcon = {
-                    date?.let {
+                    dueDateTime?.let {
                         Icon(
                             Icons.Default.Clear,
                             contentDescription = "Clear selected date",
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.combinedClickable(
                                 onClick = {
-                                    date = null
+                                    dueDateTime = null
                                 }
                             )
                         )
@@ -256,37 +254,25 @@ fun NewTaskPage(
             )
 
 
-            if (isDatePickerShown) {
-                DatePickerDialog(
-                    confirmButton = {
-                        TextButton(onClick = {
-                            date = datePickerState.selectedDateMillis?.let {
+            if (isDateTimePickerShown) {
+                DateTimePickerDialog(
+                    onDismiss = { isDateTimePickerShown = false },
+                    onConfirm = {
+                        dueDateTime = dueDatePickerState.selectedDateMillis?.let {
+                           Instant.ofEpochMilli(
                                 // Convert to local time
-                                Instant.ofEpochMilli(
-                                    it - (ZonedDateTime.now().offset.totalSeconds * 1000)
-                                )
-                            }
-                            isDatePickerShown = false
-                        }) {
-                            Text("OK", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                it - (ZonedDateTime.now().offset.totalSeconds * 1000)
+                            ).plusSeconds(
+                                (dueTimePickerState.minute * 60 + dueTimePickerState.hour * 3600)
+                                    .toLong()
+                            )
                         }
+
+                        isDateTimePickerShown = false
                     },
-                    dismissButton = {
-                        TextButton(onClick = { isDatePickerShown = false }) {
-                            Text("Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        }
-                    },
-                    onDismissRequest = { isDatePickerShown = false },
-                ) {
-                    DatePicker(
-                        state = datePickerState, colors = DatePickerDefaults.colors(
-                            selectedDayContainerColor = MaterialTheme.colorScheme.secondary,
-                            todayContentColor = MaterialTheme.colorScheme.secondary,
-                            todayDateBorderColor = MaterialTheme.colorScheme.secondary,
-                            selectedDayContentColor = MaterialTheme.colorScheme.onSecondary
-                        )
-                    )
-                }
+                    datePickerState = dueDatePickerState,
+                    timePickerState = dueTimePickerState
+                )
 
             }
 
@@ -306,7 +292,7 @@ fun NewTaskPage(
 
 
             TimeInput(
-                state = timePickerState,
+                state = estTimePickerState,
             )
 
 
@@ -315,7 +301,7 @@ fun NewTaskPage(
                     Task(
                         taskId = 0,
                         name = taskName,
-                        dueDate = date,
+                        dueDate = dueDateTime,
                         difficulty = difficulty.toInt(),
                         color = Color.hsv(colorSliderPos * 360, 1f, 1f),
                         status = ExecutionStatus.NOT_STARTED,
@@ -324,18 +310,12 @@ fun NewTaskPage(
                     )
                 )
 
+                controller.navigateUp()
+
             }) {
                 Text("Add")
             }
         }
-
-
-        Button(
-            onClick = {
-                controller.navigate("List") {
-                    popUpTo(0)
-                }
-            }) {}
     }
 }
 
