@@ -55,7 +55,6 @@ import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.TimeZone
@@ -63,9 +62,11 @@ import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewTaskPage(controller: NavHostController = rememberNavController(),
-                taskViewModel: TaskViewModel) {
-    val coroutineScope = rememberCoroutineScope()
+fun NewTaskPage(
+    controller: NavHostController = rememberNavController(),
+    taskViewModel: TaskViewModel
+) {
+    rememberCoroutineScope()
     var assignmentname by remember { mutableStateOf("Homework") }
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     var difficulty by remember { mutableFloatStateOf(0f) }
@@ -79,13 +80,13 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
     )
     val brush = Brush.horizontalGradient(
         listOf(
-            Color.hsv(0f,1f,1f),
-            Color.hsv(60f,1f,1f),
-            Color.hsv(120f,1f,1f),
-            Color.hsv(180f,1f,1f),
-            Color.hsv(240f,1f,1f),
-            Color.hsv(300f,1f,1f),
-            Color.hsv(360f,1f,1f)
+            Color.hsv(0f, 1f, 1f),
+            Color.hsv(60f, 1f, 1f),
+            Color.hsv(120f, 1f, 1f),
+            Color.hsv(180f, 1f, 1f),
+            Color.hsv(240f, 1f, 1f),
+            Color.hsv(300f, 1f, 1f),
+            Color.hsv(360f, 1f, 1f)
         )
     )
     val sdfDate = SimpleDateFormat(
@@ -109,7 +110,8 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
                 }
             )
         }
-    ) { innerPadding -> Column(
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(innerPadding)
@@ -117,7 +119,7 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
             verticalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.Top),
             horizontalAlignment = Alignment.CenterHorizontally,
 
-        )
+            )
         {
             OutlinedTextField(
                 colors = TextFieldDefaults.colors(
@@ -125,15 +127,19 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
                     unfocusedContainerColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
                     unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary
-                    ),
+                ),
                 value = assignmentname,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 onValueChange = { assignmentname = it },
-                label = { Text("Assignment Name",
-                    style = TextStyle(
-                    letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
-                )) }
+                label = {
+                    Text(
+                        "Assignment Name",
+                        style = TextStyle(
+                            letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                        )
+                    )
+                }
             )
             Text(
                 textAlign = TextAlign.Left,
@@ -216,17 +222,19 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
                 onClick = { dateShown = true },
                 shape = RoundedCornerShape(5.dp),
             ) {
-                Text(sdfDate.format(date),
+                Text(
+                    sdfDate.format(date),
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth())
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
             if (dateShown) {
                 DatePickerDialog(
                     confirmButton = {
                         TextButton(onClick = {
                             date = datePickerState.selectedDateMillis ?: 0
-                            Log.println(Log.INFO,"d", date.toString())
+                            Log.println(Log.INFO, "d", date.toString())
                             dateShown = false
                         }) {
                             Text("OK", color = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -237,15 +245,17 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
                             Text("Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
                     },
-                    onDismissRequest = {dateShown = false},
+                    onDismissRequest = { dateShown = false },
                 ) {
-                    DatePicker(state = datePickerState,
+                    DatePicker(
+                        state = datePickerState,
                         colors = DatePickerDefaults.colors(
                             selectedDayContainerColor = MaterialTheme.colorScheme.secondary,
                             todayContentColor = MaterialTheme.colorScheme.secondary,
                             todayDateBorderColor = MaterialTheme.colorScheme.secondary,
                             selectedDayContentColor = MaterialTheme.colorScheme.onSecondary
-                        ))
+                        )
+                    )
                 }
 
             }
@@ -265,22 +275,20 @@ fun NewTaskPage(controller: NavHostController = rememberNavController(),
                 state = timePickerState,
             )
             Button(onClick = {
-                coroutineScope.launch{
-                    taskViewModel.insertTask(
-                        Task(
-                            taskId = 10L,
-                            name = assignmentname,
-                            dueDate = Instant.ofEpochMilli(date),
-                            difficulty = difficulty.toInt(),
-                            color = Color.hsv(sliderPosition * 360, 1f, 1f),
-                            status = ExecutionStatus.NOT_STARTED,
-                            segments = emptyList(),
-                            markers = emptyList(),
-                        )
+                taskViewModel.insertTask(
+                    Task(
+                        taskId = 0,
+                        name = assignmentname,
+                        dueDate = Instant.ofEpochMilli(date),
+                        difficulty = difficulty.toInt(),
+                        color = Color.hsv(sliderPosition * 360, 1f, 1f),
+                        status = ExecutionStatus.NOT_STARTED,
+                        segments = emptyList(),
+                        markers = emptyList(),
                     )
-                }
+                )
 
-            }){
+            }) {
                 Text("Add")
             }
         }

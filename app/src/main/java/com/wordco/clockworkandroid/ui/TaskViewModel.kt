@@ -63,10 +63,14 @@ class TaskViewModel(
 //            }
         }
     }
-    suspend fun insertTask(task : Task){
-        taskRepository.insertTask(task)
-        setupTaskList()
+    fun insertTask(task : Task) {
+        viewModelScope.launch {
+            taskRepository.insertTask(task)
+            setupTaskList()
+        }
     }
+
+
     fun onTaskClick(taskId: Long) {
         // FIXME: Im worried about the !!
         currentTask = tasks.value!!.firstOrNull { it.taskId == taskId }

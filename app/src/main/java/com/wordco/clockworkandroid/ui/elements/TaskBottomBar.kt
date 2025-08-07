@@ -28,11 +28,11 @@ fun TaskBottomBar(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement =
-                        Arrangement.spacedBy(
-                            20.dp,
-                            alignment = Alignment.CenterHorizontally
-                        )
+            horizontalArrangement =
+                Arrangement.spacedBy(
+                    20.dp,
+                    alignment = Alignment.CenterHorizontally
+                )
         )
         {
             CalImage()
@@ -45,8 +45,10 @@ fun TaskBottomBar(
                 border = BorderStroke(5.dp, MaterialTheme.colorScheme.onSecondary)
             )
             {
-                
-                PlusImage(Modifier.aspectRatio(1f).fillMaxSize())
+
+                PlusImage(Modifier
+                    .aspectRatio(1f)
+                    .fillMaxSize())
             }
             UserImage()
         }
