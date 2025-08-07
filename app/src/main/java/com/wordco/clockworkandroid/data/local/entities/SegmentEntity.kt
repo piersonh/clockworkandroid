@@ -25,7 +25,8 @@ data class SegmentEntity (
     // TODO change the type converters to a mapper where the entity classes use
     //  database native types
     @TypeConverters(TimestampConverter::class) var startTime: Instant,
-    @TypeConverters(DurationConverter::class) var duration: Duration?
+    @TypeConverters(DurationConverter::class) var duration: Duration?,
+    val type: Int
 ) {
 
     fun setEnd(endTime: Instant) {

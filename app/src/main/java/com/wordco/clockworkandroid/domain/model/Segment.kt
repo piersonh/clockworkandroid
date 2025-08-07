@@ -6,8 +6,9 @@ import java.time.Instant
 data class Segment(
     val segmentId: Long,
     val taskId: Long,
-    var startTime: Instant,
-    var duration: Duration?
+    val startTime: Instant,
+    var duration: Duration?,
+    val type: SegmentType
 ) {
 
     fun setEnd(endTime: Instant) {

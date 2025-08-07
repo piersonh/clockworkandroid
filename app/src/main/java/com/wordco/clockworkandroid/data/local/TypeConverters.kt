@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.TypeConverter
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
+import com.wordco.clockworkandroid.domain.model.SegmentType
 import java.time.Duration
 import java.time.Instant
 
@@ -40,6 +41,19 @@ class TaskStatusConverter {
     @TypeConverter
     fun toTaskStatus(status: Int?): ExecutionStatus? {
         return status?.let { ExecutionStatus.entries[it] }
+    }
+}
+
+// FIXME I do not like this
+class SegmentTypeConverter {
+    companion object {
+        fun SegmentType.fromSegmentType(): Int {
+            return this.ordinal
+        }
+
+        fun Int.toSegmentType(): SegmentType {
+            return SegmentType.entries[this]
+        }
     }
 }
 

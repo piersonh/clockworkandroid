@@ -12,9 +12,9 @@ data class Task(
     val color: Color,
     val status: ExecutionStatus,
     val segments: List<Segment>,
-    val markers: List<Marker>
+    val markers: List<Marker>,
+    val workTime: Duration,
+    val breakTime: Duration
 ) {
 
-    val workTime: Duration by lazy { Duration.ofMillis(0) }
-    val breakTime: Duration by lazy { Duration.ofMillis(0) }
 }

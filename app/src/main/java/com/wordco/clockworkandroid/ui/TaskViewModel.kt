@@ -64,11 +64,6 @@ class TaskViewModel(
         }
     }
 
-    fun onTaskClick(taskId: Long) {
-        // FIXME: Im worried about the !!
-        currentTask = tasks.value!!.firstOrNull { it.taskId == taskId }
-    }
-
     private fun setupTaskList() {
         val comparator = UpcomingTaskListItemComparator()
 
