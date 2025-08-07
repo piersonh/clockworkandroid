@@ -55,6 +55,7 @@ import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
+import com.wordco.clockworkandroid.util.asTaskDueFormat
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.TimeZone
@@ -67,11 +68,11 @@ fun NewTaskPage(
     taskViewModel: TaskViewModel
 ) {
     rememberCoroutineScope()
-    var assignmentname by remember { mutableStateOf("Homework") }
-    var sliderPosition by remember { mutableFloatStateOf(0f) }
+    var taskName by remember { mutableStateOf("Homework") }
+    var colorSliderPos by remember { mutableFloatStateOf(0f) }
     var difficulty by remember { mutableFloatStateOf(0f) }
     var dateShown by remember { mutableStateOf(false) }
-    var date by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var date: Instant? by remember { mutableStateOf(null) } // not scheduled by default
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState(
         initialHour = 0,
@@ -128,10 +129,10 @@ fun NewTaskPage(
                     focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
                     unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary
                 ),
-                value = assignmentname,
+                value = taskName,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                onValueChange = { assignmentname = it },
+                onValueChange = { taskName = it },
                 label = {
                     Text(
                         "Assignment Name",
@@ -154,14 +155,14 @@ fun NewTaskPage(
                 )
             )
             Slider(
-                value = sliderPosition,
+                value = colorSliderPos,
                 thumb = {
                     Box(
                         Modifier
                             .size(48.dp)
                             .padding(4.dp)
                             .background(
-                                Color.hsv(sliderPosition * 360, 1f, 1f),
+                                Color.hsv(colorSliderPos * 360, 1f, 1f),
                                 RoundedCornerShape(50.dp)
                             )
                             .border(
@@ -180,7 +181,7 @@ fun NewTaskPage(
                             .fillMaxWidth()
                     )
                 },
-                onValueChange = { sliderPosition = it }
+                onValueChange = { colorSliderPos = it }
             )
             Text(
                 textAlign = TextAlign.Left,
@@ -223,7 +224,7 @@ fun NewTaskPage(
                 shape = RoundedCornerShape(5.dp),
             ) {
                 Text(
-                    sdfDate.format(date),
+                    date.asTaskDueFormat(),
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -233,8 +234,10 @@ fun NewTaskPage(
                 DatePickerDialog(
                     confirmButton = {
                         TextButton(onClick = {
-                            date = datePickerState.selectedDateMillis ?: 0
-                            Log.println(Log.INFO, "d", date.toString())
+                            date = datePickerState.selectedDateMillis?.let {
+                                Instant.ofEpochMilli(it)
+                            }
+                            Log.println(Log.INFO, "d", date.asTaskDueFormat())
                             dateShown = false
                         }) {
                             Text("OK", color = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -278,10 +281,10 @@ fun NewTaskPage(
                 taskViewModel.insertTask(
                     Task(
                         taskId = 0,
-                        name = assignmentname,
-                        dueDate = Instant.ofEpochMilli(date),
+                        name = taskName,
+                        dueDate = date,
                         difficulty = difficulty.toInt(),
-                        color = Color.hsv(sliderPosition * 360, 1f, 1f),
+                        color = Color.hsv(colorSliderPos * 360, 1f, 1f),
                         status = ExecutionStatus.NOT_STARTED,
                         segments = emptyList(),
                         markers = emptyList(),
