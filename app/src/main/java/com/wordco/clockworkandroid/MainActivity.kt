@@ -6,8 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -74,24 +72,17 @@ class MainActivity : ComponentActivity() {
                                     )
                                 )
                             },
-                            taskViewModel
+                            taskViewModel,
+                            navController
                         )
                     }
                     composable(
                         PageRoutes.NewTaskPage.route,
-                        enterTransition = {
-                            slideIntoContainer (
-                                animationSpec = tween(150, easing = LinearEasing),
-                                towards = AnimatedContentTransitionScope.SlideDirection.Up
-                            )
-                        }, exitTransition = {
-                            slideOutOfContainer(
-                                animationSpec = tween(150, easing = LinearEasing),
-                                towards = AnimatedContentTransitionScope.SlideDirection.Up
-                            )
-                        }
                     ) {
-                        NewTaskPage(navController)
+                        NewTaskPage(
+                            controller = navController,
+                            taskViewModel
+                        )
                     }
                     composable(
                         route = PageRoutes.TimerPage.route,
