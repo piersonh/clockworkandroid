@@ -3,6 +3,7 @@ package com.wordco.clockworkandroid.ui.pages
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,15 +13,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -35,7 +39,6 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,9 +59,8 @@ import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.util.asTaskDueFormat
-import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.TimeZone
+import java.time.ZonedDateTime
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +73,7 @@ fun NewTaskPage(
     var taskName by remember { mutableStateOf("Homework") }
     var colorSliderPos by remember { mutableFloatStateOf(0f) }
     var difficulty by remember { mutableFloatStateOf(0f) }
-    var dateShown by remember { mutableStateOf(false) }
+    var isDatePickerShown by remember { mutableStateOf(false) }
     var date: Instant? by remember { mutableStateOf(null) } // not scheduled by default
     val datePickerState = rememberDatePickerState()
     val timePickerState = rememberTimePickerState(
@@ -90,19 +92,14 @@ fun NewTaskPage(
             Color.hsv(360f, 1f, 1f)
         )
     )
-    val sdfDate = SimpleDateFormat(
-        "MM/dd/yyyy"
-    )
-    sdfDate.timeZone = TimeZone.getTimeZone("GMT")
+
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primary,
-        topBar = {
+        containerColor = MaterialTheme.colorScheme.primary, topBar = {
             TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                ),
-                title = {
+                ), title = {
                     Row(modifier = Modifier.padding(end = 10.dp)) {
                         IconButton(onClick = { controller.navigateUp() }) {
                             BackImage()
@@ -119,9 +116,7 @@ fun NewTaskPage(
                 .padding(horizontal = 30.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.Top),
             horizontalAlignment = Alignment.CenterHorizontally,
-
-            )
-        {
+        ) {
             OutlinedTextField(
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.primary,
@@ -135,13 +130,14 @@ fun NewTaskPage(
                 onValueChange = { taskName = it },
                 label = {
                     Text(
-                        "Assignment Name",
-                        style = TextStyle(
+                        "Assignment Name", style = TextStyle(
                             letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                         )
                     )
                 }
             )
+
+
             Text(
                 textAlign = TextAlign.Left,
                 fontSize = 14.sp,
@@ -154,6 +150,8 @@ fun NewTaskPage(
                     letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                 )
             )
+
+
             Slider(
                 value = colorSliderPos,
                 thumb = {
@@ -162,8 +160,9 @@ fun NewTaskPage(
                             .size(48.dp)
                             .padding(4.dp)
                             .background(
-                                Color.hsv(colorSliderPos * 360, 1f, 1f),
-                                RoundedCornerShape(50.dp)
+                                Color.hsv(
+                                    colorSliderPos * 360, 1f, 1f),
+                                    RoundedCornerShape(50.dp)
                             )
                             .border(
                                 5.dp,
@@ -183,7 +182,9 @@ fun NewTaskPage(
                 },
                 onValueChange = { colorSliderPos = it }
             )
-            Text(
+
+
+            Text (
                 textAlign = TextAlign.Left,
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -195,10 +196,10 @@ fun NewTaskPage(
                     letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                 )
             )
+
+
             Slider(
-                value = difficulty,
-                steps = 3,
-                colors = SliderDefaults.colors(
+                value = difficulty, steps = 3, colors = SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colorScheme.secondary,
                     inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
                     activeTickColor = MaterialTheme.colorScheme.primaryContainer,
@@ -207,52 +208,78 @@ fun NewTaskPage(
                 ),
                 onValueChange = { difficulty = it }
             )
-            Text(
-                textAlign = TextAlign.Left,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onPrimary,
+
+            OutlinedTextField(
+                // override the disabled colors
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledContainerColor = Color.Transparent,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                value = date.asTaskDueFormat(),
+                enabled = false,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                text = "Due Date",
-                style = TextStyle(
-                    letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
-                )
+                    .combinedClickable(
+                        onClick = { isDatePickerShown = true })
+                    .fillMaxWidth(),
+                label = {
+                    Text(
+                        "Due Date", style = TextStyle(
+                            letterSpacing = 0.02.em
+                        )
+                    )
+                },
+                onValueChange = { },
+                singleLine = true,
+                readOnly = true,
+                trailingIcon = {
+                    date?.let {
+                        Icon(
+                            Icons.Default.Clear,
+                            contentDescription = "Clear selected date",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.combinedClickable(
+                                onClick = {
+                                    date = null
+                                }
+                            )
+                        )
+                    }
+                }
             )
-            OutlinedButton(
-                onClick = { dateShown = true },
-                shape = RoundedCornerShape(5.dp),
-            ) {
-                Text(
-                    date.asTaskDueFormat(),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            if (dateShown) {
+
+
+            if (isDatePickerShown) {
                 DatePickerDialog(
                     confirmButton = {
                         TextButton(onClick = {
                             date = datePickerState.selectedDateMillis?.let {
-                                Instant.ofEpochMilli(it)
+                                // Convert to local time
+                                Instant.ofEpochMilli(
+                                    it - (ZonedDateTime.now().offset.totalSeconds * 1000)
+                                )
                             }
-                            Log.println(Log.INFO, "d", date.asTaskDueFormat())
-                            dateShown = false
+                            isDatePickerShown = false
                         }) {
                             Text("OK", color = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { dateShown = false }) {
+                        TextButton(onClick = { isDatePickerShown = false }) {
                             Text("Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
                         }
                     },
-                    onDismissRequest = { dateShown = false },
+                    onDismissRequest = { isDatePickerShown = false },
                 ) {
                     DatePicker(
-                        state = datePickerState,
-                        colors = DatePickerDefaults.colors(
+                        state = datePickerState, colors = DatePickerDefaults.colors(
                             selectedDayContainerColor = MaterialTheme.colorScheme.secondary,
                             todayContentColor = MaterialTheme.colorScheme.secondary,
                             todayDateBorderColor = MaterialTheme.colorScheme.secondary,
@@ -262,6 +289,8 @@ fun NewTaskPage(
                 }
 
             }
+
+
             Text(
                 textAlign = TextAlign.Left,
                 fontSize = 14.sp,
@@ -274,9 +303,13 @@ fun NewTaskPage(
                     letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                 )
             )
+
+
             TimeInput(
                 state = timePickerState,
             )
+
+
             Button(onClick = {
                 taskViewModel.insertTask(
                     Task(
@@ -302,8 +335,7 @@ fun NewTaskPage(
                 controller.navigate("List") {
                     popUpTo(0)
                 }
-            }
-        ) {}
+            }) {}
     }
 }
 

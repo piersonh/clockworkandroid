@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.util
 
+import android.util.Log
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -33,13 +34,14 @@ fun Instant?.asTaskDueFormat(): String {
     val overmorrowStart = todayStart.plus(2, ChronoUnit.DAYS)
     val yesterdayStart = todayStart.minus(1, ChronoUnit.DAYS)
 
-    val zonedDueDate = ZonedDateTime.ofInstant(this, ZoneId.systemDefault())
+
+    val zonedDueDate = this.atZone(ZoneId.systemDefault())//ZonedDateTime.ofInstant(this, ZoneId.systemDefault())
     val formattedDueTime = zonedDueDate.format(TIME_FORMATER)
 
     return when (this) {
-        in yesterdayStart..todayStart -> "Yesterday $formattedDueTime"
-        in todayStart..tomorrowStart -> "Today $formattedDueTime"
-        in tomorrowStart..overmorrowStart -> "Tomorrow $formattedDueTime"
+        in yesterdayStart..<todayStart -> "Yesterday $formattedDueTime"
+        in todayStart..<tomorrowStart -> "Today $formattedDueTime"
+        in tomorrowStart..<overmorrowStart -> "Tomorrow $formattedDueTime"
         else -> {
             zonedDueDate.format(DATE_TIME_FORMATTER)
         }
