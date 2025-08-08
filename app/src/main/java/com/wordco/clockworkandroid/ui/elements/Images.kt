@@ -100,3 +100,12 @@ fun BackImage() = Image(
     modifier = Modifier.aspectRatio(0.7f),
     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onSecondary)
 )
+
+@Composable
+fun PlusImage(modifier: Modifier) = Image(
+    painter = painterResource(id = R.drawable.plus),
+    contentDescription = "Add",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f).then(modifier),
+    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onSecondary)
+)

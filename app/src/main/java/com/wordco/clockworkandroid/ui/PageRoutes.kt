@@ -1,26 +1,21 @@
 package com.wordco.clockworkandroid.ui
 
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+import kotlinx.serialization.Serializable
 
-sealed class PageRoutes (
-    val route : String,
-    val navArguments : List<NamedNavArgument> = emptyList()
-) {
-    object TaskListPage : PageRoutes("List")
+// See
+// https://developer.android.com/guide/navigation/design#compose-arguments
+// https://developer.android.com/guide/navigation/use-graph/navigate#composable
+// https://developer.android.com/develop/ui/compose/navigation <- for view model arg passing
 
-    object TimerPage : PageRoutes(
-        route = "Timer/{taskId}",
-        navArguments = listOf(
-            navArgument("taskId") {
-                type = NavType.LongType
-            }
-        )
-    ) {
-        fun createRoute(taskId: Long) = "Timer/${taskId}"
-    }
+sealed class PageRoutes () {
 
-    object TaskCompletionPage : PageRoutes("TaskCompletionPage")
-    object NewTaskPage : PageRoutes("Add")
+    @Serializable
+    object TaskList
+    @Serializable
+    object NewTask
+    @Serializable
+    data class Timer(val id: Long)
+    @Serializable
+    data class TaskComplete(val id: Long)
 }
+

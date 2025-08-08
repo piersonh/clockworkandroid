@@ -63,6 +63,13 @@ class TaskViewModel(
 //            }
         }
     }
+    fun insertTask(task : Task) {
+        viewModelScope.launch {
+            taskRepository.insertTask(task)
+            //setupTaskList()
+        }
+    }
+
 
     private fun setupTaskList() {
         val comparator = UpcomingTaskListItemComparator()

@@ -16,6 +16,7 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.toRoute
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
@@ -30,7 +31,7 @@ class TimerViewModel (
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val taskId : Long = savedStateHandle.get<Long>("taskId")!!
+    val taskId : Long = savedStateHandle.toRoute<PageRoutes.Timer>().id
 
     val loadedTask = taskRepository.getTask(taskId).asLiveData()
 

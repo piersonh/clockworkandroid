@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,8 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.StartedListItem
+import com.wordco.clockworkandroid.ui.elements.TaskBottomBar
 import com.wordco.clockworkandroid.ui.elements.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.ui.theme.LATO
 
@@ -35,7 +36,8 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 @Composable
 fun ListPage(
     onTaskClick: (Long) -> Unit,
-    taskViewModel: TaskViewModel
+    taskViewModel: TaskViewModel,
+    navController: NavController
 ) {
     val startedTaskList by taskViewModel.startedTaskList.observeAsState()
     val upcomingTaskList by taskViewModel.upcomingTaskList.observeAsState()
@@ -55,11 +57,9 @@ fun ListPage(
 
             )
         },
-        floatingActionButtonPosition = FabPosition.End,
-//        floatingActionButton = {
-//            FloatingNavButton("Add", controller, "Add")
-//
-//        },
+        bottomBar = {
+            TaskBottomBar(navController)
+        },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Box(

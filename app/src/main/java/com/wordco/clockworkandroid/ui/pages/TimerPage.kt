@@ -26,6 +26,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.wordco.clockworkandroid.ui.TimerState
 import com.wordco.clockworkandroid.ui.TimerViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
@@ -37,7 +38,8 @@ import com.wordco.clockworkandroid.ui.theme.LATO
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerPage(
-    timerViewModel: TimerViewModel,
+    // See https://developer.android.com/topic/libraries/architecture/viewmodel/viewmodel-factories#jetpack-compose
+    timerViewModel: TimerViewModel = viewModel(factory = TimerViewModel.Factory),
     onBackClick: () -> Unit,
 ) {
     val task by timerViewModel.loadedTask.observeAsState()
