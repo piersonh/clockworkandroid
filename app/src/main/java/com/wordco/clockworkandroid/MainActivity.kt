@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
 
                     composable<PageRoutes.NewTask> {
                         NewTaskPage(
-                            controller = navController,
+                            onBackClick = { navController.navigateUp() },
                             taskViewModel
                         )
                     }

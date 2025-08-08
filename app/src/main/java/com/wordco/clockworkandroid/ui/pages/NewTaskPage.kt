@@ -62,7 +62,7 @@ import java.time.ZonedDateTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewTaskPage(
-    controller: NavHostController = rememberNavController(),
+    onBackClick: () -> Unit,
     taskViewModel: TaskViewModel
 ) {
     rememberCoroutineScope()
@@ -78,17 +78,19 @@ fun NewTaskPage(
         initialMinute = 0,
         is24Hour = true,
     )
-    val brush = Brush.horizontalGradient(
-        listOf(
-            Color.hsv(0f, 1f, 1f),
-            Color.hsv(60f, 1f, 1f),
-            Color.hsv(120f, 1f, 1f),
-            Color.hsv(180f, 1f, 1f),
-            Color.hsv(240f, 1f, 1f),
-            Color.hsv(300f, 1f, 1f),
-            Color.hsv(360f, 1f, 1f)
+    val brush = remember {
+        Brush.horizontalGradient(
+            listOf(
+                Color.hsv(0f, 1f, 1f),
+                Color.hsv(60f, 1f, 1f),
+                Color.hsv(120f, 1f, 1f),
+                Color.hsv(180f, 1f, 1f),
+                Color.hsv(240f, 1f, 1f),
+                Color.hsv(300f, 1f, 1f),
+                Color.hsv(360f, 1f, 1f)
+            )
         )
-    )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary, topBar = {
@@ -98,7 +100,7 @@ fun NewTaskPage(
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ), title = {
                     Row(modifier = Modifier.padding(end = 10.dp)) {
-                        IconButton(onClick = { controller.navigateUp() }) {
+                        IconButton(onClick = onBackClick) {
                             BackImage()
                         }
                     }
@@ -310,7 +312,7 @@ fun NewTaskPage(
                     )
                 )
 
-                controller.navigateUp()
+                onBackClick()
 
             }) {
                 Text("Add")
