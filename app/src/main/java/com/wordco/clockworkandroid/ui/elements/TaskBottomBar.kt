@@ -37,7 +37,7 @@ fun TaskBottomBar(
         {
             CalImage()
             OutlinedButton(
-                onClick = { navController.navigate(PageRoutes.NewTaskPage.route) },
+                onClick = { navController.navigate(PageRoutes.NewTask) },
                 modifier = Modifier
                     .aspectRatio(1f)
                     .fillMaxSize(),

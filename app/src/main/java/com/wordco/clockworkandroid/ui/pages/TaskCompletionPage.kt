@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.util.asHHMM
 
@@ -129,7 +130,7 @@ fun TaskCompletionPage(
             }
 
             Button(
-                onClick = { navController.navigate("List") },
+                onClick = { navController.navigate(PageRoutes.TaskList) },
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
                 modifier = Modifier.fillMaxWidth(0.7f),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(

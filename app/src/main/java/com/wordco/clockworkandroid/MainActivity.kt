@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost (
                     navController = navController,
-                    startDestination = PageRoutes.TaskListPage.route,
+                    startDestination = PageRoutes.TaskList,
                     enterTransition = {
                         slideInHorizontally(
                             initialOffsetX = { it }, animationSpec = tween(300)
@@ -62,46 +62,38 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                 ) {
-                    composable(PageRoutes.TaskListPage.route) {
+                    composable<PageRoutes.TaskList> {
                         ListPage (
                             onTaskClick = {
                                 taskId ->
                                 navController.navigate(
-                                    PageRoutes.TimerPage.createRoute(
-                                        taskId = taskId
-                                    )
+                                    route = PageRoutes.Timer(taskId)
                                 )
                             },
                             taskViewModel,
                             navController
                         )
                     }
-                    composable(
-                        PageRoutes.NewTaskPage.route,
-                    ) {
+
+
+                    composable<PageRoutes.NewTask> {
                         NewTaskPage(
                             controller = navController,
                             taskViewModel
                         )
                     }
-                    composable(
-                        route = PageRoutes.TimerPage.route,
-                        arguments = PageRoutes.TimerPage.navArguments
-                    ) {
-                        navBackStackEntry ->
-                        val timerViewModel: TimerViewModel = viewModel(
-                            navBackStackEntry,
-                            factory = TimerViewModel.Factory
-                        )
+
+
+                    composable<PageRoutes.Timer> {
                         TimerPage(
-                            timerViewModel,
                             onBackClick = {
                                 navController.navigateUp()
                             }
                         )
                     }
-                    // FIXME: Use new page routes
-                    composable(PageRoutes.TaskCompletionPage.route + "/{taskId}") {
+
+
+                    composable<PageRoutes.TaskComplete> {
                         TaskCompletionPage(navController, taskViewModel)
                     }
                 }
