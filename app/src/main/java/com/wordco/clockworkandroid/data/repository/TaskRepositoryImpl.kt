@@ -5,6 +5,7 @@ import com.wordco.clockworkandroid.data.mapper.toMarkerEntity
 import com.wordco.clockworkandroid.data.mapper.toSegmentEntity
 import com.wordco.clockworkandroid.data.mapper.toTask
 import com.wordco.clockworkandroid.data.mapper.toTaskEntity
+import com.wordco.clockworkandroid.domain.model.Segment
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
@@ -30,5 +31,9 @@ class TaskRepositoryImpl (
             .map { taskList ->
                 taskList.map { it.toTask() }
             }
+    }
+
+    override suspend fun insertSegment(segment: Segment) {
+        return taskDao.insertSegment(segment.toSegmentEntity())
     }
 }

@@ -42,6 +42,7 @@ class TaskViewModel(
 
     init {
         viewModelScope.launch {
+            // TODO: Why is this in the view model scope?
             tasks = taskRepository.getTasks().asLiveData()
             setupTaskList()
 

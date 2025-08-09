@@ -5,9 +5,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wordco.clockworkandroid.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.data.local.entities.TaskEntity
+import com.wordco.clockworkandroid.data.mapper.toTaskEntity
+import com.wordco.clockworkandroid.data.repository.TaskRepositoryImpl
+import com.wordco.clockworkandroid.util.DummyData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Database(
     entities = [
@@ -15,7 +23,7 @@ import com.wordco.clockworkandroid.data.local.entities.TaskEntity
         SegmentEntity::class,
         MarkerEntity::class
                ],
-    version = 2)
+    version = 7)
 @TypeConverters(
     TimestampConverter::class,
     DurationConverter::class,
@@ -34,8 +42,21 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context, AppDatabase::class.java, "clockwork_db"
                 )
-                    // .fallbackToDestructiveMigration() // Only for development - clears database on schema change
+                    .fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
                     // .addMigrations(MIGRATION_1_2) // Add your migration strategies here
+                    .addCallback(object: Callback() {
+                        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+                            super.onDestructiveMigration(db)
+                            val taskDao = getDatabase(context).taskDao()
+                            val taskRepo = TaskRepositoryImpl(taskDao)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                DummyData.TASKS.forEach {
+                                    task ->
+                                    taskRepo.insertTask(task)
+                                }
+                            }
+                        }
+                    })
                     .build()
                 INSTANCE = instance
                 return instance

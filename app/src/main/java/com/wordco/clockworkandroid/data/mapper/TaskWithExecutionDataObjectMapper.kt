@@ -7,10 +7,7 @@ import java.time.Duration
 
 fun TaskWithExecutionDataObject.toTask() : Task {
     val segments = segments.map { segmentEntity -> segmentEntity.toSegment() }
-    val workTime = segments.filter { it.type == SegmentType.WORK }
-        .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration) }
-    val breakTime = segments.filter { it.type == SegmentType.BREAK }
-        .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration) }
+
     return Task(
         taskId = taskEntity.taskId,
         name = taskEntity.name,
@@ -20,7 +17,5 @@ fun TaskWithExecutionDataObject.toTask() : Task {
         status = taskEntity.status,
         segments = segments,
         markers = markers.map { markerEntity -> markerEntity.toMarker() },
-        workTime = workTime,
-        breakTime = breakTime
     )
 }

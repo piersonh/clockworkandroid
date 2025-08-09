@@ -14,8 +14,16 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
 
+    // TODO: UPSERT??
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(taskEntity: TaskEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTasks(tasks: List<TaskEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSegment(segment: SegmentEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSegments(segments: List<SegmentEntity>)

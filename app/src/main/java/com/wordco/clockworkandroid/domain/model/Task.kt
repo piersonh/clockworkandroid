@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import java.time.Duration
 import java.time.Instant
 
-data class Task(
+data class Task (
     val taskId: Long,
     val name: String,
     val dueDate: Instant?,
@@ -13,8 +13,9 @@ data class Task(
     val status: ExecutionStatus,
     val segments: List<Segment>,
     val markers: List<Marker>,
-    val workTime: Duration,
-    val breakTime: Duration
 ) {
-
+    val workTime: Duration = segments.filter { it.type == SegmentType.WORK && it.duration != null}
+        .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
+    val breakTime: Duration = segments.filter { it.type == SegmentType.BREAK && it.duration != null}
+        .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
 }
