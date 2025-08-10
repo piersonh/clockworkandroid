@@ -1,30 +1,22 @@
 package com.wordco.clockworkandroid.ui
 
 import android.util.Log
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.navigation.toRoute
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.domain.model.Segment
 import com.wordco.clockworkandroid.domain.model.SegmentType
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -32,12 +24,13 @@ import java.time.Duration
 import java.time.Instant
 
 class TimerViewModel (
+    private val taskId: Long,
     private val timer: Timer,
     private val taskRepository: TaskRepository,
-    private val savedStateHandle: SavedStateHandle
+    //private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val taskId : Long = savedStateHandle.toRoute<PageRoutes.Timer>().id
+    //val taskId : Long = savedStateHandle.toRoute<PageRoutes.Timer>().id
 
     private val _loadedTask = taskRepository.getTask(taskId)
     private lateinit var _ooga: Task
@@ -134,15 +127,22 @@ class TimerViewModel (
 
 
     companion object {
+
+        val TASK_ID_KEY = object : CreationExtras.Key<Long> {}
+
         val Factory: ViewModelProvider.Factory = viewModelFactory {
+
             initializer {
-                val savedStateHandle = createSavedStateHandle()
+                //val savedStateHandle = createSavedStateHandle()
                 val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
                 val timer = (this[APPLICATION_KEY] as MainApplication).timer
+                val taskId = this[TASK_ID_KEY] as Long
+
                 TimerViewModel (
+                    taskId = taskId,
                     timer = timer,
                     taskRepository = taskRepository,
-                    savedStateHandle = savedStateHandle
+                    //savedStateHandle = savedStateHandle
                 )
             }
         }

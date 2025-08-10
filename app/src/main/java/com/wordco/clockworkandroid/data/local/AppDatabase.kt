@@ -5,12 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wordco.clockworkandroid.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.data.local.entities.TaskEntity
-import com.wordco.clockworkandroid.data.mapper.toTaskEntity
 import com.wordco.clockworkandroid.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.util.DummyData
 import kotlinx.coroutines.CoroutineScope

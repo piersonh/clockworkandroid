@@ -47,15 +47,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.DateTimePickerDialog
 import com.wordco.clockworkandroid.util.asTaskDueFormat
-import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
 

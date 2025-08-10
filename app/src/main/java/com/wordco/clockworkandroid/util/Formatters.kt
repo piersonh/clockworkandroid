@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.util
 
-import android.util.Log
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate

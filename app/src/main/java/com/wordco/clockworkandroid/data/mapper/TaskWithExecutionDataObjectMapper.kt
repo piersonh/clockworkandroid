@@ -1,9 +1,7 @@
 package com.wordco.clockworkandroid.data.mapper
 
 import com.wordco.clockworkandroid.data.local.entities.TaskWithExecutionDataObject
-import com.wordco.clockworkandroid.domain.model.SegmentType
 import com.wordco.clockworkandroid.domain.model.Task
-import java.time.Duration
 
 fun TaskWithExecutionDataObject.toTask() : Task {
     val segments = segments.map { segmentEntity -> segmentEntity.toSegment() }

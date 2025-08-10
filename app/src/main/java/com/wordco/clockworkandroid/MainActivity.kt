@@ -11,18 +11,17 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskViewModel
-import com.wordco.clockworkandroid.ui.TimerViewModel
+import com.wordco.clockworkandroid.ui.navigateToTimer
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
-import com.wordco.clockworkandroid.ui.pages.TimerPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.ui.timerPage
 
 class MainActivity : ComponentActivity() {
 
@@ -66,9 +65,7 @@ class MainActivity : ComponentActivity() {
                         ListPage (
                             onTaskClick = {
                                 taskId ->
-                                navController.navigate(
-                                    route = PageRoutes.Timer(taskId)
-                                )
+                                navController.navigateToTimer(taskId)
                             },
                             taskViewModel,
                             navController
@@ -84,14 +81,9 @@ class MainActivity : ComponentActivity() {
                     }
 
 
-                    composable<PageRoutes.Timer> {
-                        TimerPage(
-                            onBackClick = {
-                                navController.navigateUp()
-                            }
-                        )
-                    }
-
+                    timerPage(
+                        onBackClick = navController::navigateUp,
+                    )
 
                     composable<PageRoutes.TaskComplete> {
                         TaskCompletionPage(navController, taskViewModel)
