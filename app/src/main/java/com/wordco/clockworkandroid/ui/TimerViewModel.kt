@@ -1,12 +1,9 @@
 package com.wordco.clockworkandroid.ui
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
@@ -17,11 +14,23 @@ import com.wordco.clockworkandroid.domain.model.SegmentType
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
+
+// maybe represent as sealed interface loading & execution states?
+data class TimerUiState (
+    val isLoading: Boolean = true,
+    val loadedTask: Task? = null,
+    val executionState: TimerState = TimerState.WAITING,
+    val timerSeconds: Int = 0,
+)
 
 class TimerViewModel (
     private val taskId: Long,
@@ -30,42 +39,47 @@ class TimerViewModel (
     //private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    //val taskId : Long = savedStateHandle.toRoute<PageRoutes.Timer>().id
+    private val _state = MutableStateFlow(TimerUiState())
+
+    val state: StateFlow<TimerUiState>
+        get() = _state
 
     private val _loadedTask = taskRepository.getTask(taskId)
-    private lateinit var _ooga: Task
-    val loadedTask = _loadedTask.asLiveData(viewModelScope.coroutineContext)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
-    var isRunning = timer.isRunning.asLiveData()
+    private val _executionState = MutableStateFlow(TimerState.WAITING)
 
-    var secondsElapsed = timer.secondsElapsed.asLiveData()
-
-    private val _state = MutableLiveData(TimerState.WAITING)
-    val state : LiveData<TimerState>
-        get() = _state
+    private val _timerSeconds = timer.secondsElapsed
 
     init {
         viewModelScope.launch {
-            Log.println(Log.INFO, "TimerINIT", "${loadedTask.isInitialized} ${loadedTask.value}")
-            Log.println(Log.INFO, "TimerINITTest", "${_loadedTask.stateIn(this).value}")
 
-            _loadedTask.first().let {
-                task ->
-                timer.setTimer(
-                    task.workTime.toMillis().toInt()
+            combine(
+                _loadedTask,
+                _executionState,
+                _timerSeconds
+            ) {
+                task,
+                executionState,
+                timerSeconds,
+                ->
+
+                TimerUiState(
+                    isLoading = false,
+                    loadedTask = task,
+                    executionState = executionState,
+                    timerSeconds = timerSeconds,
                 )
-
-                _ooga = task
+            }.collect {
+                _state.value = it
             }
-
-
         }
 
     }
 
     fun startTimer() {
         timer.startTimer()
-        _state.value = TimerState.RUNNING
+        _executionState.update { TimerState.RUNNING }
 
         viewModelScope.launch {
             taskRepository.insertSegment(
@@ -82,37 +96,53 @@ class TimerViewModel (
 
     fun takeBreak() {
         timer.stopTimer()
-        _state.value = TimerState.BREAK
+        _executionState.update { TimerState.BREAK }
 
         viewModelScope.launch {
-            Log.println(Log.INFO, "TimerINIT", "${loadedTask.isInitialized} ${loadedTask.value}")
+            // TODO: Test this when .value is null
+            _loadedTask.value?.run {
+                segments.last().run {
+                    val duration = Duration.between(startTime, Instant.now())
+                    taskRepository.insertSegment(copy(duration=duration))
+                }
+            }.also {
+                taskRepository.insertSegment(
+                    Segment(
+                        segmentId = 0,
+                        taskId = taskId,
+                        startTime = Instant.now(),
+                        duration = null,
+                        type = SegmentType.BREAK
+                    )
+                )
+            } ?: {
+                Log.println(Log.ERROR, "TimerSaveProgress",
+                    "Failed to save progress for taskId=${taskId} because failed to load."
+                )
 
-            loadedTask.value!!.segments.last().run {
-                val duration = Duration.between(startTime, Instant.now())
-                taskRepository.insertSegment(copy(duration=duration))
             }
 
-            taskRepository.insertSegment(
-                Segment(
-                    segmentId = 0,
-                    taskId = taskId,
-                    startTime = Instant.now(),
-                    duration = null,
-                    type = SegmentType.BREAK
-                )
-            )
+            null // this is here because println returns and int
         }
     }
 
     fun suspendTimer() {
         timer.stopTimer()
-        _state.value = TimerState.SUSPENDED
+        _executionState.update { TimerState.SUSPENDED }
 
         viewModelScope.launch {
-            loadedTask.value!!.segments.last().run {
-                val duration = Duration.between(startTime, Instant.now())
-                taskRepository.insertSegment(copy(duration=duration))
+            _loadedTask.value?.run {
+                segments.last().run {
+                    val duration = Duration.between(startTime, Instant.now())
+                    taskRepository.insertSegment(copy(duration=duration))
+                }
+            } ?: {
+                Log.println(Log.ERROR, "TimerSaveProgress",
+                    "Failed to save progress for taskId=${taskId} because failed to load."
+                )
             }
+
+            null
         }
     }
 

@@ -19,13 +19,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.ui.TimerState
 import com.wordco.clockworkandroid.ui.TimerViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
@@ -41,9 +41,7 @@ fun TimerPage(
     timerViewModel: TimerViewModel,// = viewModel(factory = TimerViewModel.Factory),
     onBackClick: () -> Unit,
 ) {
-    val task by timerViewModel.loadedTask.observeAsState()
-    val secondsElapsed by timerViewModel.secondsElapsed.observeAsState()
-    val timerState by timerViewModel.state.observeAsState()
+    val uiState by timerViewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -60,7 +58,7 @@ fun TimerPage(
                         }
 
                         Spacer(Modifier.weight(1f))
-                        if (timerState == TimerState.WAITING) {
+                        if (uiState.executionState == TimerState.WAITING) {
                             Text(
                                 modifier = Modifier.align(alignment = Alignment.CenterVertically),
                                 text = "Edit",
@@ -84,7 +82,7 @@ fun TimerPage(
         ) {
 
 
-            task?.let {
+            uiState.loadedTask?.let {
                 // FIXME: make it not this way
                 Column(
                     verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -95,7 +93,7 @@ fun TimerPage(
                 ) {
                     Text(
                         // FIXME
-                        text = task!!.name,
+                        text = it.name,
                         style = TextStyle(fontSize = 48.sp),
                         modifier = Modifier,
                         fontFamily = LATO,
@@ -104,8 +102,8 @@ fun TimerPage(
                     )
 
                     TimeDisplay(
-                        timerState = timerState,
-                        secondsElapsed = secondsElapsed
+                        timerState = uiState.executionState,
+                        secondsElapsed = uiState.timerSeconds // TODO: THIS HAS NOT BEEN CHANGED YET
                     )
 
 
@@ -115,7 +113,7 @@ fun TimerPage(
                             .aspectRatio(2f)
                             .padding(10.dp)
                             .defaultMinSize(minHeight = 200.dp),
-                        timerState,
+                        uiState.executionState,
                         onStartClick = { timerViewModel.startTimer() },
                         onBreakClick = { timerViewModel.takeBreak() },
                         onSuspendClick = { timerViewModel.suspendTimer() },
