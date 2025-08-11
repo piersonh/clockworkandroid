@@ -82,7 +82,8 @@ fun TimerPage(
         ) {
 
 
-            uiState.loadedTask?.let {
+            uiState.taskName?.let {
+                taskName ->
                 // FIXME: make it not this way
                 Column(
                     verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -93,7 +94,7 @@ fun TimerPage(
                 ) {
                     Text(
                         // FIXME
-                        text = it.name,
+                        text = taskName,
                         style = TextStyle(fontSize = 48.sp),
                         modifier = Modifier,
                         fontFamily = LATO,
@@ -117,7 +118,7 @@ fun TimerPage(
                         onStartClick = { timerViewModel.startTimer() },
                         onBreakClick = { timerViewModel.takeBreak() },
                         onSuspendClick = { timerViewModel.suspendTimer() },
-                        onResumeClick = { timerViewModel.startTimer() },
+                        onResumeClick = { timerViewModel.resumeTimer() },
                         onMarkClick = { timerViewModel.addMark() },
                         onFinishClick = { timerViewModel.finish() },
                     )

@@ -43,14 +43,33 @@ abstract class AppDatabase : RoomDatabase() {
                     .fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
                     // .addMigrations(MIGRATION_1_2) // Add your migration strategies here
                     .addCallback(object: Callback() {
+
+
                         override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
                             super.onDestructiveMigration(db)
+
                             val taskDao = getDatabase(context).taskDao()
                             val taskRepo = TaskRepositoryImpl(taskDao)
                             CoroutineScope(Dispatchers.IO).launch {
                                 DummyData.TASKS.forEach {
                                     task ->
                                     taskRepo.insertTask(task)
+                                }
+                            }
+                        }
+
+                        override fun onOpen(db: SupportSQLiteDatabase) {
+                            super.onOpen(db)
+
+                            val resetOnStart = false
+                            val taskDao = getDatabase(context).taskDao()
+                            val taskRepo = TaskRepositoryImpl(taskDao)
+                            if (resetOnStart) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    DummyData.TASKS.forEach {
+                                            task ->
+                                        taskRepo.insertTask(task)
+                                    }
                                 }
                             }
                         }

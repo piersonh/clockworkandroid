@@ -17,6 +17,13 @@ object DummyData {
                 startTime = Instant.parse("2025-04-17T18:31:04Z"),
                 duration = Duration.ofSeconds(12345),
                 type = SegmentType.WORK
+            ),
+            Segment(
+                segmentId = 0,
+                taskId = 1,
+                startTime = Instant.parse("2025-04-17T18:31:04Z").plusSeconds(12345),
+                duration = null,
+                type = SegmentType.SUSPEND
             )), emptyList()),
         Task(2,"Project Plan", Instant.parse("2025-04-17T18:29:04Z"), 2, Color.Blue, ExecutionStatus.NOT_STARTED, emptyList(), emptyList()),
         Task(3,"Homework 99", Instant.parse("2025-04-17T18:29:04Z"), 3, Color.White, ExecutionStatus.NOT_STARTED, emptyList(), emptyList()),

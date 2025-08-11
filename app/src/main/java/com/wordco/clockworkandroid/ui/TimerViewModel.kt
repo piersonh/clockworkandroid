@@ -9,17 +9,17 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Segment
 import com.wordco.clockworkandroid.domain.model.SegmentType
-import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -27,7 +27,7 @@ import java.time.Instant
 // maybe represent as sealed interface loading & execution states?
 data class TimerUiState (
     val isLoading: Boolean = true,
-    val loadedTask: Task? = null,
+    val taskName: String? = null,
     val executionState: TimerState = TimerState.WAITING,
     val timerSeconds: Int = 0,
 )
@@ -44,10 +44,10 @@ class TimerViewModel (
     val state: StateFlow<TimerUiState>
         get() = _state
 
-    private val _loadedTask = taskRepository.getTask(taskId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
-
-    private val _executionState = MutableStateFlow(TimerState.WAITING)
+    private val _loadedTask = taskRepository.getTask(taskId).onEach {
+        task ->
+        timer.setTimer(task.workTime.seconds.toInt())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     private val _timerSeconds = timer.secondsElapsed
 
@@ -56,18 +56,17 @@ class TimerViewModel (
 
             combine(
                 _loadedTask,
-                _executionState,
                 _timerSeconds
             ) {
                 task,
-                executionState,
                 timerSeconds,
                 ->
 
+
                 TimerUiState(
                     isLoading = false,
-                    loadedTask = task,
-                    executionState = executionState,
+                    taskName = task?.name,
+                    executionState = task?.run {status.toTimerState()} ?: TimerState.WAITING,
                     timerSeconds = timerSeconds,
                 )
             }.collect {
@@ -79,28 +78,40 @@ class TimerViewModel (
 
     fun startTimer() {
         timer.startTimer()
-        _executionState.update { TimerState.RUNNING }
 
         viewModelScope.launch {
-            taskRepository.insertSegment(
-                Segment(
-                    segmentId = 0,
-                    taskId = taskId,
-                    startTime = Instant.now(),
-                    duration = null,
-                    type = SegmentType.WORK
+            // TODO: Test this when .value is null
+            _loadedTask.value?.run {
+                taskRepository.insertTask(this.copy(status = ExecutionStatus.RUNNING))
+            }.also {
+                taskRepository.insertSegment(
+                    Segment(
+                        segmentId = 0,
+                        taskId = taskId,
+                        startTime = Instant.now(),
+                        duration = null,
+                        type = SegmentType.WORK
+                    )
                 )
-            )
+            } ?: {
+                Log.println(Log.ERROR, "TimerSaveProgress",
+                    "Failed to save progress for taskId=${taskId} because failed to load."
+                )
+
+            }
+
+            null // this is here because println returns and int
         }
     }
 
     fun takeBreak() {
         timer.stopTimer()
-        _executionState.update { TimerState.BREAK }
 
         viewModelScope.launch {
             // TODO: Test this when .value is null
             _loadedTask.value?.run {
+                taskRepository.insertTask(this.copy(status = ExecutionStatus.PAUSED))
+
                 segments.last().run {
                     val duration = Duration.between(startTime, Instant.now())
                     taskRepository.insertSegment(copy(duration=duration))
@@ -128,14 +139,25 @@ class TimerViewModel (
 
     fun suspendTimer() {
         timer.stopTimer()
-        _executionState.update { TimerState.SUSPENDED }
 
         viewModelScope.launch {
             _loadedTask.value?.run {
+                taskRepository.insertTask(this.copy(status = ExecutionStatus.SUSPENDED))
+
                 segments.last().run {
                     val duration = Duration.between(startTime, Instant.now())
                     taskRepository.insertSegment(copy(duration=duration))
                 }
+            }.also {
+                taskRepository.insertSegment(
+                    Segment(
+                        segmentId = 0,
+                        taskId = taskId,
+                        startTime = Instant.now(),
+                        duration = null,
+                        type = SegmentType.SUSPEND
+                    )
+                )
             } ?: {
                 Log.println(Log.ERROR, "TimerSaveProgress",
                     "Failed to save progress for taskId=${taskId} because failed to load."
@@ -143,6 +165,39 @@ class TimerViewModel (
             }
 
             null
+        }
+    }
+
+    fun resumeTimer() {
+        timer.startTimer()
+
+        viewModelScope.launch {
+            // TODO: Test this when .value is null
+            _loadedTask.value?.run {
+                taskRepository.insertTask(this.copy(status = ExecutionStatus.RUNNING))
+
+                segments.last().run {
+                    val duration = Duration.between(startTime, Instant.now())
+                    taskRepository.insertSegment(copy(duration=duration))
+                }
+            }.also {
+                taskRepository.insertSegment(
+                    Segment(
+                        segmentId = 0,
+                        taskId = taskId,
+                        startTime = Instant.now(),
+                        duration = null,
+                        type = SegmentType.WORK
+                    )
+                )
+            } ?: {
+                Log.println(Log.ERROR, "TimerSaveProgress",
+                    "Failed to save progress for taskId=${taskId} because failed to load."
+                )
+
+            }
+
+            null // this is here because println returns and int
         }
     }
 
