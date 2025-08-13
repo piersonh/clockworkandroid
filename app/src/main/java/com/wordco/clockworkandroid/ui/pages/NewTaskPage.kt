@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +27,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberDatePickerState
@@ -34,6 +34,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,6 +53,7 @@ import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.DateTimePickerDialog
+import com.wordco.clockworkandroid.ui.elements.InfiniteCircularList
 import com.wordco.clockworkandroid.util.asTaskDueFormat
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -71,11 +73,8 @@ fun NewTaskPage(
     var dueDateTime: Instant? by remember { mutableStateOf(null) } // not scheduled by default
     val dueDatePickerState = rememberDatePickerState()
     val dueTimePickerState = rememberTimePickerState()
-    val estTimePickerState = rememberTimePickerState(
-        initialHour = 0,
-        initialMinute = 0,
-        is24Hour = true,
-    )
+    var hour by remember { mutableIntStateOf(0) }
+    var minute by remember { mutableIntStateOf(0) }
     val brush = remember {
         Brush.horizontalGradient(
             listOf(
@@ -289,14 +288,52 @@ fun NewTaskPage(
                     letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                 )
             )
+            Row(horizontalArrangement =
+                Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                InfiniteCircularList(
+                    width = 40.dp,
+                    itemHeight = 60.dp,
+                    items = (0..24).toList(),
+                    initialItem = hour,
+                    textStyle = TextStyle(fontSize = 23.sp),
+                    textColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    onItemSelected = { i, item ->
+                        hour = item
+                    }
+                )
+                Text(
+                    textAlign = TextAlign.Left,
+                    fontSize = 23.sp,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                    text = ":",
+                    style = TextStyle(
+                        letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                    )
+                )
+                InfiniteCircularList(
+                    width = 40.dp,
+                    itemHeight = 70.dp,
+                    items = (0..59).toList(),
+                    initialItem = minute,
+                    textStyle = TextStyle(fontSize = 23.sp),
+                    textColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                    onItemSelected = { i, item ->
+                        minute = item
+                    }
+                )
+            }
 
-
-            TimeInput(
-                state = estTimePickerState,
-            )
-
-
-            Button(onClick = {
+            Button(colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            ),
+                onClick = {
                 taskViewModel.insertTask(
                     Task(
                         taskId = 0,
@@ -313,7 +350,8 @@ fun NewTaskPage(
                 onBackClick()
 
             }) {
-                Text("Add")
+                Text("Add",
+                    color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }

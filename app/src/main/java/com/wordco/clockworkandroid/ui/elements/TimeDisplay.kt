@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,8 @@ fun TimeDisplay(
     // TIME DISPLAY
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
+        verticalArrangement = Arrangement.Bottom,
+        modifier = Modifier.padding(10.dp)
     ) {
         Box(
             Modifier
@@ -52,12 +54,8 @@ fun TimeDisplay(
                     text = statusText,
                     style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center),
                     fontFamily = LATO,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            } else {
-                Text(
-                    text = "",
-                    style = TextStyle(fontSize = 30.sp, textAlign = TextAlign.Center)
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -70,7 +68,8 @@ fun TimeDisplay(
                 ),
                 style = TextStyle(fontSize = 120.sp, textAlign = TextAlign.Center),
                 fontFamily = ROBOTO,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

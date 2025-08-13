@@ -65,7 +65,9 @@ fun ListPage(
         Box(
             modifier = Modifier
                 .padding(
-                    PaddingValues(top = innerPadding.calculateTopPadding())
+                    PaddingValues(top = innerPadding.calculateTopPadding(),
+                        bottom = innerPadding.calculateBottomPadding()
+                    )
                 )
                 .background(color = MaterialTheme.colorScheme.primary)
         )
