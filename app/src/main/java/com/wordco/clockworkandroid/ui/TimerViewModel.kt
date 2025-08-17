@@ -125,7 +125,7 @@ class TimerViewModel (
     }
 
     fun suspendTimer() {
-        timer.suspend()
+        timer.suspend(timer.Close())
     }
 
     fun resumeTimer() {

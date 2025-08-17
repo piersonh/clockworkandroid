@@ -22,10 +22,12 @@ import java.time.Instant
 sealed interface TimerState {
     sealed interface Empty : TimerState
 
-    data object Idle : Empty
+    data object Dormant : Empty
 
     // TODO: use this to show when the timer is preparing to start a task
     data object Preparing : Empty
+
+    data object Closing : Empty
 
     sealed interface HasTask : TimerState {
         val task: Task
@@ -50,12 +52,12 @@ class Timer(
 ) {
 
     private enum class State {
-        IDLE, RETRIEVING, READY, RUNNING, PAUSED
+        DORMANT, PREPARING, READY, RUNNING, PAUSED, CLOSING
     }
 
-    private val _internalState = MutableStateFlow(State.IDLE)
+    private val _internalState = MutableStateFlow(State.DORMANT)
 
-    private val _timerState = MutableStateFlow<TimerState>(TimerState.Idle)
+    private val _timerState = MutableStateFlow<TimerState>(TimerState.Dormant)
 
     private var _loadedTask: StateFlow<Task?> = MutableStateFlow<Task?>(null)
 
@@ -84,8 +86,9 @@ class Timer(
                 taskState, loadedTask, elapsedTime ->
 
                 when (taskState) {
-                    State.IDLE -> TimerState.Idle
-                    State.RETRIEVING, State.READY -> TimerState.Preparing
+                    State.DORMANT -> TimerState.Dormant
+                    State.PREPARING, State.READY -> TimerState.Preparing
+                    State.CLOSING -> TimerState.Closing
                     State.RUNNING -> TimerState.Running(
                         task = loadedTask!!,
                         elapsedSeconds = elapsedTime
@@ -109,42 +112,28 @@ class Timer(
     }
 
 
-    // FIXME: clean up
-    private fun load(flowSupplier: () -> StateFlow<Task?>) {
-        if (_internalState.value != State.IDLE) {
-            suspend()
-        }
-
-        cancelCollection()
-
-        _loadedTask = flowSupplier()
-
-        initCollection()
-    }
-
-
-    // FIXME: clean up
     fun start(taskFlow: StateFlow<Task?>) {
-        coroutineScope.launch {
-            load {
-                _internalState.update { State.RETRIEVING }
-                taskFlow.stateIn(
-                    coroutineScope,
-                    SharingStarted.WhileSubscribed(),
-                    taskFlow.value
-                )
-            }
-            _elapsedSeconds.update {
-                _loadedTask.first { it != null }!!.workTime.seconds.toInt()
-            }
-            _internalState.update { State.READY }
-            resume()
+        val replaceStrategy = ReplaceWith(
+            taskFlow,
+            ::resume
+        )
+
+        when (_internalState.value) {
+            State.DORMANT -> replaceStrategy()
+            State.PREPARING, State.CLOSING, State.READY -> throw IllegalStateException(
+                "timer.start() must not be called in ${_timerState.value}"
+            )
+            State.PAUSED, State.RUNNING -> suspend(
+                replaceStrategy
+            )
         }
     }
 
     fun resume() {
         when (_internalState.value) {
-            State.IDLE, State.RETRIEVING, State.RUNNING -> return
+            State.DORMANT, State.PREPARING, State.RUNNING, State.CLOSING -> throw IllegalStateException(
+                "timer.resume() must not be called in ${_timerState.value}"
+            )
             State.PAUSED -> {
                 // TODO: Stop break time incrementer
             }
@@ -186,7 +175,9 @@ class Timer(
 
     fun pause() {
         when (_internalState.value) {
-            State.IDLE, State.RETRIEVING, State.PAUSED, State.READY -> return
+            State.DORMANT, State.PREPARING, State.PAUSED, State.CLOSING, State.READY -> throw IllegalStateException(
+                "timer.pause() must not be called in ${_timerState.value}"
+            )
             State.RUNNING -> {}
         }
 
@@ -215,9 +206,59 @@ class Timer(
         }
     }
 
-    fun suspend() {
+    sealed interface SuspendAction {
+        operator fun invoke()
+    }
+
+    inner class Close : SuspendAction {
+        override fun invoke() {
+            cancelCollection()
+            _timerState.update { TimerState.Dormant }
+            _internalState.update { State.DORMANT }
+            _loadedTask = MutableStateFlow(null)
+            _elapsedSeconds.update { 0 }
+        }
+    }
+
+    inner class ReplaceWith(
+        val taskFlow: StateFlow<Task?>,
+        val onReady: () -> Unit
+    ) : SuspendAction {
+        override fun invoke() {
+            cancelCollection()
+            _timerState.update { TimerState.Preparing }
+            _internalState.update { State.PREPARING }
+            _loadedTask = taskFlow.stateIn(
+                coroutineScope,
+                SharingStarted.WhileSubscribed(),
+                taskFlow.value
+            )
+
+            initCollection()
+
+            coroutineScope.launch {
+                _elapsedSeconds.update {
+                    _loadedTask.first { it != null }!!.workTime.seconds.toInt()
+                }
+                _internalState.update { State.READY }
+            }.invokeOnCompletion {
+                cause ->
+
+                if (cause == null) {
+                    onReady()
+                } else {
+                    throw cause
+                }
+            }
+        }
+    }
+
+
+    fun suspend(suspendAction: SuspendAction) {
         when (_internalState.value) {
-            State.IDLE, State.RETRIEVING -> return
+            State.DORMANT, State.PREPARING, State.CLOSING, State.READY -> throw IllegalStateException(
+                "timer.suspend() must not be called in ${_timerState.value}"
+            )
             State.RUNNING -> {
                 workTimeIncJob!!.cancel()
                 workTimeIncJob = null
@@ -225,22 +266,16 @@ class Timer(
             State.PAUSED -> {
                 // TODO: Stop break time incrementer
             }
-            State.READY -> {}
         }
 
-        _internalState.update { State.IDLE }
+        _internalState.update { State.CLOSING }
 
         coroutineScope.launch {
             _loadedTask.value!!.run {
                 taskRepository.updateTask(this.copy(status = ExecutionStatus.SUSPENDED))
-
-                // Check if this is a new task before updating the last segment
-                // Catch case of suspend on READY on NEW task
-                this.segments.takeIf { it.isNotEmpty() }?.last()?.run {
-                    taskRepository.updateSegment(
-                        this.copy(duration = Duration.between(startTime, Instant.now()))
-                    )
-                }
+                taskRepository.updateSegment(this.segments.last().run {
+                    this.copy(duration = Duration.between(startTime, Instant.now()))
+                })
 
                 taskRepository.insertSegment(
                     Segment(
@@ -254,7 +289,7 @@ class Timer(
             }
         }
 
-        load { MutableStateFlow(null) }
+        suspendAction()
     }
 
 }
