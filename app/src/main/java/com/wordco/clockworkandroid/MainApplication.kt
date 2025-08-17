@@ -6,6 +6,7 @@ import com.wordco.clockworkandroid.data.local.TaskDao
 import com.wordco.clockworkandroid.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
+import kotlinx.coroutines.Dispatchers
 
 class MainApplication : Application() {
 
@@ -17,7 +18,7 @@ class MainApplication : Application() {
     lateinit var taskDao: TaskDao
     lateinit var taskRepository: TaskRepository
 
-    var timer  = Timer()
+    lateinit var timer: Timer
 
 
     override fun onCreate() {
@@ -28,5 +29,7 @@ class MainApplication : Application() {
 //        }
         taskDao = db.taskDao()
         taskRepository = TaskRepositoryImpl(taskDao)
+
+        timer = Timer(Dispatchers.Default, taskRepository)
     }
 }

@@ -66,6 +66,7 @@ abstract class AppDatabase : RoomDatabase() {
                             val taskRepo = TaskRepositoryImpl(taskDao)
                             if (resetOnStart) {
                                 CoroutineScope(Dispatchers.IO).launch {
+                                    getDatabase(context).clearAllTables()
                                     DummyData.TASKS.forEach {
                                             task ->
                                         taskRepo.insertTask(task)

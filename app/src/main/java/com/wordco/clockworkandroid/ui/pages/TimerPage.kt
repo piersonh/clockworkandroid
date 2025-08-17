@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.ui.TimerState
+import com.wordco.clockworkandroid.ui.TimerUiState
 import com.wordco.clockworkandroid.ui.TimerViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
@@ -41,7 +41,7 @@ fun TimerPage(
     timerViewModel: TimerViewModel,// = viewModel(factory = TimerViewModel.Factory),
     onBackClick: () -> Unit,
 ) {
-    val uiState by timerViewModel.state.collectAsStateWithLifecycle()
+    val uiState by timerViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -58,7 +58,7 @@ fun TimerPage(
                         }
 
                         Spacer(Modifier.weight(1f))
-                        if (uiState.executionState == TimerState.WAITING) {
+                        if (uiState is TimerUiState.Shelved) {
                             Text(
                                 modifier = Modifier.align(alignment = Alignment.CenterVertically),
                                 text = "Edit",
@@ -81,50 +81,48 @@ fun TimerPage(
             contentAlignment = Alignment.TopEnd
         ) {
 
-
-            uiState.taskName?.let {
-                taskName ->
-                // FIXME: make it not this way
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .background(color = MaterialTheme.colorScheme.primaryContainer)
-                        .padding(top = 50.dp)
-                ) {
-                    Text(
-                        // FIXME
-                        text = taskName,
-                        style = TextStyle(fontSize = 48.sp),
-                        modifier = Modifier,
-                        fontFamily = LATO,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    TimeDisplay(
-                        timerState = uiState.executionState,
-                        secondsElapsed = uiState.timerSeconds // TODO: THIS HAS NOT BEEN CHANGED YET
-                    )
-
-
-                    // TIMER CONTROLS
-                    TimerControls(
+            when (uiState) {
+                is TimerUiState.Retrieved -> {
+                    val uiState = uiState as TimerUiState.Retrieved
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .aspectRatio(2f)
-                            .padding(10.dp)
-                            .defaultMinSize(minHeight = 200.dp),
-                        uiState.executionState,
-                        onStartClick = { timerViewModel.startTimer() },
-                        onBreakClick = { timerViewModel.takeBreak() },
-                        onSuspendClick = { timerViewModel.suspendTimer() },
-                        onResumeClick = { timerViewModel.resumeTimer() },
-                        onMarkClick = { timerViewModel.addMark() },
-                        onFinishClick = { timerViewModel.finish() },
-                    )
-                }
-            } ?: Text("Loading task...")
+                            .background(color = MaterialTheme.colorScheme.primaryContainer)
+                            .padding(top = 50.dp)
+                    ) {
+                        Text(
+                            text = uiState.taskName,
+                            style = TextStyle(fontSize = 48.sp),
+                            modifier = Modifier,
+                            fontFamily = LATO,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
 
+                        //Text(text = "${uiState.elapsedSeconds}")
+                        TimeDisplay(uiState)
+
+
+                        // TIMER CONTROLS
+                        TimerControls(
+                            modifier = Modifier
+                                .aspectRatio(2f)
+                                .padding(10.dp)
+                                .defaultMinSize(minHeight = 200.dp),
+                            uiState,
+                            onInitClick = {timerViewModel.initTimer()},
+                            onBreakClick = { timerViewModel.takeBreak() },
+                            onSuspendClick = { timerViewModel.suspendTimer() },
+                            onResumeClick = { timerViewModel.resumeTimer() },
+                            onMarkClick = { timerViewModel.addMark() },
+                            onFinishClick = { timerViewModel.finish() },
+                        )
+                    }
+                }
+
+                TimerUiState.Retrieving -> Text("Loading task...")
+            }
         }
     }
 }

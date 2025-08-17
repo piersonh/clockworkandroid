@@ -20,6 +20,14 @@ class TaskRepositoryImpl (
         taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
     }
 
+    override suspend fun insertNewTask(task: Task) {
+        taskDao.insertTask(task.toTaskEntity())
+    }
+
+    override suspend fun updateTask(task: Task) {
+        taskDao.updateTask(task.toTaskEntity())
+    }
+
     override fun getTask(taskId: Long): Flow<Task> {
         return taskDao.getTaskWithExecutionData(taskId).map {
             it.toTask()
@@ -34,6 +42,10 @@ class TaskRepositoryImpl (
     }
 
     override suspend fun insertSegment(segment: Segment) {
-        return taskDao.insertSegment(segment.toSegmentEntity())
+        taskDao.insertSegment(segment.toSegmentEntity())
+    }
+
+    override suspend fun updateSegment(segment: Segment) {
+        taskDao.updateSegment(segment.toSegmentEntity())
     }
 }

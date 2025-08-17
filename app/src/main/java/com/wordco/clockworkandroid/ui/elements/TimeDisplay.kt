@@ -16,7 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.ui.TimerState
+import com.wordco.clockworkandroid.ui.TimerUiState
 import com.wordco.clockworkandroid.ui.theme.LATO
 import com.wordco.clockworkandroid.ui.theme.ROBOTO
 import java.util.Locale
@@ -24,8 +24,7 @@ import java.util.Locale
 
 @Composable
 fun TimeDisplay(
-    timerState: TimerState?,
-    secondsElapsed: Int?
+    uiState: TimerUiState.Retrieved
 ) {
     // TIME DISPLAY
     Column(
@@ -43,9 +42,9 @@ fun TimeDisplay(
         ) {
 
             // TODO: Revisit this it seems ehh
-            val statusText = when (timerState) {
-                TimerState.BREAK -> "Taking Break"
-                TimerState.SUSPENDED -> "Suspended"
+            val statusText = when (uiState) {
+                is TimerUiState.Paused -> "Taking Break"
+                is TimerUiState.Suspended -> "Suspended"
                 else -> null
             }
 
@@ -61,11 +60,17 @@ fun TimeDisplay(
 
 
             Text(
-                text = String.format(
-                    Locale.getDefault(),
-                    if (secondsElapsed!! % 2 == 1 && timerState == TimerState.RUNNING) "%02d %02d" else "%02d:%02d",
-                    secondsElapsed.toHours(), secondsElapsed.toMinutesInHour()
-                ),
+                text = uiState.elapsedSeconds.let {
+                    secs ->
+                    String.format(
+                        Locale.getDefault(),
+                        when (uiState) {
+                            is TimerUiState.Running if secs % 2 == 1 -> "%02d %02d"
+                            else -> "%02d:%02d"
+                        },
+                        secs.toHours(), secs.toMinutesInHour()
+                    )
+                },
                 style = TextStyle(fontSize = 120.sp, textAlign = TextAlign.Center),
                 fontFamily = ROBOTO,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

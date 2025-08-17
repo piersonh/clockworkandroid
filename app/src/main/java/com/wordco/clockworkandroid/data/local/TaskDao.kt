@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.wordco.clockworkandroid.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.data.local.entities.TaskEntity
@@ -22,11 +23,19 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTasks(tasks: List<TaskEntity>)
 
+
+    @Update
+    suspend fun updateTask(task: TaskEntity)
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSegment(segment: SegmentEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSegments(segments: List<SegmentEntity>)
+
+    @Update
+    suspend fun updateSegment(segment: SegmentEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarkers(markers: List<MarkerEntity>)

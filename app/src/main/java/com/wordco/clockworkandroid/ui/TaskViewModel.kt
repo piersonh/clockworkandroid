@@ -66,7 +66,7 @@ class TaskViewModel(
     }
     fun insertTask(task : Task) {
         viewModelScope.launch {
-            taskRepository.insertTask(task)
+            taskRepository.insertNewTask(task)
             //setupTaskList()
         }
     }
