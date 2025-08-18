@@ -1,6 +1,8 @@
 package com.wordco.clockworkandroid.ui.pages
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,9 +60,12 @@ fun TimerPage(
                         }
 
                         Spacer(Modifier.weight(1f))
-                        if (uiState.executionState == TimerState.WAITING) {
+                        if (uiState.executionState == TimerState.SUSPENDED || uiState.executionState == TimerState.WAITING ) {
                             Text(
-                                modifier = Modifier.align(alignment = Alignment.CenterVertically),
+                                modifier = Modifier.align(alignment = Alignment.CenterVertically)
+                                    .clickable(onClick = {
+                                        Log.println(Log.ASSERT,"E","FUCK")
+                                    }),
                                 text = "Edit",
                                 style = TextStyle(fontSize = 25.sp),
                                 textAlign = TextAlign.Right,

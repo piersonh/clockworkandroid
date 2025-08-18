@@ -118,7 +118,9 @@ fun NewTaskPage(
                     focusedContainerColor = MaterialTheme.colorScheme.primary,
                     unfocusedContainerColor = MaterialTheme.colorScheme.primary,
                     focusedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    cursorColor = MaterialTheme.colorScheme.onPrimary,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.secondary
                 ),
                 value = taskName,
                 singleLine = true,
@@ -310,8 +312,8 @@ fun NewTaskPage(
                     fontSize = 23.sp,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                    text = ":",
+                        .padding(horizontal = 5.dp),
+                    text = "hours",
                     style = TextStyle(
                         letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                     )
@@ -328,10 +330,22 @@ fun NewTaskPage(
                         minute = item
                     }
                 )
+                Text(
+                    textAlign = TextAlign.Left,
+                    fontSize = 23.sp,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .padding(horizontal = 5.dp),
+                    text = "minutes",
+                    style = TextStyle(
+                        letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                    )
+                )
             }
 
             Button(colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary
+                containerColor = MaterialTheme.colorScheme.secondary,
+
             ),
                 onClick = {
                 taskViewModel.insertTask(
@@ -351,7 +365,11 @@ fun NewTaskPage(
 
             }) {
                 Text("Add",
-                    color = MaterialTheme.colorScheme.onPrimary)
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+
+                )
             }
         }
     }
