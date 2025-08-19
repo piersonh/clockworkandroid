@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,6 +33,7 @@ import com.wordco.clockworkandroid.ui.TimerViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.TimeDisplay
 import com.wordco.clockworkandroid.ui.elements.TimerControls
+import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.theme.LATO
 
 
@@ -45,6 +47,32 @@ fun TimerPage(
 ) {
     val uiState by timerViewModel.uiState.collectAsStateWithLifecycle()
 
+    TimerPage(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onEditClick = onEditClick,
+        onInitClick = timerViewModel::initTimer,
+        onBreakClick = timerViewModel::takeBreak,
+        onSuspendClick = timerViewModel::suspendTimer,
+        onResumeClick = timerViewModel::resumeTimer,
+        onMarkClick = timerViewModel::addMark,
+        onFinishClick = timerViewModel::finish,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimerPage(
+    uiState: TimerUiState,
+    onBackClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onInitClick: () -> Unit,
+    onBreakClick: () -> Unit,
+    onSuspendClick: () -> Unit,
+    onResumeClick: () -> Unit,
+    onMarkClick: () -> Unit,
+    onFinishClick: () -> Unit,
+) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
@@ -86,7 +114,6 @@ fun TimerPage(
 
             when (uiState) {
                 is TimerUiState.Retrieved -> {
-                    val uiState = uiState as TimerUiState.Retrieved
                     Column(
                         verticalArrangement = Arrangement.spacedBy(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,12 +141,12 @@ fun TimerPage(
                                 .padding(10.dp)
                                 .defaultMinSize(minHeight = 200.dp),
                             uiState,
-                            onInitClick = timerViewModel::initTimer,
-                            onBreakClick = timerViewModel::takeBreak,
-                            onSuspendClick = timerViewModel::suspendTimer,
-                            onResumeClick = timerViewModel::resumeTimer,
-                            onMarkClick = timerViewModel::addMark,
-                            onFinishClick = timerViewModel::finish,
+                            onInitClick,
+                            onBreakClick,
+                            onSuspendClick,
+                            onResumeClick,
+                            onMarkClick,
+                            onFinishClick,
                         )
                     }
                 }
@@ -130,27 +157,23 @@ fun TimerPage(
     }
 }
 
-
-
-
-/*@Preview(showBackground = true, backgroundColor = 0xcccccccc)
-@Composable
-private fun TimerPagePreview() {
-    val navController = rememberNavController()
-    TimerPage(Timer(Timer.State.INIT), navController)
-}
-
 @Preview
 @Composable
-private fun TimerPagePreview2() {
-    val navController = rememberNavController()
-    TimerPage(Timer(Timer.State.RUNNING), navController)
+private fun SuspendedTimerPagePreview() {
+    ClockworkTheme {
+        TimerPage(
+            uiState = TimerUiState.Suspended(
+                taskName = "Ooga Booga",
+                elapsedSeconds = 1000
+            ),
+            onBackClick = {},
+            onEditClick = {},
+            onInitClick = {},
+            onBreakClick = {},
+            onSuspendClick = {},
+            onResumeClick = {},
+            onMarkClick = {},
+            onFinishClick = {}
+        )
+    }
 }
-
-@Preview
-@Composable
-private fun TimerPagePreview3(){
-    val navController = rememberNavController()
-    TimerPage(Timer(Timer.State.PAUSED), navController)
-}
-*/
