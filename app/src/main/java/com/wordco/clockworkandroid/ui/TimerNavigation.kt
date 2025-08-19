@@ -48,7 +48,8 @@ fun NavGraphBuilder.timerPage(
 
         TimerPage(
             onBackClick = onBackClick,
-            timerViewModel = timerViewModel
+            timerViewModel = timerViewModel,
+            onEditClick = { }
         )
     }
 }

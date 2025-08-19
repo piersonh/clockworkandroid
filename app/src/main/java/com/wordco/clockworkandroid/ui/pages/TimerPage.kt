@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.ui.pages
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +41,7 @@ fun TimerPage(
     // See https://developer.android.com/topic/libraries/architecture/viewmodel/viewmodel-factories#jetpack-compose
     timerViewModel: TimerViewModel,// = viewModel(factory = TimerViewModel.Factory),
     onBackClick: () -> Unit,
+    onEditClick: () -> Unit
 ) {
     val uiState by timerViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -63,9 +63,7 @@ fun TimerPage(
                         if (uiState is TimerUiState.Shelved) {
                             Text(
                                 modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                                    .clickable(onClick = {
-                                        Log.println(Log.ASSERT,"E","FUCK")
-                                    }),
+                                    .clickable(onClick = onEditClick),
                                 text = "Edit",
                                 style = TextStyle(fontSize = 25.sp),
                                 textAlign = TextAlign.Right,
@@ -116,12 +114,12 @@ fun TimerPage(
                                 .padding(10.dp)
                                 .defaultMinSize(minHeight = 200.dp),
                             uiState,
-                            onInitClick = {timerViewModel.initTimer()},
-                            onBreakClick = { timerViewModel.takeBreak() },
-                            onSuspendClick = { timerViewModel.suspendTimer() },
-                            onResumeClick = { timerViewModel.resumeTimer() },
-                            onMarkClick = { timerViewModel.addMark() },
-                            onFinishClick = { timerViewModel.finish() },
+                            onInitClick = timerViewModel::initTimer,
+                            onBreakClick = timerViewModel::takeBreak,
+                            onSuspendClick = timerViewModel::suspendTimer,
+                            onResumeClick = timerViewModel::resumeTimer,
+                            onMarkClick = timerViewModel::addMark,
+                            onFinishClick = timerViewModel::finish,
                         )
                     }
                 }

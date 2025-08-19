@@ -59,7 +59,7 @@ class Timer(
 
     private val _timerState = MutableStateFlow<TimerState>(TimerState.Dormant)
 
-    private var _loadedTask: StateFlow<Task?> = MutableStateFlow<Task?>(null)
+    private var _loadedTask: StateFlow<Task?> = MutableStateFlow(null)
 
     private val _elapsedSeconds = MutableStateFlow(0)
 
