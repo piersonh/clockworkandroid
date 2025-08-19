@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.wordco.clockworkandroid.ui.PageRoutes
+import com.wordco.clockworkandroid.ui.navigateToNewTask
 
 @Composable
 fun TaskBottomBar(
@@ -37,7 +38,7 @@ fun TaskBottomBar(
         {
             CalImage()
             OutlinedButton(
-                onClick = { navController.navigate(PageRoutes.NewTask) },
+                onClick = { navController.navigateToNewTask() },
                 modifier = Modifier
                     .aspectRatio(1f)
                     .fillMaxSize(),

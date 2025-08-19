@@ -6,12 +6,15 @@ package com.wordco.clockworkandroid.ui.elements
 // import androidx.compose.foundation.layout.Row
 // import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -110,5 +113,36 @@ fun <T> InfiniteCircularList(
                 }
             }
         )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun rememberSnappingFlingObserver(
+    lazyListState: LazyListState,
+    onFlingStart: (initialVelocity: Float) -> Unit
+): FlingBehavior {
+    // 1. Get the snapping fling behavior
+    val snappingFlingBehavior = rememberSnapFlingBehavior(lazyListState = lazyListState)
+
+    // 2. Use remember to create and cache our custom FlingBehavior wrapper
+    return remember(snappingFlingBehavior, onFlingStart) {
+        object : FlingBehavior {
+            override suspend fun ScrollScope.performFling(
+                initialVelocity: Float
+            ): Float {
+                // 3. Your custom code goes here!
+                if (kotlin.math.abs(initialVelocity) > 1f) {
+                    onFlingStart(initialVelocity)
+                }
+
+                // 4. Delegate to the snapping fling behavior to perform the animation.
+                // FLINGBEHAVIOR DEFINES PERFORMFLING AS A SCROLLSCOPE EXTENSION
+                // YOU CANNOT SEEM TO BE ABLE TO CALL IT WITH POSTFIX
+                return with(snappingFlingBehavior) {
+                    performFling(initialVelocity)
+                }
+            }
+        }
     }
 }

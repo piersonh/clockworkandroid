@@ -3,9 +3,6 @@ package com.wordco.clockworkandroid.ui.pages
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,39 +40,30 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.NewTaskUiState
 import com.wordco.clockworkandroid.ui.NewTaskViewModel
-import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
-import com.wordco.clockworkandroid.ui.elements.DateTimePickerDialog
 import com.wordco.clockworkandroid.ui.elements.InfiniteCircularList
-import com.wordco.clockworkandroid.util.asTaskDueFormat
+import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import java.text.SimpleDateFormat
-import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
 
 
@@ -89,7 +77,17 @@ fun NewTaskPage (
     NewTaskPage(
         uiState = uiState,
         onBackClick = onBackClick,
-        onTaskNameChange = newTaskViewModel::onTaskNameChange
+        onTaskNameChange = newTaskViewModel::onTaskNameChange,
+        onColorSliderChange = newTaskViewModel::onColorSliderChange,
+        onDifficultyChange = newTaskViewModel::onDifficultyChange,
+        onShowDatePicker = newTaskViewModel::onShowTimePicker,
+        onDismissDatePicker = newTaskViewModel::onDismissDatePicker,
+        onDueDateChange = newTaskViewModel::onDueDateChange,
+        onShowTimePicker = newTaskViewModel::onShowTimePicker,
+        onDismissTimePicker = newTaskViewModel::onDismissDatePicker,
+        onDueTimeChange = newTaskViewModel::onDueTimeChange,
+        onEstimateChange = newTaskViewModel::onEstimateChange,
+        onCreateTaskClick = newTaskViewModel::onCreateTaskClick,
     )
 }
 
@@ -107,7 +105,9 @@ private fun NewTaskPage(
     onDueDateChange: (Long?) -> Unit,
     onShowTimePicker: () -> Unit,
     onDismissTimePicker: () -> Unit,
-    onDueTimeChange: (LocalTime) -> Unit
+    onDueTimeChange: (LocalTime) -> Unit,
+    onEstimateChange: (NewTaskViewModel.EstimationComponents) -> Unit,
+    onCreateTaskClick: () -> Unit,
 ) {
     val dueDatePickerState = rememberDatePickerState()
     val dueTimePickerState = rememberTimePickerState()
@@ -262,10 +262,8 @@ private fun NewTaskPage(
                         disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     value = uiState.dueDate?.let {
-                        val formatter = SimpleDateFormat("MM/dd/yyyy")
-
-                        // Format the date into a string and return it
-                        formatter.format(it)
+                        val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+                        it.format(formatter)
                     } ?: "Not Scheduled",
                     enabled = false,
                     modifier = Modifier
@@ -382,7 +380,7 @@ private fun NewTaskPage(
                 }
                 NewTaskViewModel.PickerModal.TIME -> {
                     Dialog(
-                        onDismissRequest = { pickerState = 0 },
+                        onDismissRequest = onDismissTimePicker,
                     ) {
                         Card {
                             Column(
@@ -403,10 +401,13 @@ private fun NewTaskPage(
                                         .fillMaxWidth()
                                 ) {
                                     Spacer(modifier = Modifier.weight(1f))
-                                    TextButton(onClick = { pickerState = 0 }) { Text("Cancel") }
+                                    TextButton(onClick = onDismissTimePicker) { Text("Cancel") }
                                     TextButton(onClick = {
-                                        dueTime = dueTimePickerState.minute * 60 + dueTimePickerState.hour * 3600
-                                        pickerState = 0
+                                        val time = dueTimePickerState.run {
+                                            LocalTime.of(hour, minute)
+                                        }
+                                        onDueTimeChange(time)
+                                        onDismissTimePicker()
                                     }
                                     ) { Text("OK") }
                                 }
@@ -416,29 +417,6 @@ private fun NewTaskPage(
                 }
                 null -> {}
             }
-
-
-//            if (isDateTimePickerShown) {
-//                DateTimePickerDialog(
-//                    onDismiss = { isDateTimePickerShown = false },
-//                    onConfirm = {
-//                        dueDateTime = dueDatePickerState.selectedDateMillis?.let {
-//                           Instant.ofEpochMilli(
-//                                // Convert to local time
-//                                it - (ZonedDateTime.now().offset.totalSeconds * 1000)
-//                            ).plusSeconds(
-//                                (dueTimePickerState.minute * 60 + dueTimePickerState.hour * 3600)
-//                                    .toLong()
-//                            )
-//                        }
-//
-//                        isDateTimePickerShown = false
-//                    },
-//                    datePickerState = dueDatePickerState,
-//                    timePickerState = dueTimePickerState
-//                )
-//
-//            }
 
 
             Text(
@@ -453,80 +431,73 @@ private fun NewTaskPage(
                     letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                 )
             )
-            Row(horizontalArrangement =
-                Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ){
-                InfiniteCircularList(
-                    width = 40.dp,
-                    itemHeight = 60.dp,
-                    items = (0..24).toList(),
-                    initialItem = hour,
-                    textStyle = TextStyle(fontSize = 23.sp),
-                    textColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    onItemSelected = { i, item ->
-                        hour = item
-                    }
-                )
-                Text(
-                    textAlign = TextAlign.Left,
-                    fontSize = 23.sp,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(horizontal = 5.dp),
-                    text = "hours",
-                    style = TextStyle(
-                        letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+
+            uiState.estimate?.let {
+                est ->
+                Row(horizontalArrangement =
+                    Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    InfiniteCircularList(
+                        width = 40.dp,
+                        itemHeight = 60.dp,
+                        items = (0..99).toList(),
+                        initialItem = est.hours,
+                        textStyle = TextStyle(fontSize = 23.sp),
+                        textColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                        onItemSelected = { i, item ->
+                            onEstimateChange(est.copy(hours=item))
+                        }
                     )
-                )
-                InfiniteCircularList(
-                    width = 40.dp,
-                    itemHeight = 70.dp,
-                    items = (0..59).toList(),
-                    initialItem = minute,
-                    textStyle = TextStyle(fontSize = 23.sp),
-                    textColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                    onItemSelected = { i, item ->
-                        minute = item
-                    }
-                )
-                Text(
-                    textAlign = TextAlign.Left,
-                    fontSize = 23.sp,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(horizontal = 5.dp),
-                    text = "minutes",
-                    style = TextStyle(
-                        letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                    Text(
+                        textAlign = TextAlign.Left,
+                        fontSize = 23.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp),
+                        text = "hours",
+                        style = TextStyle(
+                            letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                        )
                     )
-                )
+                    InfiniteCircularList(
+                        width = 40.dp,
+                        itemHeight = 70.dp,
+                        items = (0..59).toList(),
+                        initialItem = est.minutes,
+                        textStyle = TextStyle(fontSize = 23.sp),
+                        textColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onPrimary,
+                        onItemSelected = { i, item ->
+                            onEstimateChange(est.copy(minutes=item))
+                        }
+                    )
+                    Text(
+                        textAlign = TextAlign.Left,
+                        fontSize = 23.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp),
+                        text = "minutes",
+                        style = TextStyle(
+                            letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                        )
+                    )
+                }
             }
+
 
             Button(colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary,
 
             ),
                 onClick = {
-                taskViewModel.insertTask(
-                    Task(
-                        taskId = 0,
-                        name = taskName,
-                        dueDate = dueDateTime,
-                        difficulty = difficulty.toInt(),
-                        color = Color.hsv(colorSliderPos * 360, 1f, 1f),
-                        status = ExecutionStatus.NOT_STARTED,
-                        segments = emptyList(),
-                        markers = emptyList(),
-                    )
-                )
-
-                onBackClick()
-
-            }) {
+                    onCreateTaskClick()
+                    onBackClick()
+                }
+            ) {
                 Text("Add",
                     color = MaterialTheme.colorScheme.onSecondary,
                     fontSize = 20.sp,
@@ -538,3 +509,32 @@ private fun NewTaskPage(
     }
 }
 
+@Preview
+@Composable
+private fun NewTaskPagePreview() {
+    ClockworkTheme {
+        NewTaskPage(
+            uiState = NewTaskUiState(
+                taskName = "",
+                colorSliderPos = 0f,
+                difficulty = 0f,
+                dueDate = LocalDate.parse("2025-12-05"),
+                dueTime = LocalTime.parse("10:15"),
+                currentModal = null,
+                estimate = NewTaskViewModel.EstimationComponents(15,2)
+            ),
+            onBackClick = { },
+            onTaskNameChange = { },
+            onColorSliderChange = { },
+            onDifficultyChange = { },
+            onShowDatePicker = { },
+            onDismissDatePicker = { },
+            onDueDateChange = { },
+            onShowTimePicker = { },
+            onDismissTimePicker = { },
+            onDueTimeChange = { },
+            onEstimateChange = { },
+            onCreateTaskClick = { }
+        )
+    }
+}
