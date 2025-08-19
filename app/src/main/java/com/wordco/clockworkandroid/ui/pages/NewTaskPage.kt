@@ -62,36 +62,55 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.ui.NewTaskUiState
+import com.wordco.clockworkandroid.ui.NewTaskViewModel
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.DateTimePickerDialog
 import com.wordco.clockworkandroid.ui.elements.InfiniteCircularList
 import com.wordco.clockworkandroid.util.asTaskDueFormat
+import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.util.Date
+
+
+@Composable
+fun NewTaskPage (
+    onBackClick: () -> Unit,
+    newTaskViewModel: NewTaskViewModel
+) {
+    val uiState by newTaskViewModel.uiState.collectAsStateWithLifecycle()
+
+    NewTaskPage(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onTaskNameChange = newTaskViewModel::onTaskNameChange
+    )
+}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewTaskPage(
+private fun NewTaskPage(
+    uiState: NewTaskUiState,
     onBackClick: () -> Unit,
-    taskViewModel: TaskViewModel
+    onTaskNameChange: (String) -> Unit,
+    onColorSliderChange: (Float) -> Unit,
+    onDifficultyChange: (Float) -> Unit,
+    onShowDatePicker: () -> Unit,
+    onDismissDatePicker: () -> Unit,
+    onDueDateChange: (Long?) -> Unit,
+    onShowTimePicker: () -> Unit,
+    onDismissTimePicker: () -> Unit,
+    onDueTimeChange: (LocalTime) -> Unit
 ) {
-    rememberCoroutineScope()
-    var taskName by remember { mutableStateOf("Homework") }
-    var colorSliderPos by remember { mutableFloatStateOf(0f) }
-    var difficulty by remember { mutableFloatStateOf(0f) }
-    var isDateTimePickerShown by remember { mutableStateOf(false) }
-    var pickerState by remember { mutableIntStateOf(0) } // TODO: Change this to enumeration
-    var dueDate: Instant? by remember { mutableStateOf(null) }
-    var dueTime: Int? by remember { mutableStateOf(null) }
-    var dueDateTime: Instant? by remember { mutableStateOf(null) } // not scheduled by default
     val dueDatePickerState = rememberDatePickerState()
     val dueTimePickerState = rememberTimePickerState()
-    var hour by remember { mutableIntStateOf(0) }
-    var minute by remember { mutableIntStateOf(0) }
     val brush = remember {
         Brush.horizontalGradient(
             listOf(
@@ -139,10 +158,10 @@ fun NewTaskPage(
                     cursorColor = MaterialTheme.colorScheme.onPrimary,
                     focusedIndicatorColor = MaterialTheme.colorScheme.secondary
                 ),
-                value = taskName,
+                value = uiState.taskName,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                onValueChange = { taskName = it },
+                onValueChange = onTaskNameChange,
                 label = {
                     Text(
                         "Assignment Name", style = TextStyle(
@@ -168,7 +187,7 @@ fun NewTaskPage(
 
 
             Slider(
-                value = colorSliderPos,
+                value = uiState.colorSliderPos,
                 thumb = {
                     Box(
                         Modifier
@@ -176,7 +195,7 @@ fun NewTaskPage(
                             .padding(4.dp)
                             .background(
                                 Color.hsv(
-                                    colorSliderPos * 360, 1f, 1f
+                                    uiState.colorSliderPos * 360, 1f, 1f
                                 ),
                                 RoundedCornerShape(50.dp)
                             )
@@ -196,7 +215,7 @@ fun NewTaskPage(
                             .fillMaxWidth()
                     )
                 },
-                onValueChange = { colorSliderPos = it }
+                onValueChange = onColorSliderChange
             )
 
 
@@ -215,14 +234,14 @@ fun NewTaskPage(
 
 
             Slider(
-                value = difficulty, steps = 3, colors = SliderDefaults.colors(
+                value = uiState.difficulty, steps = 3, colors = SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colorScheme.secondary,
                     inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
                     activeTickColor = MaterialTheme.colorScheme.primaryContainer,
                     inactiveTickColor = MaterialTheme.colorScheme.primary,
                     thumbColor = MaterialTheme.colorScheme.secondary
                 ),
-                onValueChange = { difficulty = it }
+                onValueChange = onDifficultyChange
             )
 
             Row (
@@ -242,12 +261,18 @@ fun NewTaskPage(
                         disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
-                    value = dueDate.asTaskDueFormat(),
+                    value = uiState.dueDate?.let {
+                        val formatter = SimpleDateFormat("MM/dd/yyyy")
+
+                        // Format the date into a string and return it
+                        formatter.format(it)
+                    } ?: "Not Scheduled",
                     enabled = false,
                     modifier = Modifier
                         .combinedClickable(
-                            onClick = { pickerState = 1 }
-                        ).weight(0.45f),
+                            onClick = onShowDatePicker
+                        )
+                        .weight(0.45f),
                     label = {
                         Text(
                             "Due Date", style = TextStyle(
@@ -259,22 +284,20 @@ fun NewTaskPage(
                     singleLine = true,
                     readOnly = true,
                     trailingIcon = {
-                        dueDateTime?.let {
+                        uiState.dueDate?.let {
                             Icon(
                                 Icons.Default.Clear,
                                 contentDescription = "Clear selected date",
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.combinedClickable(
-                                    onClick = {
-                                        dueDate = null
-                                    }
+                                    onClick = { onDueDateChange(null) }
                                 )
                             )
                         }
                     }
                 )
 
-                dueDate?.let {
+                uiState.dueDate?.let {
                     Spacer(
                         Modifier.weight(0.05f)
                     )
@@ -292,15 +315,13 @@ fun NewTaskPage(
                             disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
-                        value = dueTime?.let{
-                            val secs = it
-                            "${secs%60}:${(secs/60)%12} ${if (secs%60 == 0) "AM" else "PM"}"
-                        }?:"All Day",
+                        value = uiState.dueTime.toString(),
                         enabled = false,
                         modifier = Modifier
                             .combinedClickable(
-                                onClick = { pickerState = 2 }
-                            ).weight(0.35f),
+                                onClick = onShowTimePicker
+                            )
+                            .weight(0.35f),
                         label = {
                             Text(
                                 "Due Time", style = TextStyle(
@@ -311,48 +332,38 @@ fun NewTaskPage(
                         onValueChange = { },
                         singleLine = true,
                         readOnly = true,
-                        trailingIcon = {
-                            dueTime?.let {
-                                Icon(
-                                    Icons.Default.Clear,
-                                    contentDescription = "Clear selected date",
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.combinedClickable(
-                                        onClick = {
-                                            dueTime = null
-                                        }
-                                    )
-                                )
-                            }
-                        }
                     )
                 }
             }
 
 
 
-            when (pickerState) {
-                1 -> {
+            when (uiState.currentModal) {
+                NewTaskViewModel.PickerModal.DATE -> {
                     DatePickerDialog(
-                        onDismissRequest = { pickerState = 0 },
+                        onDismissRequest = onDismissDatePicker,
                         confirmButton = {
                             TextButton(
                                 onClick = {
-                                    dueDate = dueDatePickerState.selectedDateMillis?.let {
-                                        Instant.ofEpochMilli(
-                                            // Convert to local time
-                                            it - (ZonedDateTime.now().offset.totalSeconds * 1000)
-                                        )
-                                    }
-                                    pickerState = 0
+                                    onDueDateChange(dueDatePickerState.selectedDateMillis)
+                                    onDismissDatePicker()
                                 }
+//                                onClick = {
+//                                    dueDate = dueDatePickerState.selectedDateMillis?.let {
+//                                        Instant.ofEpochMilli(
+//                                            // Convert to local time
+//                                            it - (ZonedDateTime.now().offset.totalSeconds * 1000)
+//                                        )
+//                                    }
+//                                    pickerState = 0
+//                                }
                             ) {
                                 Text("OK")
                             }
                         },
                         dismissButton = {
                             TextButton(
-                                onClick = {pickerState = 0}
+                                onClick = onDismissDatePicker
                             ) {
                                 Text("Cancel")
                             }
@@ -369,7 +380,7 @@ fun NewTaskPage(
                         )
                     }
                 }
-                2 -> {
+                NewTaskViewModel.PickerModal.TIME -> {
                     Dialog(
                         onDismissRequest = { pickerState = 0 },
                     ) {
@@ -403,6 +414,7 @@ fun NewTaskPage(
                         }
                     }
                 }
+                null -> {}
             }
 
 
