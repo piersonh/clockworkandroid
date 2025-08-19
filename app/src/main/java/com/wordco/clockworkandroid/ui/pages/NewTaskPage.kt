@@ -3,10 +3,14 @@ package com.wordco.clockworkandroid.ui.pages
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,6 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +34,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberDatePickerState
@@ -43,11 +53,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.TaskViewModel
@@ -70,6 +84,9 @@ fun NewTaskPage(
     var colorSliderPos by remember { mutableFloatStateOf(0f) }
     var difficulty by remember { mutableFloatStateOf(0f) }
     var isDateTimePickerShown by remember { mutableStateOf(false) }
+    var pickerState by remember { mutableIntStateOf(0) } // TODO: Change this to enumeration
+    var dueDate: Instant? by remember { mutableStateOf(null) }
+    var dueTime: Int? by remember { mutableStateOf(null) }
     var dueDateTime: Instant? by remember { mutableStateOf(null) } // not scheduled by default
     val dueDatePickerState = rememberDatePickerState()
     val dueTimePickerState = rememberTimePickerState()
@@ -208,74 +225,208 @@ fun NewTaskPage(
                 onValueChange = { difficulty = it }
             )
 
-            OutlinedTextField(
-                // override the disabled colors
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledContainerColor = Color.Transparent,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                value = dueDateTime.asTaskDueFormat(),
-                enabled = false,
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = { isDateTimePickerShown = true })
-                    .fillMaxWidth(),
-                label = {
-                    Text(
-                        "Due Date", style = TextStyle(
-                            letterSpacing = 0.02.em
+            Row (
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    // override the disabled colors
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContainerColor = Color.Transparent,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    value = dueDate.asTaskDueFormat(),
+                    enabled = false,
+                    modifier = Modifier
+                        .combinedClickable(
+                            onClick = { pickerState = 1 }
+                        ).weight(0.45f),
+                    label = {
+                        Text(
+                            "Due Date", style = TextStyle(
+                                letterSpacing = 0.02.em
+                            )
                         )
+                    },
+                    onValueChange = { },
+                    singleLine = true,
+                    readOnly = true,
+                    trailingIcon = {
+                        dueDateTime?.let {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Clear selected date",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.combinedClickable(
+                                    onClick = {
+                                        dueDate = null
+                                    }
+                                )
+                            )
+                        }
+                    }
+                )
+
+                dueDate?.let {
+                    Spacer(
+                        Modifier.weight(0.05f)
                     )
-                },
-                onValueChange = { },
-                singleLine = true,
-                readOnly = true,
-                trailingIcon = {
-                    dueDateTime?.let {
-                        Icon(
-                            Icons.Default.Clear,
-                            contentDescription = "Clear selected date",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.combinedClickable(
+                    OutlinedTextField(
+                        // override the disabled colors
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledContainerColor = Color.Transparent,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        value = dueTime?.let{
+                            val secs = it
+                            "${secs%60}:${(secs/60)%12} ${if (secs%60 == 0) "AM" else "PM"}"
+                        }?:"All Day",
+                        enabled = false,
+                        modifier = Modifier
+                            .combinedClickable(
+                                onClick = { pickerState = 2 }
+                            ).weight(0.35f),
+                        label = {
+                            Text(
+                                "Due Time", style = TextStyle(
+                                    letterSpacing = 0.02.em
+                                )
+                            )
+                        },
+                        onValueChange = { },
+                        singleLine = true,
+                        readOnly = true,
+                        trailingIcon = {
+                            dueTime?.let {
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = "Clear selected date",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.combinedClickable(
+                                        onClick = {
+                                            dueTime = null
+                                        }
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+
+
+
+            when (pickerState) {
+                1 -> {
+                    DatePickerDialog(
+                        onDismissRequest = { pickerState = 0 },
+                        confirmButton = {
+                            TextButton(
                                 onClick = {
-                                    dueDateTime = null
+                                    dueDate = dueDatePickerState.selectedDateMillis?.let {
+                                        Instant.ofEpochMilli(
+                                            // Convert to local time
+                                            it - (ZonedDateTime.now().offset.totalSeconds * 1000)
+                                        )
+                                    }
+                                    pickerState = 0
                                 }
+                            ) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {pickerState = 0}
+                            ) {
+                                Text("Cancel")
+                            }
+                        }
+                    ) {
+                        DatePicker(
+                            state = dueDatePickerState,
+                            colors = DatePickerDefaults.colors(
+                                selectedDayContainerColor = MaterialTheme.colorScheme.secondary,
+                                todayContentColor = MaterialTheme.colorScheme.secondary,
+                                todayDateBorderColor = MaterialTheme.colorScheme.secondary,
+                                selectedDayContentColor = MaterialTheme.colorScheme.onSecondary
                             )
                         )
                     }
                 }
-            )
-
-
-            if (isDateTimePickerShown) {
-                DateTimePickerDialog(
-                    onDismiss = { isDateTimePickerShown = false },
-                    onConfirm = {
-                        dueDateTime = dueDatePickerState.selectedDateMillis?.let {
-                           Instant.ofEpochMilli(
-                                // Convert to local time
-                                it - (ZonedDateTime.now().offset.totalSeconds * 1000)
-                            ).plusSeconds(
-                                (dueTimePickerState.minute * 60 + dueTimePickerState.hour * 3600)
-                                    .toLong()
-                            )
+                2 -> {
+                    Dialog(
+                        onDismissRequest = { pickerState = 0 },
+                    ) {
+                        Card {
+                            Column(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 20.dp),
+                                    text = "Select Time",
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                                TimePicker(state = dueTimePickerState)
+                                Row(
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .fillMaxWidth()
+                                ) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    TextButton(onClick = { pickerState = 0 }) { Text("Cancel") }
+                                    TextButton(onClick = {
+                                        dueTime = dueTimePickerState.minute * 60 + dueTimePickerState.hour * 3600
+                                        pickerState = 0
+                                    }
+                                    ) { Text("OK") }
+                                }
+                            }
                         }
-
-                        isDateTimePickerShown = false
-                    },
-                    datePickerState = dueDatePickerState,
-                    timePickerState = dueTimePickerState
-                )
-
+                    }
+                }
             }
+
+
+//            if (isDateTimePickerShown) {
+//                DateTimePickerDialog(
+//                    onDismiss = { isDateTimePickerShown = false },
+//                    onConfirm = {
+//                        dueDateTime = dueDatePickerState.selectedDateMillis?.let {
+//                           Instant.ofEpochMilli(
+//                                // Convert to local time
+//                                it - (ZonedDateTime.now().offset.totalSeconds * 1000)
+//                            ).plusSeconds(
+//                                (dueTimePickerState.minute * 60 + dueTimePickerState.hour * 3600)
+//                                    .toLong()
+//                            )
+//                        }
+//
+//                        isDateTimePickerShown = false
+//                    },
+//                    datePickerState = dueDatePickerState,
+//                    timePickerState = dueTimePickerState
+//                )
+//
+//            }
 
 
             Text(
