@@ -1,25 +1,32 @@
 package com.wordco.clockworkandroid.ui.elements
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Card
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,8 +44,21 @@ fun DateTimePickerDialog (
         onDismissRequest = onDismiss
     ) {
 
-        Card {
-            Column {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+            modifier =
+                Modifier
+                    .width(360.dp)
+                    //.height(IntrinsicSize.Min)
+                    .background(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        color = MaterialTheme.colorScheme.surface
+                    ),
+        ) {
+            Column (
+
+            ) {
                 when (state) {
                     0 -> {
                         DatePicker(
@@ -48,7 +68,10 @@ fun DateTimePickerDialog (
                                 todayContentColor = MaterialTheme.colorScheme.secondary,
                                 todayDateBorderColor = MaterialTheme.colorScheme.secondary,
                                 selectedDayContentColor = MaterialTheme.colorScheme.onSecondary
-                            )
+                            ),
+                            //modifier = Modifier.requiredWidth(360.dp)
+                            //    .scale(0.8f).align(Alignment.CenterHorizontally)
+
                         )
                     }
 
@@ -81,6 +104,9 @@ fun DateTimePickerDialog (
 
                     when (state) {
                         0 -> {
+                            Spacer(
+                                modifier = Modifier.weight(1f)
+                            )
                             TextButton(
                                 onClick = {
                                     state++
@@ -88,9 +114,10 @@ fun DateTimePickerDialog (
                             ) {
                                 Text(
                                     "Next",
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 )
                             }
+
                         }
 
                         1 -> {
@@ -104,6 +131,10 @@ fun DateTimePickerDialog (
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
+
+                            Spacer(
+                                modifier = Modifier.weight(1f)
+                            )
 
 
                             TextButton(
@@ -122,3 +153,13 @@ fun DateTimePickerDialog (
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview
+@Composable
+private fun Prev() = DateTimePickerDialog(
+    onDismiss = { },
+    onConfirm = { },
+    datePickerState = rememberDatePickerState(),
+    timePickerState = rememberTimePickerState()
+)

@@ -17,8 +17,8 @@ import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.navigateToTimer
+import com.wordco.clockworkandroid.ui.newTaskPage
 import com.wordco.clockworkandroid.ui.pages.ListPage
-import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.timerPage
@@ -73,12 +73,9 @@ class MainActivity : ComponentActivity() {
                     }
 
 
-                    composable<PageRoutes.NewTask> {
-                        NewTaskPage(
-                            onBackClick = { navController.navigateUp() },
-                            taskViewModel
-                        )
-                    }
+                    newTaskPage (
+                        onBackClick = navController::navigateUp,
+                    )
 
 
                     timerPage(
