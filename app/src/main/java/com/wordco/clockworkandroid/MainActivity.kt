@@ -19,7 +19,6 @@ import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.navigateToTimer
 import com.wordco.clockworkandroid.ui.newTaskPage
 import com.wordco.clockworkandroid.ui.pages.ListPage
-import com.wordco.clockworkandroid.ui.pages.NewTaskPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.timerPage

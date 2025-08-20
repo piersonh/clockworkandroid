@@ -53,18 +53,14 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.domain.model.ExecutionStatus
-import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.ui.NewTaskUiState
 import com.wordco.clockworkandroid.ui.NewTaskViewModel
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.InfiniteCircularList
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Date
 
 
 @Composable
@@ -80,11 +76,11 @@ fun NewTaskPage (
         onTaskNameChange = newTaskViewModel::onTaskNameChange,
         onColorSliderChange = newTaskViewModel::onColorSliderChange,
         onDifficultyChange = newTaskViewModel::onDifficultyChange,
-        onShowDatePicker = newTaskViewModel::onShowTimePicker,
+        onShowDatePicker = newTaskViewModel::onShowDatePicker,
         onDismissDatePicker = newTaskViewModel::onDismissDatePicker,
         onDueDateChange = newTaskViewModel::onDueDateChange,
         onShowTimePicker = newTaskViewModel::onShowTimePicker,
-        onDismissTimePicker = newTaskViewModel::onDismissDatePicker,
+        onDismissTimePicker = newTaskViewModel::onDismissTimePicker,
         onDueTimeChange = newTaskViewModel::onDueTimeChange,
         onEstimateChange = newTaskViewModel::onEstimateChange,
         onCreateTaskClick = newTaskViewModel::onCreateTaskClick,
@@ -106,11 +102,14 @@ private fun NewTaskPage(
     onShowTimePicker: () -> Unit,
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
-    onEstimateChange: (NewTaskViewModel.EstimationComponents) -> Unit,
-    onCreateTaskClick: () -> Unit,
+    onEstimateChange: (NewTaskViewModel.UserEstimate) -> Unit,
+    onCreateTaskClick: () -> NewTaskViewModel.CreateTaskResult,
 ) {
     val dueDatePickerState = rememberDatePickerState()
-    val dueTimePickerState = rememberTimePickerState()
+    val dueTimePickerState = rememberTimePickerState(
+        initialHour = uiState.dueTime.hour,
+        initialMinute = uiState.dueTime.minute
+    )
     val brush = remember {
         Brush.horizontalGradient(
             listOf(
@@ -234,7 +233,9 @@ private fun NewTaskPage(
 
 
             Slider(
-                value = uiState.difficulty, steps = 3, colors = SliderDefaults.colors(
+                value = uiState.difficulty,
+                steps = 3,
+                colors = SliderDefaults.colors(
                     activeTrackColor = MaterialTheme.colorScheme.secondary,
                     inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
                     activeTickColor = MaterialTheme.colorScheme.primaryContainer,
@@ -494,8 +495,10 @@ private fun NewTaskPage(
 
             ),
                 onClick = {
-                    onCreateTaskClick()
-                    onBackClick()
+                    when (onCreateTaskClick()) {
+                        NewTaskViewModel.CreateTaskResult.MissingName -> { }
+                        NewTaskViewModel.CreateTaskResult.Success -> onBackClick()
+                    }
                 }
             ) {
                 Text("Add",
@@ -521,7 +524,7 @@ private fun NewTaskPagePreview() {
                 dueDate = LocalDate.parse("2025-12-05"),
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
-                estimate = NewTaskViewModel.EstimationComponents(15,2)
+                estimate = NewTaskViewModel.UserEstimate(15,2)
             ),
             onBackClick = { },
             onTaskNameChange = { },
@@ -534,7 +537,7 @@ private fun NewTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onCreateTaskClick = { }
+            onCreateTaskClick = { NewTaskViewModel.CreateTaskResult.Success }
         )
     }
 }
