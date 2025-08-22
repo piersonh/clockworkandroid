@@ -41,6 +41,16 @@ class TaskRepositoryImpl (
             }
     }
 
+    override suspend fun hasActiveTask(): Boolean {
+        return taskDao.hasActiveTask()
+    }
+
+    override fun getActiveTask(): Flow<Task?> {
+        return taskDao.getActiveTask().map {
+            it?.toTask()
+        }
+    }
+
     override suspend fun insertSegment(segment: Segment) {
         taskDao.insertSegment(segment.toSegmentEntity())
     }

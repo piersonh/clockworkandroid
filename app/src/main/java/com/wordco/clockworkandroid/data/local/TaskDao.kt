@@ -57,6 +57,12 @@ interface TaskDao {
 //        }
 //    }
 
+    @Query("SELECT EXISTS (SELECT 1 FROM TaskEntity WHERE status IN (1,2))")
+    suspend fun hasActiveTask() : Boolean
+
+    @Query("SELECT * FROM TaskEntity WHERE status IN (1,2) LIMIT 1")
+    fun getActiveTask() : Flow<TaskWithExecutionDataObject?>
+
 
     @Transaction
     @Query("SELECT * FROM TaskEntity WHERE taskId == :taskId")

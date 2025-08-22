@@ -22,6 +22,10 @@ interface TaskRepository {
 
     fun getTasks() : Flow<List<Task>>
 
+    suspend fun hasActiveTask() : Boolean
+
+    fun getActiveTask() : Flow<Task?>
+
     suspend fun insertSegment(segment: Segment)
 
     suspend fun updateSegment(segment: Segment)

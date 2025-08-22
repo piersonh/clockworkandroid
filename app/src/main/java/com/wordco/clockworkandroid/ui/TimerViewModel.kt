@@ -101,11 +101,11 @@ class TimerViewModel (
                     )
                     is TimerState.Paused -> TimerUiState.Paused(
                         task.name,
-                        timerState.elapsedSeconds
+                        timerState.elapsedWorkSeconds
                     )
                     is TimerState.Running -> TimerUiState.Running(
                         task.name,
-                        timerState.elapsedSeconds
+                        timerState.elapsedWorkSeconds
                     )
                 }
             }.collect {
@@ -125,7 +125,7 @@ class TimerViewModel (
     }
 
     fun suspendTimer() {
-        timer.suspend(timer.Close())
+        timer.suspend()
     }
 
     fun resumeTimer() {
