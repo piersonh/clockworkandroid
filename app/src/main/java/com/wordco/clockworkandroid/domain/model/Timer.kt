@@ -1,7 +1,5 @@
 package com.wordco.clockworkandroid.domain.model
 
-import android.util.Log
-import com.wordco.clockworkandroid.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -34,16 +32,19 @@ sealed interface TimerState {
     sealed interface HasTask : TimerState {
         val task: Task
         val elapsedWorkSeconds: Int
+        val elapsedBreakMinutes: Int
     }
 
     data class Running(
         override val task: Task,
-        override val elapsedWorkSeconds: Int
+        override val elapsedWorkSeconds: Int,
+        override val elapsedBreakMinutes: Int
     ) : HasTask
 
     data class Paused(
         override val task: Task,
-        override val elapsedWorkSeconds: Int
+        override val elapsedWorkSeconds: Int,
+        override val elapsedBreakMinutes: Int
     ) : HasTask
 }
 
@@ -53,13 +54,15 @@ class Timer(
     private val taskRepository: TaskRepository
 ) {
 
+    private val _timerState = MutableStateFlow<TimerState>(TimerState.Dormant)
+    val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
+
+
     private enum class State {
         INIT, DORMANT, PREPARING, READY, RUNNING, PAUSED, CLOSING
     }
 
     private val _internalState = MutableStateFlow(State.PREPARING)
-
-    private val _timerState = MutableStateFlow<TimerState>(TimerState.Dormant)
 
     private var _loadedTask: StateFlow<Task?> = MutableStateFlow(null)
 
@@ -68,84 +71,101 @@ class Timer(
 
     private val coroutineScope = CoroutineScope(dispatcher)
 
-    private fun workTimeInc(): suspend CoroutineScope.() -> Unit = buildIncrementer(
-        interval = 1000,
-        initialElapsed = _loadedTask.value!!.workTime.toMillis()
-    ) {
-        _elapsedWorkSeconds.update { it + 1 }
-    }
-
-    private fun breakTimeInc(): suspend CoroutineScope.() -> Unit = buildIncrementer(
-        interval = 60000,
-        initialElapsed = _loadedTask.value!!.breakTime.toMillis()
-    ) {
-        _elapsedBreakMinutes.update { it + 1 }
-    }
-
-    private fun buildIncrementer(
-        interval: Long,
-        initialElapsed: Long,
-        onTrigger: () -> Unit,
-    ): suspend CoroutineScope.() -> Unit {
-        return {
-            // Wait for next minute
-            delay(interval - (initialElapsed % interval))
-
-            // Start after synchronized with minute
-            while (isActive) {
-                onTrigger()
-                delay(interval)
-            }
-        }
-    }
-
     private var incJob: Job? = null
     private var collectionJob: Job? = null
 
 
     init {
-        startCollection()
         restoreAfterExit()
     }
 
 
-    val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
+    private fun clearTask() {
+        cancelCollection()
+        _timerState.update { TimerState.Dormant }
+        _internalState.update { State.DORMANT }
+        _loadedTask = MutableStateFlow(null)
+        _elapsedWorkSeconds.update { 0 }
+        _elapsedBreakMinutes.update { 0 }
+    }
 
-    private fun startCollection() {
-        collectionJob = coroutineScope.launch {
-            combine (
-                _internalState,
-                _loadedTask,
-                _elapsedWorkSeconds
-            ) {
-                taskState, loadedTask, elapsedTime ->
 
-                when (taskState) {
-                    State.DORMANT -> TimerState.Dormant
-                    State.INIT, State.PREPARING, State.READY -> TimerState.Preparing
-                    State.CLOSING -> TimerState.Closing
-                    State.RUNNING -> TimerState.Running(
-                        task = loadedTask!!,
-                        elapsedWorkSeconds = elapsedTime
-                    )
-                    State.PAUSED -> TimerState.Paused(
-                        task = loadedTask!!,
-                        elapsedWorkSeconds = elapsedTime
-                    )
-                }
-            }.catch {
-                throw it
-            }.collect {
-                _timerState.value = it
+    private fun loadTask(
+        taskFlow: StateFlow<Task?>,
+        onReady: () -> Unit
+    ) {
+        cancelCollection()
+        _timerState.update { TimerState.Preparing }
+        _internalState.update { State.PREPARING }
+
+        coroutineScope.launch {
+            _loadedTask = taskFlow.stateIn(
+                coroutineScope,
+                SharingStarted.WhileSubscribed(),
+                taskFlow.first { it != null }
+            )
+
+            _loadedTask.value!!.takeIf { it.segments.isNotEmpty() }?.run {
+                loadElapsedTimes(
+                    workTime = workTime,
+                    breakTime = breakTime,
+                    lastSegment = segments.last()
+                )
+            }
+
+            _internalState.update { State.READY }
+
+            startCollection()
+        }.invokeOnCompletion {
+            cause ->
+
+            if (cause == null) {
+                onReady()
+            } else {
+                throw cause
             }
         }
     }
 
+    private fun loadElapsedTimes(
+        workTime: Duration,
+        breakTime: Duration,
+        lastSegment: Segment
+    ) {
+        val sinceStarted = Duration.between(lastSegment.startTime, Instant.now()).seconds
+
+        when (lastSegment.type) {
+            SegmentType.WORK -> {
+                _elapsedWorkSeconds.update {
+                    workTime.seconds.plus(sinceStarted).toInt()
+                }
+                _elapsedBreakMinutes.update {
+                    breakTime.toMinutes().toInt()
+                }
+            }
+            SegmentType.BREAK -> {
+                _elapsedWorkSeconds.update {
+                    workTime.seconds.toInt()
+                }
+                _elapsedBreakMinutes.update {
+                    breakTime.seconds.plus(sinceStarted).toInt()
+                }
+            }
+            SegmentType.SUSPEND -> {
+                _elapsedWorkSeconds.update {
+                    workTime.seconds.toInt()
+                }
+                _elapsedBreakMinutes.update {
+                    breakTime.toMinutes().toInt()
+                }
+            }
+        }
+    }
+
+
     private fun restoreAfterExit() {
-        Log.i("TimerLoad", "Searching for an active task on close")
         coroutineScope.launch {
             if (taskRepository.hasActiveTask()) {
-                Log.i("TimerLoad", "Found an active task on close")
                 val task = taskRepository.getActiveTask().let {
                     flow ->
 
@@ -158,19 +178,51 @@ class Timer(
 
                 loadTask(
                     taskFlow = task,
-                    onReady = ::continueAfterExit
+                    onReady = ::reactivateAfterExit
                 )
             } else {
-                Log.i("TimerLoad", "All tasks closed.  Loading Normally")
                 _internalState.update { State.DORMANT }
             }
-        }.invokeOnCompletion(
-            {
-                throwable ->
-                Log.i("TimerLoad", "Search complete")
-            }
-        )
+        }
     }
+
+
+    private fun startCollection() {
+        collectionJob = coroutineScope.launch {
+            combine (
+                _internalState,
+                _loadedTask,
+                _elapsedWorkSeconds,
+                _elapsedBreakMinutes
+            ) {
+                taskState, loadedTask, workTime, breakTime ->
+
+                when (taskState) {
+                    State.DORMANT -> TimerState.Dormant
+                    State.INIT,
+                    State.PREPARING,
+                    State.READY -> TimerState.Preparing
+                    State.CLOSING -> TimerState.Closing
+                    State.RUNNING -> TimerState.Running(
+                        task = loadedTask!!,
+                        elapsedWorkSeconds = workTime,
+                        elapsedBreakMinutes = breakTime
+                    )
+                    State.PAUSED -> TimerState.Paused(
+                        task = loadedTask!!,
+                        elapsedWorkSeconds = workTime,
+                        elapsedBreakMinutes = breakTime
+                    )
+                }
+            }.catch {
+                throw it
+            }.collect {
+                state ->
+                _timerState.update { state }
+            }
+        }
+    }
+
 
     private fun cancelCollection() {
         collectionJob?.cancel()
@@ -178,31 +230,46 @@ class Timer(
     }
 
 
-    fun start(taskFlow: StateFlow<Task?>) {
-        when (_internalState.value) {
-            State.DORMANT -> loadTask(
-                taskFlow = taskFlow,
-                onReady = ::resume
-            )
-            State.INIT, State.PREPARING, State.CLOSING, State.READY -> throw IllegalStateException(
-                "timer.start() must not be called in ${_timerState.value}"
-            )
-            State.PAUSED, State.RUNNING -> suspend(
-                taskFlow
-            )
-        }
+    /*
+        TIMER JOB UTILITIES
+     */
+    private val workTimer = Incrementer.of(
+        interval = 1000,
+        initialOffset = { _loadedTask.value!!.workTime.toMillis() },
+        stateField = _elapsedWorkSeconds
+    )
+
+
+    private val breakTimer = Incrementer.of(
+        interval = 60000,
+        initialOffset = { _loadedTask.value!!.breakTime.toMillis() },
+        stateField =  _elapsedBreakMinutes
+    )
+
+
+    private fun setIncrementer(incrementer: Incrementer) {
+        incJob?.cancel()
+        incJob = coroutineScope.launch (block = incrementer())
     }
 
+    private fun cancelIncrementer() {
+        incJob?.cancel()
+        incJob = null
+    }
+
+
+
+    /*
+        TASK REGISTRY UTILITIES
+     */
     private suspend fun Task.updateTaskStatus(newStatus: ExecutionStatus) {
         taskRepository.updateTask(copy(status = newStatus))
     }
 
-    private suspend fun Task.endLastSegment(predicate: (Task) -> Boolean = {true}) {
-        if (predicate(this)) {
-            taskRepository.updateSegment(segments.last().run {
-                copy(duration = Duration.between(startTime, Instant.now()))
-            })
-        }
+    private suspend fun Task.endLastSegment() {
+        taskRepository.updateSegment(segments.last().run {
+            copy(duration = Duration.between(startTime, Instant.now()))
+        })
     }
 
     private suspend fun Task.startNewSegment(type: SegmentType) {
@@ -217,61 +284,107 @@ class Timer(
         )
     }
 
-    fun resume() {
-        when (_internalState.value) {
-            State.INIT, State.DORMANT, State.PREPARING, State.RUNNING, State.CLOSING -> throw IllegalStateException(
-                "timer.resume() must not be called in ${_timerState.value}"
-            )
-            State.PAUSED -> {
-                // TODO: Stop break time incrementer
-            }
-            State.READY -> {}
-        }
 
-        beginRunning()
 
-        coroutineScope.launch {
-            _loadedTask.value!!.run {
-                updateTaskStatus(ExecutionStatus.RUNNING)
-
-                // Check if this is a new task before updating the last segment
-                endLastSegment { segments.isNotEmpty() }
-
-                startNewSegment(SegmentType.WORK)
-            }
-        }
-    }
-
-    private fun continueAfterExit() {
+    /*
+        TIMER EXECUTION LOGIC
+     */
+    private fun reactivateAfterExit() {
         when (_loadedTask.value!!.status) {
             ExecutionStatus.NOT_STARTED,
             ExecutionStatus.SUSPENDED,
             ExecutionStatus.COMPLETED -> throw RuntimeException(
                 "Attempted to restore an unrestorable task on load"
             )
-            ExecutionStatus.RUNNING -> beginRunning()
-            ExecutionStatus.PAUSED -> TODO()
+            ExecutionStatus.RUNNING -> { setRunning() }
+            ExecutionStatus.PAUSED -> { setPaused() }
         }
     }
 
-    private fun beginRunning() {
+
+    private fun setRunning() {
         _internalState.update { State.RUNNING }
 
-        incJob = coroutineScope.launch (block = workTimeInc())
+        setIncrementer(workTimer)
     }
+
+    private fun setPaused() {
+        _internalState.update { State.PAUSED }
+
+        setIncrementer(breakTimer)
+    }
+
+    private fun setSuspended() {
+        _internalState.update { State.CLOSING }
+
+        cancelIncrementer()
+    }
+
+
+    fun start(taskFlow: StateFlow<Task?>) {
+        when (_internalState.value) {
+            State.DORMANT -> loadTask(
+                taskFlow = taskFlow,
+                onReady = ::resume
+            )
+            State.INIT,
+            State.PREPARING,
+            State.CLOSING,
+            State.READY -> throw IllegalStateException(
+                "timer.start() must not be called in ${_timerState.value}"
+            )
+            State.PAUSED,
+            State.RUNNING -> suspend(
+                taskFlow
+            )
+        }
+    }
+
+
+    fun resume() {
+        when (_internalState.value) {
+            State.INIT,
+            State.DORMANT,
+            State.PREPARING,
+            State.RUNNING,
+            State.CLOSING -> throw IllegalStateException(
+                "timer.resume() must not be called in ${_timerState.value}"
+            )
+            State.PAUSED,
+            State.READY -> {}
+        }
+
+        setRunning()
+
+        coroutineScope.launch {
+            _loadedTask.value!!.run {
+                updateTaskStatus(ExecutionStatus.RUNNING)
+
+                // Check if this is a new task before updating the last segment
+                if (segments.isNotEmpty()) {
+                    endLastSegment()
+                }
+
+                startNewSegment(SegmentType.WORK)
+            }
+        }
+    }
+
 
     fun pause() {
         when (_internalState.value) {
-            State.INIT, State.DORMANT, State.PREPARING, State.PAUSED, State.CLOSING, State.READY -> throw IllegalStateException(
+            State.INIT,
+            State.DORMANT,
+            State.PREPARING,
+            State.PAUSED,
+            State.CLOSING,
+            State.READY -> throw IllegalStateException(
                 "timer.pause() must not be called in ${_timerState.value}"
             )
             State.RUNNING -> {}
         }
 
-        _internalState.update { State.PAUSED }
-
-        incJob!!.cancel()
-        incJob = null
+        setPaused()
 
         coroutineScope.launch {
             _loadedTask.value!!.run {
@@ -283,69 +396,20 @@ class Timer(
     }
 
 
-    private fun clearTask() {
-        cancelCollection()
-        _timerState.update { TimerState.Dormant }
-        _internalState.update { State.DORMANT }
-        _loadedTask = MutableStateFlow(null)
-        _elapsedWorkSeconds.update { 0 }
-    }
-
-    private fun loadTask(
-        taskFlow: StateFlow<Task?>,
-        onReady: () -> Unit
-    ) {
-        cancelCollection()
-        _timerState.update { TimerState.Preparing }
-        _internalState.update { State.PREPARING }
-        _loadedTask = taskFlow.stateIn(
-            coroutineScope,
-            SharingStarted.WhileSubscribed(),
-            taskFlow.value
-        )
-
-        startCollection()
-
-        coroutineScope.launch {
-            _elapsedWorkSeconds.update {
-                _loadedTask.first { it != null }!!.let{
-                    task ->
-
-                    // Check if the last segment was a work segment.  If so add it's time
-                    val sinceStarted = task.segments.takeIf { it.isNotEmpty() }?.last()
-                        ?.takeIf { it.type == SegmentType.WORK }?.duration?.seconds ?: 0
-
-                    task.workTime.seconds.plus(sinceStarted).toInt()
-                }
-            }
-            _internalState.update { State.READY }
-        }.invokeOnCompletion {
-                cause ->
-
-            if (cause == null) {
-                onReady()
-            } else {
-                throw cause
-            }
-        }
-    }
-
-
     fun suspend(replaceWith: StateFlow<Task?>? = null) {
         when (_internalState.value) {
-            State.INIT, State.DORMANT, State.PREPARING, State.CLOSING, State.READY -> throw IllegalStateException(
+            State.INIT,
+            State.DORMANT,
+            State.PREPARING,
+            State.CLOSING,
+            State.READY -> throw IllegalStateException(
                 "timer.suspend() must not be called in ${_timerState.value}"
             )
-            State.RUNNING -> {
-                incJob!!.cancel()
-                incJob = null
-            }
-            State.PAUSED -> {
-                // TODO: Stop break time incrementer
-            }
+            State.RUNNING,
+            State.PAUSED -> { }
         }
 
-        _internalState.update { State.CLOSING }
+        setSuspended()
 
         coroutineScope.launch {
             _loadedTask.value!!.run {
@@ -364,5 +428,47 @@ class Timer(
             )
         } ?: clearTask()
     }
+}
 
+
+private fun interface Incrementer {
+    operator fun invoke(): suspend CoroutineScope.() -> Unit
+
+    companion object {
+        fun of(
+            interval: Long,
+            initialOffset: () -> Long,
+            stateField: MutableStateFlow<Int>
+        ) : Incrementer = Incrementer {
+            runOnInterval(
+                interval = interval,
+                initialOffset = initialOffset
+            ) {
+                stateField.update { it + 1 }
+            }
+        }
+
+        /**
+         * Invokes the provided function [block] every [interval] milliseconds
+         *
+         * @param interval time in milliseconds between triggers
+         * @param initialOffset time in milliseconds to offset first interval
+         */
+        private fun runOnInterval(
+            interval: Long,
+            initialOffset: () -> Long,
+            block: () -> Unit,
+        ): suspend CoroutineScope.() -> Unit {
+            return {
+                // Wait for next minute
+                delay(interval - (initialOffset() % interval))
+
+                // Start after synchronized with minute
+                while (isActive) {
+                    block()
+                    delay(interval)
+                }
+            }
+        }
+    }
 }
