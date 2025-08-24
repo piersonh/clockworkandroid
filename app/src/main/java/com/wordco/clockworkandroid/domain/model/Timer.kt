@@ -111,6 +111,9 @@ class Timer(
                     breakTime = breakTime,
                     lastSegment = segments.last()
                 )
+            } ?: run {
+                _elapsedWorkSeconds.update { 0 }
+                _elapsedBreakMinutes.update { 0 }
             }
 
             _internalState.update { State.READY }
