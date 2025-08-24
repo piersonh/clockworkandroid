@@ -1,11 +1,11 @@
 package com.wordco.clockworkandroid.ui.mapper
 
 import com.wordco.clockworkandroid.domain.model.Task
-import com.wordco.clockworkandroid.ui.UpcomingTaskListItem
+import com.wordco.clockworkandroid.ui.NewTaskListItem
 import java.time.Duration
 
-fun Task.toUpcomingTaskListItem() : UpcomingTaskListItem {
-    return UpcomingTaskListItem(
+fun Task.toNewTaskListItem() : NewTaskListItem {
+    return NewTaskListItem(
         taskId = taskId,
         name = name,
         dueDate = dueDate,

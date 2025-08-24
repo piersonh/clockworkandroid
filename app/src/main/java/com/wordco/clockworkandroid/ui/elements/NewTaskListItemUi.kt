@@ -18,14 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.ui.UpcomingTaskListItem
+import com.wordco.clockworkandroid.ui.NewTaskListItem
 import com.wordco.clockworkandroid.ui.theme.LATO
 import com.wordco.clockworkandroid.util.asHHMM
 import com.wordco.clockworkandroid.util.asTaskDueFormat
 
 @Composable
 fun UpcomingTaskUIListItem(
-    task: UpcomingTaskListItem,
+    task: NewTaskListItem,
     modifier: Modifier = Modifier
 ) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),

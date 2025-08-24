@@ -15,18 +15,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.domain.model.ExecutionStatus
-import com.wordco.clockworkandroid.ui.StartedTaskListItem
+import com.wordco.clockworkandroid.ui.SuspendedTaskListItem
 import com.wordco.clockworkandroid.ui.theme.LATO
 import com.wordco.clockworkandroid.util.asHHMM
 
 @Composable
 fun StartedListItem(
-    task: StartedTaskListItem,
+    task: SuspendedTaskListItem,
     modifier: Modifier = Modifier
 ) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -52,40 +50,22 @@ fun StartedListItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
-        if (task.status == ExecutionStatus.SUSPENDED) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.height(30.dp),
 
-                ) {
-                MoonImage()
-                Text(
-                    "Suspended",
-                    fontFamily = LATO,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.height(30.dp),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.height(30.dp),
 
-                ) {
-                StarImage()
-                Text(
-                    "Running",
-                    fontFamily = LATO,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            ) {
+            MoonImage()
+            Text(
+                "Suspended",
+                fontFamily = LATO,
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         Row(

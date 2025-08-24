@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import java.time.Duration
 import java.time.Instant
 
-class UpcomingTaskListItem(
+data class NewTaskListItem(
     val taskId: Long,
     val name: String,
     val dueDate: Instant?,

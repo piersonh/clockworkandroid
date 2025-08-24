@@ -20,29 +20,47 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.wordco.clockworkandroid.ui.TaskViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.ui.SuspendedTaskListItem
+import com.wordco.clockworkandroid.ui.TaskListUiState
+import com.wordco.clockworkandroid.ui.TaskListViewModel
+import com.wordco.clockworkandroid.ui.elements.ActiveTaskUiItem
 import com.wordco.clockworkandroid.ui.elements.StartedListItem
 import com.wordco.clockworkandroid.ui.elements.TaskBottomBar
 import com.wordco.clockworkandroid.ui.elements.UpcomingTaskUIListItem
+import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.theme.LATO
+import java.time.Duration
+
+@Composable
+fun TaskListPage(
+    taskListViewModel: TaskListViewModel,
+    onTaskClick: (Long) -> Unit,
+    onNewTaskClick: () -> Unit,
+) {
+    val uiState by taskListViewModel.uiState.collectAsStateWithLifecycle()
+
+    TaskListPage(
+        uiState = uiState,
+        onTaskClick = onTaskClick,
+        onNewTaskClick = onNewTaskClick,
+    )
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListPage(
+private fun TaskListPage(
+    uiState: TaskListUiState,
     onTaskClick: (Long) -> Unit,
-    taskViewModel: TaskViewModel,
-    navController: NavController
+    onNewTaskClick: () -> Unit,
 ) {
-    val startedTaskList by taskViewModel.startedTaskList.observeAsState()
-    val upcomingTaskList by taskViewModel.upcomingTaskList.observeAsState()
-
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -50,18 +68,19 @@ fun ListPage(
                     Text(
                         "Task Sessions",
                         fontFamily = LATO,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onSecondary
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary)
-
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondary)
             )
         },
         bottomBar = {
-            TaskBottomBar(navController)
+            TaskBottomBar(onNewTaskClick)
         },
         modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
+    ) {
+        innerPadding ->
+
         Box(
             modifier = Modifier
                 .padding(
@@ -72,79 +91,118 @@ fun ListPage(
                 .background(color = MaterialTheme.colorScheme.primary)
         )
         {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier
-                    .padding(5.dp)
-                    .background(color = MaterialTheme.colorScheme.primary)
-                    .fillMaxSize()
-            ) {
-                item {
-                    Text(
-                        "STARTED",
-                        fontFamily = LATO,
-                        fontSize = 25.sp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    )
-                }
-
-                startedTaskList?.let {
-                    items(
-                        startedTaskList!!,
-                        key = { task -> task.taskId }
-                    ) {
-                        StartedListItem(
-                            it,
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(shape = RoundedCornerShape(10.dp))
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .height(100.dp)
-                                // TODO: Remove curtask and make routing per task
-                                //.clickable(onClick = {
-                                //    taskViewModel.onTaskClick(it.taskId)
-                                //    controller.navigate(PageRoutes.TimerPage.route+"/${it.taskId}")
-                                //})
-                                .clickable(onClick = { onTaskClick(it.taskId) })
-                        )
-                    }
-                }
-
-
-                item {
-                    Text(
-                        "UPCOMING",
-                        fontFamily = LATO,
-                        fontSize = 25.sp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 20.dp)
-                    )
-                }
-
-                upcomingTaskList?.let {
-                    items(
-                        upcomingTaskList!!,
-                        key = { task -> task.taskId }
-                    ) {
-                        UpcomingTaskUIListItem(
-                            it,
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(shape = RoundedCornerShape(10.dp))
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .height(100.dp)
-                                // TODO: Remove curtask and make routing per task
-//                                .clickable(onClick = {
-//                                    taskViewModel.onTaskClick(it.taskId)
-//                                    controller.navigate(PageRoutes.TimerPage.route+"/${it.taskId}")
-//                                })
-                                .clickable(onClick = {onTaskClick(it.taskId)})
-                        )
-                    }
-                }
-
+            when (uiState) {
+                is TaskListUiState.Retrieved -> TaskList(
+                    uiState,
+                    onTaskClick = onTaskClick,
+                )
+                TaskListUiState.Retrieving -> Text("Loading...")
             }
         }
+    }
+}
+
+
+@Composable
+private fun TaskList(
+    uiState: TaskListUiState.Retrieved,
+    onTaskClick: (Long) -> Unit,
+) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        modifier = Modifier
+            .padding(5.dp)
+            .background(color = MaterialTheme.colorScheme.primary)
+            .fillMaxSize()
+    ) {
+        item {
+            Text(
+                "STARTED",
+                fontFamily = LATO,
+                fontSize = 25.sp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        }
+
+        if (uiState is TaskListUiState.TimerActive) {
+            item {
+                ActiveTaskUiItem(
+                    task = uiState.activeTask,
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(10.dp))
+                        .background(color = MaterialTheme.colorScheme.primaryContainer)
+                        .height(100.dp)
+                        .clickable(onClick = { onTaskClick(uiState.activeTask.taskId) })
+                )
+            }
+        }
+
+
+        items(
+            uiState.startedTasks,
+            key = { task -> task.taskId }
+        ) {
+            StartedListItem(
+                it,
+                Modifier
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(10.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .height(100.dp)
+                    .clickable(onClick = { onTaskClick(it.taskId) })
+            )
+        }
+
+
+        item {
+            Text(
+                "UPCOMING",
+                fontFamily = LATO,
+                fontSize = 25.sp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        }
+
+        items(
+            uiState.upcomingTasks,
+            key = { task -> task.taskId }
+        ) {
+            UpcomingTaskUIListItem(
+                it,
+                Modifier
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(10.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .height(100.dp)
+                    .clickable(onClick = {onTaskClick(it.taskId)})
+            )
+        }
+
+    }
+}
+
+
+@Preview
+@Composable
+private fun TaskListPagePreview() {
+    ClockworkTheme {
+        TaskListPage(
+            uiState = TaskListUiState.TimerDormant(
+                upcomingTasks = listOf(),
+                startedTasks = listOf(
+                    SuspendedTaskListItem(
+                        taskId = 0,
+                        name = "Awooga",
+                        color = Color(40,50,160),
+                        workTime = Duration.ZERO,
+                        breakTime = Duration.ZERO
+                    )
+                ),
+            ),
+            onTaskClick = {},
+            onNewTaskClick = {}
+        )
     }
 }

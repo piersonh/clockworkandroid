@@ -14,12 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.wordco.clockworkandroid.ui.navigateToNewTask
 
 @Composable
 fun TaskBottomBar(
-    navController: NavController
+    onNewTaskClick: () -> Unit,
 ) {
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.secondary,
@@ -37,7 +35,7 @@ fun TaskBottomBar(
         {
             CalImage()
             OutlinedButton(
-                onClick = { navController.navigateToNewTask() },
+                onClick = onNewTaskClick,
                 modifier = Modifier
                     .aspectRatio(1f)
                     .fillMaxSize(),

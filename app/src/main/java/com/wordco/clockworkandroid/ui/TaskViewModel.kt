@@ -19,8 +19,8 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.ui.mapper.toStartedTaskListItem
-import com.wordco.clockworkandroid.ui.mapper.toUpcomingTaskListItem
+import com.wordco.clockworkandroid.ui.mapper.toNewTaskListItem
+import com.wordco.clockworkandroid.ui.mapper.toSuspendedTaskListItem
 import kotlinx.coroutines.launch
 
 class TaskViewModel(
@@ -31,10 +31,10 @@ class TaskViewModel(
     private lateinit var tasks: LiveData<List<Task>>
 
     // mutableStateListOf??
-    lateinit var upcomingTaskList: LiveData<List<UpcomingTaskListItem>>
+    lateinit var upcomingTaskList: LiveData<List<NewTaskListItem>>
     //private set
 
-    lateinit var startedTaskList: LiveData<List<StartedTaskListItem>>
+    lateinit var startedTaskList: LiveData<List<SuspendedTaskListItem>>
     //private set
 
     var currentTask by mutableStateOf<Task?>(null)
@@ -73,11 +73,11 @@ class TaskViewModel(
 
 
     private fun setupTaskList() {
-        val comparator = UpcomingTaskListItemComparator()
+        val comparator = NewTaskListItemComparator()
 
         upcomingTaskList = tasks.map {
             it.filter { task -> task.status == ExecutionStatus.NOT_STARTED }
-                .map { task -> task.toUpcomingTaskListItem() }
+                .map { task -> task.toNewTaskListItem() }
                 .sortedWith(comparator)
         }
 
@@ -88,7 +88,7 @@ class TaskViewModel(
                         task.status == ExecutionStatus.SUSPENDED ||
                         task.status == ExecutionStatus.PAUSED
             }
-                .map { task -> task.toStartedTaskListItem() }
+                .map { task -> task.toSuspendedTaskListItem() }
         }
     }
 

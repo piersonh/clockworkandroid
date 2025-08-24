@@ -15,11 +15,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.ui.PageRoutes
+import com.wordco.clockworkandroid.ui.TaskListRoute
 import com.wordco.clockworkandroid.ui.TaskViewModel
+import com.wordco.clockworkandroid.ui.navigateToNewTask
 import com.wordco.clockworkandroid.ui.navigateToTimer
 import com.wordco.clockworkandroid.ui.newTaskPage
-import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
+import com.wordco.clockworkandroid.ui.taskListPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.timerPage
 
@@ -39,7 +41,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost (
                     navController = navController,
-                    startDestination = PageRoutes.TaskList,
+                    startDestination = TaskListRoute,
                     enterTransition = {
                         slideInHorizontally(
                             initialOffsetX = { it }, animationSpec = tween(300)
@@ -61,22 +63,14 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                 ) {
-                    composable<PageRoutes.TaskList> {
-                        ListPage (
-                            onTaskClick = {
-                                taskId ->
-                                navController.navigateToTimer(taskId)
-                            },
-                            taskViewModel,
-                            navController
-                        )
-                    }
-
+                    taskListPage(
+                        onTaskClick = navController::navigateToTimer,
+                        onNewTaskClick = navController::navigateToNewTask,
+                    )
 
                     newTaskPage (
                         onBackClick = navController::navigateUp,
                     )
-
 
                     timerPage(
                         onBackClick = navController::navigateUp,

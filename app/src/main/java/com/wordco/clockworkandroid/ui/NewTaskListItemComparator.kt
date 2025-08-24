@@ -3,8 +3,8 @@ package com.wordco.clockworkandroid.ui
 import java.time.Instant
 import java.time.Period
 
-class UpcomingTaskListItemComparator : Comparator<UpcomingTaskListItem> {
-    override fun compare(task1: UpcomingTaskListItem, task2: UpcomingTaskListItem): Int {
+class NewTaskListItemComparator : Comparator<NewTaskListItem> {
+    override fun compare(task1: NewTaskListItem, task2: NewTaskListItem): Int {
         // ORDER:
         // Tasks due in 24 hours
         // Tasks with no due date
