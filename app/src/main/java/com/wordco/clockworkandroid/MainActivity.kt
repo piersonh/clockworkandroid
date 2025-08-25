@@ -80,6 +80,11 @@ class MainActivity : ComponentActivity() {
 
                     timerPage(
                         onBackClick = navController::navigateUp,
+                        onEditClick = navController::navigateToEdit
+                    )
+
+                    editTaskPage(
+                        onBackClick = navController::navigateUp
                     )
 
                     composable<PageRoutes.TaskComplete> {

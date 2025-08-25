@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.ui
+package com.wordco.clockworkandroid
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.MutableCreationExtras
@@ -7,20 +7,21 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.wordco.clockworkandroid.ui.pages.TimerPage
+import com.wordco.clockworkandroid.ui.EditTaskViewModel
+import com.wordco.clockworkandroid.ui.pages.EditTaskPage
 import kotlinx.serialization.Serializable
 
 // See https://github.com/android/nowinandroid modularized navigation
 
 
 @Serializable
-data class TimerRoute(val id: Long)
+data class EditTaskRoute(val id: Long)
 
-fun NavController.navigateToTimer(
+fun NavController.navigateToEdit(
     taskId: Long,
     navOptions: NavOptionsBuilder.() -> Unit = {}
 ) {
-    navigate(route = TimerRoute(taskId)) {
+    navigate(route = EditTaskRoute(taskId)) {
         navOptions()
     }
 }
@@ -29,28 +30,26 @@ fun NavController.navigateToTimer(
 // https://search.brave.com/search?q=default+viewmodel+extras&conversation=e96cd8b99dbedd699a77a6&summary=1
 
 
-fun NavGraphBuilder.timerPage(
-    onBackClick: () -> Unit,
-    onEditClick: (Long) -> Unit
+fun NavGraphBuilder.editTaskPage(
+    onBackClick: () -> Unit
 ) {
-    composable<TimerRoute> {
+    composable<EditTaskRoute> {
         entry ->
-        val taskId = entry.toRoute<TimerRoute>().id
+        val taskId = entry.toRoute<EditTaskRoute>().id
 
-        val timerViewModel = ViewModelProvider.create(
+        val editTaskViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = TimerViewModel.Factory,
+            factory = EditTaskViewModel.Companion.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {
-                set(TimerViewModel.TASK_ID_KEY, taskId)
+                set(EditTaskViewModel.Companion.TASK_ID_KEY, taskId)
             }
-        )[TimerViewModel::class]
+        )[EditTaskViewModel::class]
 
-        TimerPage(
+        EditTaskPage(
             onBackClick = onBackClick,
-            timerViewModel = timerViewModel,
-            onEditClick = {onEditClick(taskId)}
+            editTaskViewModel = editTaskViewModel
         )
     }
 }
