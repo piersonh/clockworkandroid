@@ -5,19 +5,19 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
-import com.wordco.clockworkandroid.ui.pages.NewTaskPage
+import com.wordco.clockworkandroid.ui.pages.CreateNewTaskPage
 import kotlinx.serialization.Serializable
 
 // See https://github.com/android/nowinandroid modularized navigation
 
 
 @Serializable
-data object NewTaskRoute
+data object CreateNewTaskRoute
 
-fun NavController.navigateToNewTask(
+fun NavController.navigateToCreateNewTask(
     navOptions: NavOptionsBuilder.() -> Unit = {}
 ) {
-    navigate(route = NewTaskRoute) {
+    navigate(route = CreateNewTaskRoute) {
         navOptions()
     }
 }
@@ -26,20 +26,20 @@ fun NavController.navigateToNewTask(
 // https://search.brave.com/search?q=default+viewmodel+extras&conversation=e96cd8b99dbedd699a77a6&summary=1
 
 
-fun NavGraphBuilder.newTaskPage(
+fun NavGraphBuilder.createNewTaskPage(
     onBackClick: () -> Unit
 ) {
-    composable<NewTaskRoute> {
+    composable<CreateNewTaskRoute> {
         entry ->
-        val newTaskViewModel = ViewModelProvider.create(
+        val createNewTaskViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = NewTaskViewModel.Factory,
+            factory = CreateNewTaskViewModel.Factory,
             extras = entry.defaultViewModelCreationExtras
-        )[NewTaskViewModel::class]
+        )[CreateNewTaskViewModel::class]
 
-        NewTaskPage(
+        CreateNewTaskPage(
             onBackClick = onBackClick,
-            newTaskViewModel = newTaskViewModel
+            createNewTaskViewModel = createNewTaskViewModel
         )
     }
 }

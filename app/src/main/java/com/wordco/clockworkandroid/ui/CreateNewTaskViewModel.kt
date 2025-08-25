@@ -25,23 +25,23 @@ import java.time.ZoneOffset
 import kotlin.random.Random
 
 
-data class NewTaskUiState (
-    val taskName: String,
-    val colorSliderPos: Float,
-    val difficulty: Float,
-    val dueDate: LocalDate?,
-    val dueTime: LocalTime,
-    val currentModal: NewTaskViewModel.PickerModal?,
-    val estimate: NewTaskViewModel.UserEstimate?
-)
+data class CreateNewTaskUiState (
+    override val taskName: String,
+    override val colorSliderPos: Float,
+    override val difficulty: Float,
+    override val dueDate: LocalDate?,
+    override val dueTime: LocalTime,
+    override val currentModal: PickerModal?,
+    override val estimate: UserEstimate?
+) : EditTaskFormUiState
 
 
-class NewTaskViewModel (
+class CreateNewTaskViewModel (
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
-        NewTaskUiState(
+        CreateNewTaskUiState(
             taskName = "",
             colorSliderPos = Random.nextFloat(),
             difficulty = 0f,
@@ -55,16 +55,7 @@ class NewTaskViewModel (
         )
     )
 
-    val uiState: StateFlow<NewTaskUiState> = _uiState.asStateFlow()
-
-    data class UserEstimate (
-        val minutes: Int,
-        val hours: Int,
-    )
-
-    enum class PickerModal {
-        DATE, TIME
-    }
+    val uiState: StateFlow<CreateNewTaskUiState> = _uiState.asStateFlow()
 
 
     fun onTaskNameChange(newName: String) {
@@ -161,7 +152,7 @@ class NewTaskViewModel (
                 //val savedStateHandle = createSavedStateHandle()
                 val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
 
-                NewTaskViewModel (
+                CreateNewTaskViewModel (
                     taskRepository = taskRepository,
                     //savedStateHandle = savedStateHandle
                 )
