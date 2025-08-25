@@ -290,15 +290,6 @@ fun EditTaskForm(
                                 onDueDateChange(dueDatePickerState.selectedDateMillis)
                                 onDismissDatePicker()
                             }
-//                                onClick = {
-//                                    dueDate = dueDatePickerState.selectedDateMillis?.let {
-//                                        Instant.ofEpochMilli(
-//                                            // Convert to local time
-//                                            it - (ZonedDateTime.now().offset.totalSeconds * 1000)
-//                                        )
-//                                    }
-//                                    pickerState = 0
-//                                }
                         ) {
                             Text("OK")
                         }

@@ -19,8 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.ui.EditTaskUiState
-import com.wordco.clockworkandroid.ui.EditTaskViewModel
+import com.wordco.clockworkandroid.ui.CreateNewTaskUiState
+import com.wordco.clockworkandroid.ui.CreateNewTaskViewModel
 import com.wordco.clockworkandroid.ui.UserEstimate
 import com.wordco.clockworkandroid.ui.elements.BackImage
 import com.wordco.clockworkandroid.ui.elements.EditTaskForm
@@ -28,34 +28,36 @@ import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import java.time.LocalDate
 import java.time.LocalTime
 
-@Composable
-fun EditTaskPage (
-    onBackClick: () -> Unit,
-    editTaskViewModel: EditTaskViewModel
-) {
-    val uiState by editTaskViewModel.uiState.collectAsStateWithLifecycle()
 
-    EditTaskPage(
+@Composable
+fun CreateNewTaskPage (
+    onBackClick: () -> Unit,
+    newTaskViewModel: CreateNewTaskViewModel
+) {
+    val uiState by newTaskViewModel.uiState.collectAsStateWithLifecycle()
+
+    CreateNewTaskPage(
         uiState = uiState,
         onBackClick = onBackClick,
-        onTaskNameChange = editTaskViewModel::onTaskNameChange,
-        onColorSliderChange = editTaskViewModel::onColorSliderChange,
-        onDifficultyChange = editTaskViewModel::onDifficultyChange,
-        onShowDatePicker = editTaskViewModel::onShowDatePicker,
-        onDismissDatePicker = editTaskViewModel::onDismissDatePicker,
-        onDueDateChange = editTaskViewModel::onDueDateChange,
-        onShowTimePicker = editTaskViewModel::onShowTimePicker,
-        onDismissTimePicker = editTaskViewModel::onDismissTimePicker,
-        onDueTimeChange = editTaskViewModel::onDueTimeChange,
-        onEstimateChange = editTaskViewModel::onEstimateChange,
-        onEditTaskClick = editTaskViewModel::onEditTaskClick,
+        onTaskNameChange = newTaskViewModel::onTaskNameChange,
+        onColorSliderChange = newTaskViewModel::onColorSliderChange,
+        onDifficultyChange = newTaskViewModel::onDifficultyChange,
+        onShowDatePicker = newTaskViewModel::onShowDatePicker,
+        onDismissDatePicker = newTaskViewModel::onDismissDatePicker,
+        onDueDateChange = newTaskViewModel::onDueDateChange,
+        onShowTimePicker = newTaskViewModel::onShowTimePicker,
+        onDismissTimePicker = newTaskViewModel::onDismissTimePicker,
+        onDueTimeChange = newTaskViewModel::onDueTimeChange,
+        onEstimateChange = newTaskViewModel::onEstimateChange,
+        onCreateTaskClick = newTaskViewModel::onCreateTaskClick,
     )
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditTaskPage(
-    uiState: EditTaskUiState,
+fun CreateNewTaskPage(
+    uiState: CreateNewTaskUiState,
     onBackClick: () -> Unit,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
@@ -67,7 +69,7 @@ private fun EditTaskPage(
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate) -> Unit,
-    onEditTaskClick: () -> EditTaskViewModel.EditTaskResult,
+    onCreateTaskClick: () -> CreateNewTaskViewModel.CreateTaskResult,
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary, topBar = {
@@ -85,56 +87,54 @@ private fun EditTaskPage(
             )
         }
     ) { innerPadding ->
-        when (uiState) {
-            EditTaskUiState.Retrieving -> Text("Loading...")
-            is EditTaskUiState.Retrieved -> EditTaskForm(
-                uiState = uiState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(innerPadding)
-                    .padding(horizontal = 30.dp, vertical = 20.dp),
-                onTaskNameChange = onTaskNameChange,
-                onColorSliderChange = onColorSliderChange,
-                onDifficultyChange = onDifficultyChange,
-                onShowDatePicker = onShowDatePicker,
-                onDismissDatePicker = onDismissDatePicker,
-                onDueDateChange = onDueDateChange,
-                onShowTimePicker = onShowTimePicker,
-                onDismissTimePicker = onDismissTimePicker,
-                onDueTimeChange = onDueTimeChange,
-                onEstimateChange = onEstimateChange,
-                confirmButton = {
-                    Button(colors = ButtonDefaults.buttonColors(
+        EditTaskForm(
+            uiState = uiState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(innerPadding)
+                .padding(horizontal = 30.dp, vertical = 20.dp),
+            onTaskNameChange = onTaskNameChange,
+            onColorSliderChange = onColorSliderChange,
+            onDifficultyChange = onDifficultyChange,
+            onShowDatePicker = onShowDatePicker,
+            onDismissDatePicker = onDismissDatePicker,
+            onDueDateChange = onDueDateChange,
+            onShowTimePicker = onShowTimePicker,
+            onDismissTimePicker = onDismissTimePicker,
+            onDueTimeChange = onDueTimeChange,
+            onEstimateChange = onEstimateChange,
+            confirmButton = {
+                Button(
+                    colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
 
                         ),
-                        onClick = {
-                            when (onEditTaskClick()) {
-                                EditTaskViewModel.EditTaskResult.MissingName -> { }
-                                EditTaskViewModel.EditTaskResult.Success -> onBackClick()
-                            }
+                    onClick = {
+                        when (onCreateTaskClick()) {
+                            CreateNewTaskViewModel.CreateTaskResult.MissingName -> {}
+                            CreateNewTaskViewModel.CreateTaskResult.Success -> onBackClick()
                         }
-                    ) {
-                        Text("Save",
-                            color = MaterialTheme.colorScheme.onSecondary,
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
-
-                        )
                     }
-                }
-            )
-        }
+                ) {
+                    Text(
+                        "Add",
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
 
+                    )
+                }
+            }
+        )
     }
 }
 
 @Preview
 @Composable
-private fun EditTaskPagePreview() {
+private fun CreateNewTaskPagePreview() {
     ClockworkTheme {
-        EditTaskPage(
-            uiState = EditTaskUiState.Retrieved(
+        CreateNewTaskPage(
+            uiState = CreateNewTaskUiState(
                 taskName = "",
                 colorSliderPos = 0f,
                 difficulty = 0f,
@@ -154,7 +154,7 @@ private fun EditTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onEditTaskClick = { EditTaskViewModel.EditTaskResult.Success }
+            onCreateTaskClick = { CreateNewTaskViewModel.CreateTaskResult.Success }
         )
     }
 }

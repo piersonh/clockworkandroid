@@ -34,36 +34,54 @@ private fun Color.hue() : Float {
     return hsl[0]
 }
 
+sealed interface EditTaskUiState {
+    data object Retrieving : EditTaskUiState
 
-data class EditTaskUiState (
-    override val taskName: String = "N/A",
-    override val colorSliderPos: Float = 0f,
-    override val difficulty: Float = 0f,
-    override val dueDate: LocalDate? = LocalDate.now(),
-    override val dueTime: LocalTime? = LocalTime.now(),
-    override val currentModal: PickerModal? = null,
-    override val estimate: UserEstimate? = UserEstimate(15,0)
-) : EditTaskFormUiState
+    data class Retrieved (
+        override val taskName: String,
+        override val colorSliderPos: Float,
+        override val difficulty: Float,
+        override val dueDate: LocalDate?,
+        override val dueTime: LocalTime?,
+        override val currentModal: PickerModal?,
+        override val estimate: UserEstimate?,
+    ) : EditTaskUiState, EditTaskFormUiState
+}
 
 
 class EditTaskViewModel (
     private val taskRepository: TaskRepository,
     private val taskId: Long
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState())
+    private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
     private lateinit var _loadedTask: Task
+
+    // We might want to split these into their own MutableStateFlow()s
+    private val _internalState = MutableStateFlow(EditTaskUiState.Retrieved(
+        taskName = "",
+        colorSliderPos = 0f,
+        difficulty = 0f,
+        dueDate = null,
+        dueTime = null,
+        currentModal = null,
+        estimate = null
+    ))
+
     init {
         viewModelScope.launch {
             _loadedTask = taskRepository.getTask(taskId).first()
+
             with (_loadedTask) {
-                _uiState.update {
-                    EditTaskUiState(
+                _internalState.update {
+                    EditTaskUiState.Retrieved(
                         taskName = name,
                         colorSliderPos = color.hue()/360,
                         difficulty = difficulty.toFloat(),
                         dueDate = dueDate?.atZone(ZoneId.systemDefault())?.toLocalDate(),
-                        dueTime = dueDate?.atZone(ZoneId.systemDefault())?.toLocalTime(),
+                        dueTime = dueDate?.run {
+                            atZone(ZoneId.systemDefault())?.toLocalTime()
+                        } ?: LocalTime.MIDNIGHT,
                         currentModal = null,
                         estimate = UserEstimate(
                             minutes = 15,
@@ -72,33 +90,35 @@ class EditTaskViewModel (
                     )
                 }
             }
+
+            _internalState.collect { state ->
+                _uiState.update { state }
+            }
         }
     }
 
-
-
     fun onTaskNameChange(newName: String) {
-        _uiState.update { it.copy(taskName = newName) }
+        _internalState.update { it.copy(taskName = newName) }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.update { it.copy(colorSliderPos = newPos) }
+        _internalState.update { it.copy(colorSliderPos = newPos) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.update { it.copy(difficulty = newDifficulty) }
+        _internalState.update { it.copy(difficulty = newDifficulty) }
     }
 
     fun onShowDatePicker() {
-        _uiState.update { it.copy(currentModal = PickerModal.DATE) }
+        _internalState.update { it.copy(currentModal = PickerModal.DATE) }
     }
 
     fun onDismissDatePicker() {
-        _uiState.update { it.copy(currentModal = null) }
+        _internalState.update { it.copy(currentModal = null) }
     }
 
     fun onDueDateChange(newDate: Long?) {
-        _uiState.update { it.copy(dueDate = newDate?.let {
+        _internalState.update { it.copy(dueDate = newDate?.let {
             Instant.ofEpochMilli(newDate)
                 .atZone(ZoneOffset.UTC)
                 .toLocalDate()
@@ -106,19 +126,19 @@ class EditTaskViewModel (
     }
 
     fun onShowTimePicker() {
-        _uiState.update { it.copy(currentModal = PickerModal.TIME) }
+        _internalState.update { it.copy(currentModal = PickerModal.TIME) }
     }
 
     fun onDismissTimePicker() {
-        _uiState.update { it.copy(currentModal = null) }
+        _internalState.update { it.copy(currentModal = null) }
     }
 
     fun onDueTimeChange(newTime: LocalTime) {
-        _uiState.update { it.copy(dueTime = newTime) }
+        _internalState.update { it.copy(dueTime = newTime) }
     }
 
     fun onEstimateChange(newEstimate: UserEstimate) {
-        _uiState.update { it.copy(estimate = newEstimate) }
+        _internalState.update { it.copy(estimate = newEstimate) }
     }
 
     sealed interface EditTaskResult {
@@ -128,7 +148,7 @@ class EditTaskViewModel (
     }
 
     fun onEditTaskClick() : EditTaskResult {
-        with(_uiState.value) {
+        with(_internalState.value) {
 
             if (taskName.isBlank()) {
                 return EditTaskResult.MissingName

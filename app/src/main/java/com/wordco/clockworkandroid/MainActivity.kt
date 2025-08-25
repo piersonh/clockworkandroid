@@ -19,7 +19,7 @@ import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.editTaskPage
 import com.wordco.clockworkandroid.ui.navigateToEdit
 import com.wordco.clockworkandroid.ui.navigateToTimer
-import com.wordco.clockworkandroid.ui.newTaskPage
+import com.wordco.clockworkandroid.ui.newCreateTaskPage
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                     }
 
 
-                    newTaskPage (
+                    newCreateTaskPage (
                         onBackClick = navController::navigateUp,
                     )
 
