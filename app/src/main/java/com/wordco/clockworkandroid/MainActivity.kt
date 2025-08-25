@@ -16,8 +16,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskViewModel
+import com.wordco.clockworkandroid.ui.editTaskPage
+import com.wordco.clockworkandroid.ui.navigateToEdit
 import com.wordco.clockworkandroid.ui.navigateToTimer
-import com.wordco.clockworkandroid.ui.newTaskPage
+import com.wordco.clockworkandroid.ui.createNewTaskPage
 import com.wordco.clockworkandroid.ui.pages.ListPage
 import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
@@ -73,13 +75,18 @@ class MainActivity : ComponentActivity() {
                     }
 
 
-                    newTaskPage (
+                    createNewTaskPage (
                         onBackClick = navController::navigateUp,
                     )
 
 
                     timerPage(
                         onBackClick = navController::navigateUp,
+                        onEditClick = navController::navigateToEdit
+                    )
+
+                    editTaskPage(
+                        onBackClick = navController::navigateUp
                     )
 
                     composable<PageRoutes.TaskComplete> {
