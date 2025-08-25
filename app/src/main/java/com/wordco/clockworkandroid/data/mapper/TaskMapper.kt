@@ -7,9 +7,9 @@ fun Task.toTaskEntity() : TaskEntity {
     return TaskEntity(
         taskId = taskId,
         name = name,
-        dueDate = dueDate,
+        dueDate = fromOptionalInstant(dueDate),
         difficulty = difficulty,
-        color = color,
-        status = status
+        color = fromColor(color),
+        status = fromTaskStatus(status)
     )
 }

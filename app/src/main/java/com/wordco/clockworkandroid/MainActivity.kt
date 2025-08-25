@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     taskListPage(
                         onTaskClick = navController::navigateToTimer,
-                        onNewTaskClick = navController::navigateToNewTask,
+                        onCreateNewTaskClick = navController::navigateToNewTask,
                     )
 
                     newTaskPage (

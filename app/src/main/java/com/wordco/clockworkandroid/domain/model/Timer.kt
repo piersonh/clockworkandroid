@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.domain.model
 
+import android.util.Log
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -73,6 +74,10 @@ class Timer(
 
     private var incJob: Job? = null
     private var collectionJob: Job? = null
+
+    private var dbWriteJob: Job? = null
+
+    private val dbWritesBuffer = mutableListOf<suspend CoroutineScope.() -> Unit>()
 
 
     init {
@@ -200,6 +205,8 @@ class Timer(
             ) {
                 taskState, loadedTask, workTime, breakTime ->
 
+                Log.i("TimerStateFlow", "$loadedTask")
+
                 when (taskState) {
                     State.DORMANT -> TimerState.Dormant
                     State.INIT,
@@ -266,6 +273,7 @@ class Timer(
         TASK REGISTRY UTILITIES
      */
     private suspend fun Task.updateTaskStatus(newStatus: ExecutionStatus) {
+        Log.i("TaskStatus", "Updated task's status to $newStatus")
         taskRepository.updateTask(copy(status = newStatus))
     }
 
@@ -285,6 +293,24 @@ class Timer(
                 type = type
             )
         )
+    }
+
+    private fun enqueueDBWrite(writeOp: suspend CoroutineScope.() -> Unit) {
+        Log.i("DBWrite", "${dbWriteJob?.isActive?:false}")
+        if (dbWriteJob?.isActive?:true) {
+            dbWriteJob = coroutineScope.launch {
+                writeOp()
+
+                while (dbWritesBuffer.isNotEmpty()) {
+                    dbWritesBuffer.removeFirstOrNull()!!()
+                }
+            }
+            dbWriteJob?.invokeOnCompletion{ throwable ->
+                dbWriteJob = null
+            }
+        } else {
+            dbWritesBuffer.add(writeOp)
+        }
     }
 
 
@@ -359,8 +385,9 @@ class Timer(
 
         setRunning()
 
-        coroutineScope.launch {
+        enqueueDBWrite {
             _loadedTask.value!!.run {
+                Log.i("DBWrite", "Resumed")
                 updateTaskStatus(ExecutionStatus.RUNNING)
 
                 // Check if this is a new task before updating the last segment
@@ -389,8 +416,9 @@ class Timer(
 
         setPaused()
 
-        coroutineScope.launch {
+        enqueueDBWrite {
             _loadedTask.value!!.run {
+                Log.i("DBWrite", "Paused")
                 updateTaskStatus(ExecutionStatus.PAUSED)
                 endLastSegment()
                 startNewSegment(SegmentType.BREAK)
@@ -414,8 +442,9 @@ class Timer(
 
         setSuspended()
 
-        coroutineScope.launch {
+        enqueueDBWrite {
             _loadedTask.value!!.run {
+                Log.i("DBWrite", "Suspended")
                 updateTaskStatus(ExecutionStatus.SUSPENDED)
                 endLastSegment()
                 startNewSegment(SegmentType.SUSPEND)

@@ -40,22 +40,13 @@ interface TaskDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMarkers(markers: List<MarkerEntity>)
 
-//    @Transaction
-//    suspend fun insertTask(task: Task) {
-//        val taskId = insertTaskProperties(task.taskProperties)
-//
-//        for (segment in task.segments) {
-//            val segmentToInsert = segment.copy(taskId = taskId)
-//            insertSegment(segmentToInsert)
-//
-//        }
-//
-//        for (marker in task.markers) {
-//            val markerToInsert = marker.copy(taskId = taskId)
-//            insertMarker(markerToInsert)
-//
-//        }
-//    }
+
+    @Transaction
+    suspend fun updateSegmentAndInsertNew(existing: SegmentEntity, new: SegmentEntity) {
+        updateSegment(existing)
+        insertSegment(new)
+    }
+
 
     @Query("SELECT EXISTS (SELECT 1 FROM TaskEntity WHERE status IN (1,2))")
     suspend fun hasActiveTask() : Boolean

@@ -24,6 +24,18 @@ fun StarImage() = Image(
 
 @Preview
 @Composable
+fun RunningImage() = Image(
+    painter = painterResource(id = R.drawable.running),
+    contentDescription = "Running person",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f),
+    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+)
+
+
+
+@Preview
+@Composable
 fun ClockImage() = Image(
     painter = painterResource(id = R.drawable.clock),
     contentDescription = "Time",

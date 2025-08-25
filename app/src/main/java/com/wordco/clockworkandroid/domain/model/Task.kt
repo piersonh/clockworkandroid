@@ -18,4 +18,17 @@ data class Task (
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
     val breakTime: Duration = segments.filter { it.type == SegmentType.BREAK && it.duration != null}
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
+
+
+    fun status() : ExecutionStatus {
+        if (segments.isEmpty()) {
+            return ExecutionStatus.NOT_STARTED
+        }
+
+        return when (segments.last().type) {
+            SegmentType.WORK -> ExecutionStatus.RUNNING
+            SegmentType.BREAK -> ExecutionStatus.PAUSED
+            SegmentType.SUSPEND -> ExecutionStatus.SUSPENDED
+        }
+    }
 }

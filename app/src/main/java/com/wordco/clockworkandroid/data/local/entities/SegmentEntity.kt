@@ -4,11 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
-import com.wordco.clockworkandroid.data.local.DurationConverter
-import com.wordco.clockworkandroid.data.local.TimestampConverter
-import java.time.Duration
-import java.time.Instant
 
 @Entity(
     foreignKeys = [ForeignKey(
@@ -24,12 +19,7 @@ data class SegmentEntity (
     val taskId: Long,
     // TODO change the type converters to a mapper where the entity classes use
     //  database native types
-    @TypeConverters(TimestampConverter::class) var startTime: Instant,
-    @TypeConverters(DurationConverter::class) var duration: Duration?,
+    var startTime: Long,
+    var duration: Long?,
     val type: Int
-) {
-
-    fun setEnd(endTime: Instant) {
-        duration = Duration.between(startTime, endTime)
-    }
-}
+)

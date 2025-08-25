@@ -12,7 +12,7 @@ fun Task.toActiveTaskItem(
         elapsedWorkSeconds = elapsedWorkSeconds,
         elapsedBreakMinutes = elapsedBreakMinutes,
         taskId = taskId,
-        status = status,
+        status = status(),
         color = color,
     )
 }

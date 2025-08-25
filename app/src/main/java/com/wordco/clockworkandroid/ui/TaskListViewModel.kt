@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -29,18 +30,18 @@ sealed interface TaskListUiState {
     data object Retrieving : TaskListUiState
 
     sealed interface Retrieved : TaskListUiState {
-        val upcomingTasks: List<NewTaskListItem>
-        val startedTasks: List<SuspendedTaskListItem>
+        val newTasks: List<NewTaskListItem>
+        val suspendedTasks: List<SuspendedTaskListItem>
     }
 
     data class TimerDormant(
-        override val upcomingTasks: List<NewTaskListItem>,
-        override val startedTasks: List<SuspendedTaskListItem>,
+        override val newTasks: List<NewTaskListItem>,
+        override val suspendedTasks: List<SuspendedTaskListItem>,
     ) : Retrieved
 
     data class TimerActive(
-        override val upcomingTasks: List<NewTaskListItem>,
-        override val startedTasks: List<SuspendedTaskListItem>,
+        override val newTasks: List<NewTaskListItem>,
+        override val suspendedTasks: List<SuspendedTaskListItem>,
         val activeTask: ActiveTaskListItem,
     ) : Retrieved
 }
@@ -89,16 +90,17 @@ class TaskListViewModel(
                     TimerState.Dormant,
                     TimerState.Preparing -> {
                         TaskListUiState.TimerDormant(
-                            upcomingTasks = newTasks,
-                            startedTasks = suspendedTasks,
+                            newTasks = newTasks,
+                            suspendedTasks = suspendedTasks,
                         )
                     }
 
                     is TimerState.Paused,
                     is TimerState.Running -> {
+                        Log.i("ListStateFlow", "${timerState.task}")
                         TaskListUiState.TimerActive(
-                            upcomingTasks = newTasks,
-                            startedTasks = suspendedTasks,
+                            newTasks = newTasks,
+                            suspendedTasks = suspendedTasks,
                             activeTask = timerState.task.toActiveTaskItem(
                                 elapsedWorkSeconds = timerState.elapsedWorkSeconds,
                                 elapsedBreakMinutes = timerState.elapsedBreakMinutes,

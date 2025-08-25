@@ -21,7 +21,7 @@ data object TaskListRoute
 
 fun NavGraphBuilder.taskListPage(
     onTaskClick: (Long) -> Unit,
-    onNewTaskClick: () -> Unit,
+    onCreateNewTaskClick: () -> Unit,
 ) {
     composable<TaskListRoute> {
         entry ->
@@ -35,7 +35,7 @@ fun NavGraphBuilder.taskListPage(
         TaskListPage(
             taskListViewModel = taskListViewModel,
             onTaskClick = onTaskClick,
-            onNewTaskClick = onNewTaskClick
+            onCreateNewTaskClick = onCreateNewTaskClick
         )
     }
 }

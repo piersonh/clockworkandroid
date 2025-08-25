@@ -7,7 +7,7 @@ fun MarkerEntity.toMarker() : Marker {
     return Marker(
         markerId = markerId,
         taskId = taskId,
-        startTime = startTime,
+        startTime = toInstant(startTime),
         label = label
     )
 }
@@ -16,7 +16,7 @@ fun Marker.toMarkerEntity() : MarkerEntity {
     return MarkerEntity(
         markerId = markerId,
         taskId = taskId,
-        startTime = startTime,
+        startTime = fromInstant(startTime),
         label = label
     )
 }

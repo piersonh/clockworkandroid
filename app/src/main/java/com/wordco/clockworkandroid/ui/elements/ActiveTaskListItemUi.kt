@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wordco.clockworkandroid.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.ui.ActiveTaskListItem
 import com.wordco.clockworkandroid.ui.theme.LATO
 import java.util.Locale
@@ -50,31 +51,52 @@ fun ActiveTaskUiItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             modifier = Modifier.height(30.dp),
-
-            ) {
-            StarImage()
-            Text(
-                "Running",
-                fontFamily = LATO,
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
-            )
+        ) {
+            when (task.status) {
+                ExecutionStatus.RUNNING -> {
+                    RunningImage()
+                    Text(
+                        "Running",
+                        fontFamily = LATO,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                ExecutionStatus.PAUSED -> {
+                    MugImage()
+                    Text(
+                        "Paused",
+                        fontFamily = LATO,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                else -> throw RuntimeException("Invalid active task state")
+            }
         }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
-        )
-        {
+        ) {
             ClockImage()
             Text(
-                task.elapsedWorkSeconds.toHHMM(),
+                task.elapsedWorkSeconds.let { secs ->
+                    String.format(
+                        Locale.getDefault(),
+                        "%02d:%02d",
+                        secs / 3600, (secs % 3600) / 60
+                    )
+                },
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -82,7 +104,13 @@ fun ActiveTaskUiItem(
             )
             MugImage()
             Text(
-                task.elapsedBreakMinutes.toHHMM(),
+                task.elapsedBreakMinutes.let { mins ->
+                    String.format(
+                        Locale.getDefault(),
+                        "%02d:%02d",
+                        mins / 60, mins % 60
+                    )
+                },
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -90,14 +118,4 @@ fun ActiveTaskUiItem(
             )
         }
     }
-}
-
-
-
-private fun Int.toHHMM() : String {
-    return String.format(
-        Locale.getDefault(),
-        "%02d:%02d",
-        this / 3600, (this % 3600) / 60
-    )
 }

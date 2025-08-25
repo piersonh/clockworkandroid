@@ -58,4 +58,14 @@ class TaskRepositoryImpl (
     override suspend fun updateSegment(segment: Segment) {
         taskDao.updateSegment(segment.toSegmentEntity())
     }
+
+    override suspend fun updateSegmentAndInsertNew(
+        existing: Segment,
+        new: Segment
+    ) {
+        taskDao.updateSegmentAndInsertNew(
+            existing = existing.toSegmentEntity(),
+            new = new.toSegmentEntity()
+        )
+    }
 }

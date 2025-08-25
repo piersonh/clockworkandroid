@@ -9,10 +9,10 @@ fun TaskWithExecutionDataObject.toTask() : Task {
     return Task(
         taskId = taskEntity.taskId,
         name = taskEntity.name,
-        dueDate = taskEntity.dueDate,
+        dueDate = toOptionalInstant(taskEntity.dueDate),
         difficulty = taskEntity.difficulty,
-        color = taskEntity.color,
-        status = taskEntity.status,
+        color = toColor(taskEntity.color),
+        status = toTaskStatus(taskEntity.status),
         segments = segments,
         markers = markers.map { markerEntity -> markerEntity.toMarker() },
     )

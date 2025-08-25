@@ -42,14 +42,14 @@ import java.time.Duration
 fun TaskListPage(
     taskListViewModel: TaskListViewModel,
     onTaskClick: (Long) -> Unit,
-    onNewTaskClick: () -> Unit,
+    onCreateNewTaskClick: () -> Unit,
 ) {
     val uiState by taskListViewModel.uiState.collectAsStateWithLifecycle()
 
     TaskListPage(
         uiState = uiState,
         onTaskClick = onTaskClick,
-        onNewTaskClick = onNewTaskClick,
+        onCreateNewTaskClick = onCreateNewTaskClick,
     )
 }
 
@@ -59,7 +59,7 @@ fun TaskListPage(
 private fun TaskListPage(
     uiState: TaskListUiState,
     onTaskClick: (Long) -> Unit,
-    onNewTaskClick: () -> Unit,
+    onCreateNewTaskClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -75,7 +75,7 @@ private fun TaskListPage(
             )
         },
         bottomBar = {
-            TaskBottomBar(onNewTaskClick)
+            TaskBottomBar(onCreateNewTaskClick)
         },
         modifier = Modifier.fillMaxSize()
     ) {
@@ -140,7 +140,7 @@ private fun TaskList(
 
 
         items(
-            uiState.startedTasks,
+            uiState.suspendedTasks,
             key = { task -> task.taskId }
         ) {
             StartedListItem(
@@ -166,7 +166,7 @@ private fun TaskList(
         }
 
         items(
-            uiState.upcomingTasks,
+            uiState.newTasks,
             key = { task -> task.taskId }
         ) {
             UpcomingTaskUIListItem(
@@ -190,8 +190,8 @@ private fun TaskListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                upcomingTasks = listOf(),
-                startedTasks = listOf(
+                newTasks = listOf(),
+                suspendedTasks = listOf(
                     SuspendedTaskListItem(
                         taskId = 0,
                         name = "Awooga",
@@ -202,7 +202,7 @@ private fun TaskListPagePreview() {
                 ),
             ),
             onTaskClick = {},
-            onNewTaskClick = {}
+            onCreateNewTaskClick = {}
         )
     }
 }

@@ -21,13 +21,7 @@ import kotlinx.coroutines.launch
         SegmentEntity::class,
         MarkerEntity::class
                ],
-    version = 7)
-@TypeConverters(
-    TimestampConverter::class,
-    DurationConverter::class,
-    TaskStatusConverter::class,
-    ColorConverter::class
-)
+    version = 8)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 
