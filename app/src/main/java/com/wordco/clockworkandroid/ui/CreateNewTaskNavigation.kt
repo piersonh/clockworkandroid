@@ -26,12 +26,12 @@ fun NavController.navigateToCreateNewTask(
 // https://search.brave.com/search?q=default+viewmodel+extras&conversation=e96cd8b99dbedd699a77a6&summary=1
 
 
-fun NavGraphBuilder.newCreateTaskPage(
+fun NavGraphBuilder.createNewTaskPage(
     onBackClick: () -> Unit
 ) {
     composable<CreateNewTaskRoute> {
         entry ->
-        val newTaskViewModel = ViewModelProvider.create(
+        val createNewTaskViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
             factory = CreateNewTaskViewModel.Factory,
             extras = entry.defaultViewModelCreationExtras
@@ -39,7 +39,7 @@ fun NavGraphBuilder.newCreateTaskPage(
 
         CreateNewTaskPage(
             onBackClick = onBackClick,
-            newTaskViewModel = newTaskViewModel
+            createNewTaskViewModel = createNewTaskViewModel
         )
     }
 }

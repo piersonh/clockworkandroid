@@ -32,24 +32,24 @@ import java.time.LocalTime
 @Composable
 fun CreateNewTaskPage (
     onBackClick: () -> Unit,
-    newTaskViewModel: CreateNewTaskViewModel
+    createNewTaskViewModel: CreateNewTaskViewModel
 ) {
-    val uiState by newTaskViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by createNewTaskViewModel.uiState.collectAsStateWithLifecycle()
 
     CreateNewTaskPage(
         uiState = uiState,
         onBackClick = onBackClick,
-        onTaskNameChange = newTaskViewModel::onTaskNameChange,
-        onColorSliderChange = newTaskViewModel::onColorSliderChange,
-        onDifficultyChange = newTaskViewModel::onDifficultyChange,
-        onShowDatePicker = newTaskViewModel::onShowDatePicker,
-        onDismissDatePicker = newTaskViewModel::onDismissDatePicker,
-        onDueDateChange = newTaskViewModel::onDueDateChange,
-        onShowTimePicker = newTaskViewModel::onShowTimePicker,
-        onDismissTimePicker = newTaskViewModel::onDismissTimePicker,
-        onDueTimeChange = newTaskViewModel::onDueTimeChange,
-        onEstimateChange = newTaskViewModel::onEstimateChange,
-        onCreateTaskClick = newTaskViewModel::onCreateTaskClick,
+        onTaskNameChange = createNewTaskViewModel::onTaskNameChange,
+        onColorSliderChange = createNewTaskViewModel::onColorSliderChange,
+        onDifficultyChange = createNewTaskViewModel::onDifficultyChange,
+        onShowDatePicker = createNewTaskViewModel::onShowDatePicker,
+        onDismissDatePicker = createNewTaskViewModel::onDismissDatePicker,
+        onDueDateChange = createNewTaskViewModel::onDueDateChange,
+        onShowTimePicker = createNewTaskViewModel::onShowTimePicker,
+        onDismissTimePicker = createNewTaskViewModel::onDismissTimePicker,
+        onDueTimeChange = createNewTaskViewModel::onDueTimeChange,
+        onEstimateChange = createNewTaskViewModel::onEstimateChange,
+        onCreateTaskClick = createNewTaskViewModel::onCreateTaskClick,
     )
 }
 
