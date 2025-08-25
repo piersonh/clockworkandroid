@@ -56,9 +56,7 @@ fun DateTimePickerDialog (
                         color = MaterialTheme.colorScheme.surface
                     ),
         ) {
-            Column (
-
-            ) {
+            Column {
                 when (state) {
                     0 -> {
                         DatePicker(
