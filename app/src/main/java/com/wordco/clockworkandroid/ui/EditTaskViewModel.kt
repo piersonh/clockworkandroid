@@ -28,23 +28,22 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 
-val Color.hue: Float
-    get() {
-        val hsl = FloatArray(3)
-        ColorUtils.colorToHSL(this.toArgb(), hsl)
-        return hsl[0]
-    }
+private fun Color.hue() : Float {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(this.toArgb(), hsl)
+    return hsl[0]
+}
 
 
 data class EditTaskUiState (
-    val taskName: String = "N/A",
-    val colorSliderPos: Float = 0f,
-    val difficulty: Float = 0f,
-    val dueDate: LocalDate? = LocalDate.now(),
-    val dueTime: LocalTime? = LocalTime.now(),
-    val currentModal: EditTaskViewModel.PickerModal? = null,
-    val estimate: EditTaskViewModel.UserEstimate? = EditTaskViewModel.UserEstimate(15,0)
-)
+    override val taskName: String = "N/A",
+    override val colorSliderPos: Float = 0f,
+    override val difficulty: Float = 0f,
+    override val dueDate: LocalDate? = LocalDate.now(),
+    override val dueTime: LocalTime? = LocalTime.now(),
+    override val currentModal: PickerModal? = null,
+    override val estimate: UserEstimate? = UserEstimate(15,0)
+) : EditTaskFormUiState
 
 
 class EditTaskViewModel (
@@ -61,7 +60,7 @@ class EditTaskViewModel (
                 _uiState.update {
                     EditTaskUiState(
                         taskName = name,
-                        colorSliderPos = color.hue/360,
+                        colorSliderPos = color.hue()/360,
                         difficulty = difficulty.toFloat(),
                         dueDate = dueDate?.atZone(ZoneId.systemDefault())?.toLocalDate(),
                         dueTime = dueDate?.atZone(ZoneId.systemDefault())?.toLocalTime(),
@@ -75,14 +74,7 @@ class EditTaskViewModel (
             }
         }
     }
-    data class UserEstimate (
-        val minutes: Int,
-        val hours: Int,
-    )
 
-    enum class PickerModal {
-        DATE, TIME
-    }
 
 
     fun onTaskNameChange(newName: String) {

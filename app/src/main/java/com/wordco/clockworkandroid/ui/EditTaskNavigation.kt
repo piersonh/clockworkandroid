@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid
+package com.wordco.clockworkandroid.ui
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.MutableCreationExtras
@@ -7,7 +7,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.wordco.clockworkandroid.ui.EditTaskViewModel
 import com.wordco.clockworkandroid.ui.pages.EditTaskPage
 import kotlinx.serialization.Serializable
 
@@ -39,7 +38,7 @@ fun NavGraphBuilder.editTaskPage(
 
         val editTaskViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = EditTaskViewModel.Companion.Factory,
+            factory = EditTaskViewModel.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {

@@ -16,6 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskViewModel
+import com.wordco.clockworkandroid.ui.editTaskPage
+import com.wordco.clockworkandroid.ui.navigateToEdit
 import com.wordco.clockworkandroid.ui.navigateToTimer
 import com.wordco.clockworkandroid.ui.newTaskPage
 import com.wordco.clockworkandroid.ui.pages.ListPage
