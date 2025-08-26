@@ -10,6 +10,6 @@ fun Task.toTaskEntity() : TaskEntity {
         dueDate = fromOptionalInstant(dueDate),
         difficulty = difficulty,
         color = fromColor(color),
-        status = fromTaskStatus(status)
+        status = getStatus()
     )
 }

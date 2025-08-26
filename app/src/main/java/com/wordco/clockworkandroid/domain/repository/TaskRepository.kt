@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.domain.repository
 
 import com.wordco.clockworkandroid.domain.model.Segment
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.domain.model.Task
 import kotlinx.coroutines.flow.Flow
 
@@ -24,7 +25,10 @@ interface TaskRepository {
 
     suspend fun hasActiveTask() : Boolean
 
-    fun getActiveTask() : Flow<Task?>
+    /**
+     * ALWAYS CALL [hasActiveTask] FIRST
+     */
+    fun getActiveTask() : Flow<StartedTask>
 
     suspend fun insertSegment(segment: Segment)
 

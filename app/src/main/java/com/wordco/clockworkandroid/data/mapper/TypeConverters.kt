@@ -2,8 +2,11 @@ package com.wordco.clockworkandroid.data.mapper
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.wordco.clockworkandroid.domain.model.ExecutionStatus
+import com.wordco.clockworkandroid.domain.model.CompletedTask
+import com.wordco.clockworkandroid.domain.model.NewTask
 import com.wordco.clockworkandroid.domain.model.SegmentType
+import com.wordco.clockworkandroid.domain.model.StartedTask
+import com.wordco.clockworkandroid.domain.model.Task
 import java.time.Duration
 import java.time.Instant
 
@@ -39,18 +42,18 @@ fun toColor(color: Int): Color {
     return Color(color)
 }
 
-fun fromTaskStatus(status: ExecutionStatus): Int {
-    return status.ordinal
-}
-
-fun toTaskStatus(status: Int): ExecutionStatus {
-    return ExecutionStatus.entries[status]
-}
-
 fun fromSegmentType(variant: SegmentType): Int {
     return variant.ordinal
 }
 
 fun toSegmentType(ordinal: Int): SegmentType {
     return SegmentType.entries[ordinal]
+}
+
+fun Task.getStatus() : Int {
+    return when (this) {
+        is NewTask -> 0
+        is StartedTask -> 1
+        is CompletedTask -> 2
+    }
 }

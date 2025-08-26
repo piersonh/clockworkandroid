@@ -1,9 +1,9 @@
 package com.wordco.clockworkandroid.ui.mapper
 
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.ui.ActiveTaskListItem
 
-fun Task.toActiveTaskItem(
+fun StartedTask.toActiveTaskItem(
     elapsedWorkSeconds: Int,
     elapsedBreakMinutes: Int
 ): ActiveTaskListItem {

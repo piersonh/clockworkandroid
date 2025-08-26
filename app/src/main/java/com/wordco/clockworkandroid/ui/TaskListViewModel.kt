@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -9,6 +8,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.domain.model.ExecutionStatus
+import com.wordco.clockworkandroid.domain.model.NewTask
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.model.TimerState
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
@@ -75,14 +76,14 @@ class TaskListViewModel(
                 }
 
                 val newTasks = tasks.filter {
-                    it.status == ExecutionStatus.NOT_STARTED
-                }.map { it.toNewTaskListItem() }
+                    it is NewTask
+                }.map { (it as NewTask).toNewTaskListItem() }
                         .sortedWith(NewTaskListItemComparator())
 
 
                 val suspendedTasks = tasks.filter {
-                    it.status == ExecutionStatus.SUSPENDED
-                }.map { task -> task.toSuspendedTaskListItem() }
+                    it is StartedTask && it.status() == ExecutionStatus.SUSPENDED
+                }.map { task -> (task as StartedTask).toSuspendedTaskListItem() }
 
 
                 when (timerState) {
@@ -97,7 +98,6 @@ class TaskListViewModel(
 
                     is TimerState.Paused,
                     is TimerState.Running -> {
-                        Log.i("ListStateFlow", "${timerState.task}")
                         TaskListUiState.TimerActive(
                             newTasks = newTasks,
                             suspendedTasks = suspendedTasks,

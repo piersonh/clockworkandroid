@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.domain.model
 
-import android.util.Log
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -13,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -31,19 +31,19 @@ sealed interface TimerState {
     data object Closing : Empty
 
     sealed interface HasTask : TimerState {
-        val task: Task
+        val task: StartedTask
         val elapsedWorkSeconds: Int
         val elapsedBreakMinutes: Int
     }
 
     data class Running(
-        override val task: Task,
+        override val task: StartedTask,
         override val elapsedWorkSeconds: Int,
         override val elapsedBreakMinutes: Int
     ) : HasTask
 
     data class Paused(
-        override val task: Task,
+        override val task: StartedTask,
         override val elapsedWorkSeconds: Int,
         override val elapsedBreakMinutes: Int
     ) : HasTask
@@ -65,7 +65,7 @@ class Timer(
 
     private val _internalState = MutableStateFlow(State.PREPARING)
 
-    private var _loadedTask: StateFlow<Task?> = MutableStateFlow(null)
+    private var _loadedTask: StateFlow<StartedTask?> = MutableStateFlow(null)
 
     private val _elapsedWorkSeconds = MutableStateFlow(0)
     private val _elapsedBreakMinutes = MutableStateFlow(0)
@@ -75,9 +75,8 @@ class Timer(
     private var incJob: Job? = null
     private var collectionJob: Job? = null
 
-    private var dbWriteJob: Job? = null
-
-    private val dbWritesBuffer = mutableListOf<suspend CoroutineScope.() -> Unit>()
+//    private var dbWriteJob: Job? = null
+//    private val dbWritesBuffer = mutableListOf<suspend CoroutineScope.() -> Unit>()
 
 
     init {
@@ -94,46 +93,6 @@ class Timer(
         _elapsedBreakMinutes.update { 0 }
     }
 
-
-    private fun loadTask(
-        taskFlow: StateFlow<Task?>,
-        onReady: () -> Unit
-    ) {
-        cancelCollection()
-        _timerState.update { TimerState.Preparing }
-        _internalState.update { State.PREPARING }
-
-        coroutineScope.launch {
-            _loadedTask = taskFlow.stateIn(
-                coroutineScope,
-                SharingStarted.WhileSubscribed(),
-                taskFlow.first { it != null }
-            )
-
-            _loadedTask.value!!.takeIf { it.segments.isNotEmpty() }?.run {
-                loadElapsedTimes(
-                    workTime = workTime,
-                    breakTime = breakTime,
-                    lastSegment = segments.last()
-                )
-            } ?: run {
-                _elapsedWorkSeconds.update { 0 }
-                _elapsedBreakMinutes.update { 0 }
-            }
-
-            _internalState.update { State.READY }
-
-            startCollection()
-        }.invokeOnCompletion {
-            cause ->
-
-            if (cause == null) {
-                onReady()
-            } else {
-                throw cause
-            }
-        }
-    }
 
     private fun loadElapsedTimes(
         workTime: Duration,
@@ -174,20 +133,32 @@ class Timer(
     private fun restoreAfterExit() {
         coroutineScope.launch {
             if (taskRepository.hasActiveTask()) {
-                val task = taskRepository.getActiveTask().let {
-                    flow ->
-
+                _internalState.update { State.PREPARING }
+                val task = taskRepository.getActiveTask().let { flow ->
                     flow.stateIn(
                         coroutineScope,
                         SharingStarted.WhileSubscribed(),
-                        flow.first { it != null }!!
+                        flow.first()
                     )
                 }
 
-                loadTask(
-                    taskFlow = task,
-                    onReady = ::reactivateAfterExit
+                setLoadedTask(task)
+
+                loadElapsedTimes(
+                    workTime = task.value.workTime,
+                    breakTime = task.value.breakTime,
+                    lastSegment = task.value.segments.last()
                 )
+
+                when (task.value.status()) {
+                    ExecutionStatus.NOT_STARTED,
+                    ExecutionStatus.SUSPENDED,
+                    ExecutionStatus.COMPLETED -> throw RuntimeException(
+                        "Attempted to restore an unrestorable task on load ${task.value}"
+                    )
+                    ExecutionStatus.RUNNING -> { setRunning() }
+                    ExecutionStatus.PAUSED -> { setPaused() }
+                }
             } else {
                 _internalState.update { State.DORMANT }
             }
@@ -202,11 +173,7 @@ class Timer(
                 _loadedTask,
                 _elapsedWorkSeconds,
                 _elapsedBreakMinutes
-            ) {
-                taskState, loadedTask, workTime, breakTime ->
-
-                Log.i("TimerStateFlow", "$loadedTask")
-
+            ) { taskState, loadedTask, workTime, breakTime ->
                 when (taskState) {
                     State.DORMANT -> TimerState.Dormant
                     State.INIT,
@@ -226,8 +193,7 @@ class Timer(
                 }
             }.catch {
                 throw it
-            }.collect {
-                state ->
+            }.collect { state ->
                 _timerState.update { state }
             }
         }
@@ -237,6 +203,12 @@ class Timer(
     private fun cancelCollection() {
         collectionJob?.cancel()
         collectionJob = null
+    }
+
+    private fun setLoadedTask(taskFlow: StateFlow<StartedTask?>) {
+        cancelCollection()
+        _loadedTask = taskFlow
+        startCollection()
     }
 
 
@@ -272,65 +244,47 @@ class Timer(
     /*
         TASK REGISTRY UTILITIES
      */
-    private suspend fun Task.updateTaskStatus(newStatus: ExecutionStatus) {
-        Log.i("TaskStatus", "Updated task's status to $newStatus")
-        taskRepository.updateTask(copy(status = newStatus))
-    }
-
-    private suspend fun Task.endLastSegment() {
-        taskRepository.updateSegment(segments.last().run {
-            copy(duration = Duration.between(startTime, Instant.now()))
-        })
-    }
-
-    private suspend fun Task.startNewSegment(type: SegmentType) {
-        taskRepository.insertSegment(
-            Segment(
-                segmentId = 0,
-                taskId = taskId,
-                startTime = Instant.now(),
-                duration = null,
-                type = type
-            )
+     private suspend fun StartedTask.endLastSegmentAndStartNew(type: SegmentType) {
+        val now = Instant.now()
+        val lastSegment = segments.last().run {
+            copy(duration = Duration.between(startTime, now))
+        }
+        val newSegment = Segment(
+            segmentId = 0,
+            taskId = taskId,
+            startTime = now,
+            duration = null,
+            type = type
+        )
+        taskRepository.updateSegmentAndInsertNew(
+            existing = lastSegment,
+            new = newSegment
         )
     }
 
-    private fun enqueueDBWrite(writeOp: suspend CoroutineScope.() -> Unit) {
-        Log.i("DBWrite", "${dbWriteJob?.isActive?:false}")
-        if (dbWriteJob?.isActive?:true) {
-            dbWriteJob = coroutineScope.launch {
-                writeOp()
-
-                while (dbWritesBuffer.isNotEmpty()) {
-                    dbWritesBuffer.removeFirstOrNull()!!()
-                }
-            }
-            dbWriteJob?.invokeOnCompletion{ throwable ->
-                dbWriteJob = null
-            }
-        } else {
-            dbWritesBuffer.add(writeOp)
-        }
-    }
+//    private fun enqueueDBWrite(writeOp: suspend CoroutineScope.() -> Unit) {
+//        Log.i("DBWrite", "${dbWriteJob?.isActive?:false}")
+//        if (dbWriteJob?.isActive?:true) {
+//            dbWriteJob = coroutineScope.launch {
+//                writeOp()
+//
+//                while (dbWritesBuffer.isNotEmpty()) {
+//                    dbWritesBuffer.removeFirstOrNull()!!()
+//                }
+//            }
+//            dbWriteJob?.invokeOnCompletion{ throwable ->
+//                dbWriteJob = null
+//            }
+//        } else {
+//            dbWritesBuffer.add(writeOp)
+//        }
+//    }
 
 
 
     /*
         TIMER EXECUTION LOGIC
      */
-    private fun reactivateAfterExit() {
-        when (_loadedTask.value!!.status) {
-            ExecutionStatus.NOT_STARTED,
-            ExecutionStatus.SUSPENDED,
-            ExecutionStatus.COMPLETED -> throw RuntimeException(
-                "Attempted to restore an unrestorable task on load"
-            )
-            ExecutionStatus.RUNNING -> { setRunning() }
-            ExecutionStatus.PAUSED -> { setPaused() }
-        }
-    }
-
-
     private fun setRunning() {
         _internalState.update { State.RUNNING }
 
@@ -349,13 +303,9 @@ class Timer(
         cancelIncrementer()
     }
 
-
-    fun start(taskFlow: StateFlow<Task?>) {
+    fun start(taskId: Long) {
         when (_internalState.value) {
-            State.DORMANT -> loadTask(
-                taskFlow = taskFlow,
-                onReady = ::resume
-            )
+            State.DORMANT -> prepareAndStart(taskId)
             State.INIT,
             State.PREPARING,
             State.CLOSING,
@@ -364,9 +314,75 @@ class Timer(
             )
             State.PAUSED,
             State.RUNNING -> suspend(
-                taskFlow
+                taskId
             )
         }
+    }
+
+
+    private fun prepareAndStart(taskId: Long) {
+        coroutineScope.launch {
+            _internalState.update { State.PREPARING }
+            val taskFlow = taskRepository.getTask(taskId)
+            val task = taskFlow.first()
+
+            val startedTask = when (task) {
+                is CompletedTask -> throw RuntimeException(
+                    "Completed tasks may not be loaded into the timer"
+                )
+                is NewTask -> task.start()
+                is StartedTask -> {
+                    loadElapsedTimes(
+                        workTime = task.workTime,
+                        breakTime = task.breakTime,
+                        lastSegment = task.segments.last()
+                    )
+                    task.endLastSegmentAndStartNew(SegmentType.WORK)
+                    task
+                }
+            }
+
+            setLoadedTask(
+                taskFlow.map { it as StartedTask }.run {
+                    stateIn(
+                        coroutineScope,
+                        SharingStarted.WhileSubscribed(),
+                        startedTask
+                    )
+                }
+            )
+
+            setRunning()
+        }
+    }
+
+    private suspend fun NewTask.start() : StartedTask{
+        val segment = Segment(
+            segmentId = 0,
+            taskId = taskId,
+            startTime = Instant.now(),
+            duration = null,
+            type = SegmentType.WORK
+        )
+
+        val task = StartedTask(
+            taskId = taskId,
+            name = name,
+            dueDate = dueDate,
+            difficulty = difficulty,
+            color = color,
+            userEstimate = userEstimate,
+            segments = listOf(segment),
+            markers = emptyList()
+        )
+
+        taskRepository.insertSegment(segment)
+        taskRepository.updateTask(task)
+
+        _elapsedWorkSeconds.update { 0 }
+        _elapsedBreakMinutes.update { 0 }
+
+        return task
     }
 
 
@@ -385,18 +401,8 @@ class Timer(
 
         setRunning()
 
-        enqueueDBWrite {
-            _loadedTask.value!!.run {
-                Log.i("DBWrite", "Resumed")
-                updateTaskStatus(ExecutionStatus.RUNNING)
-
-                // Check if this is a new task before updating the last segment
-                if (segments.isNotEmpty()) {
-                    endLastSegment()
-                }
-
-                startNewSegment(SegmentType.WORK)
-            }
+        coroutineScope.launch {
+            _loadedTask.value!!.endLastSegmentAndStartNew(SegmentType.WORK)
         }
     }
 
@@ -416,18 +422,13 @@ class Timer(
 
         setPaused()
 
-        enqueueDBWrite {
-            _loadedTask.value!!.run {
-                Log.i("DBWrite", "Paused")
-                updateTaskStatus(ExecutionStatus.PAUSED)
-                endLastSegment()
-                startNewSegment(SegmentType.BREAK)
-            }
+        coroutineScope.launch {
+            _loadedTask.value!!.endLastSegmentAndStartNew(SegmentType.BREAK)
         }
     }
 
 
-    fun suspend(replaceWith: StateFlow<Task?>? = null) {
+    fun suspend(replaceWith: Long? = null) {
         when (_internalState.value) {
             State.INIT,
             State.DORMANT,
@@ -442,22 +443,12 @@ class Timer(
 
         setSuspended()
 
-        enqueueDBWrite {
-            _loadedTask.value!!.run {
-                Log.i("DBWrite", "Suspended")
-                updateTaskStatus(ExecutionStatus.SUSPENDED)
-                endLastSegment()
-                startNewSegment(SegmentType.SUSPEND)
-            }
+        coroutineScope.launch {
+            _loadedTask.value!!.endLastSegmentAndStartNew(SegmentType.SUSPEND)
         }
 
-        replaceWith?.let{
-            replacement ->
-
-            loadTask(
-                replacement,
-                onReady = ::resume
-            )
+        replaceWith?.let{ replacement ->
+            prepareAndStart(replacement)
         } ?: clearTask()
     }
 }

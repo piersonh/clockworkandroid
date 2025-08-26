@@ -5,7 +5,10 @@ import com.wordco.clockworkandroid.data.mapper.toMarkerEntity
 import com.wordco.clockworkandroid.data.mapper.toSegmentEntity
 import com.wordco.clockworkandroid.data.mapper.toTask
 import com.wordco.clockworkandroid.data.mapper.toTaskEntity
+import com.wordco.clockworkandroid.domain.model.CompletedTask
+import com.wordco.clockworkandroid.domain.model.NewTask
 import com.wordco.clockworkandroid.domain.model.Segment
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
@@ -16,8 +19,20 @@ class TaskRepositoryImpl (
 ) : TaskRepository {
     override suspend fun insertTask(task: Task) {
         taskDao.insertTask(task.toTaskEntity())
-        taskDao.insertSegments(task.segments.map { segment -> segment.toSegmentEntity() })
-        taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
+
+        when (task) {
+            is NewTask -> {}
+            is CompletedTask -> {
+                taskDao.insertSegments(task.segments.map { segment -> segment.toSegmentEntity() })
+                taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
+
+            }
+            is StartedTask -> {
+                taskDao.insertSegments(task.segments.map { segment -> segment.toSegmentEntity() })
+                taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
+            }
+        }
+
     }
 
     override suspend fun insertNewTask(task: Task) {
@@ -45,9 +60,9 @@ class TaskRepositoryImpl (
         return taskDao.hasActiveTask()
     }
 
-    override fun getActiveTask(): Flow<Task?> {
+    override fun getActiveTask(): Flow<StartedTask> {
         return taskDao.getActiveTask().map {
-            it?.toTask()
+            it.toTask() as StartedTask
         }
     }
 

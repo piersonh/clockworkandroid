@@ -8,6 +8,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.domain.model.NewTask
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.domain.model.Timer
 import com.wordco.clockworkandroid.domain.model.TimerState
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
@@ -83,12 +85,14 @@ class TimerViewModel (
                     return@combine TimerUiState.Retrieving
                 }
 
-                if (task.segments.isEmpty()) {
+                if (task is NewTask) {
                     return@combine TimerUiState.New(
                         task.name,
                         0
                     )
                 }
+
+                val task = task as StartedTask
 
                 when (timerState) {
                     is TimerState.Empty -> TimerUiState.Suspended(
@@ -116,7 +120,7 @@ class TimerViewModel (
     }
 
     fun initTimer() {
-        timer.start(_loadedTask)
+        timer.start(taskId)
     }
 
 

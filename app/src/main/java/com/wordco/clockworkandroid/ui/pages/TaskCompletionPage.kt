@@ -19,15 +19,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.wordco.clockworkandroid.ui.PageRoutes
-import com.wordco.clockworkandroid.ui.TaskViewModel
-import com.wordco.clockworkandroid.util.asHHMM
 
 @Composable
 fun TaskCompletionPage(
-    navController: NavController,
-    taskViewModel: TaskViewModel
+    //navController: NavController,
+    //taskViewModel: TaskViewModel
 ) {
     Box(
         modifier = Modifier
@@ -44,7 +40,7 @@ fun TaskCompletionPage(
 
             Text(
                 // FIXME
-                text = taskViewModel.currentTask!!.name,
+                text = "",//taskViewModel.currentTask!!.name,
                 style = TextStyle(fontSize = 40.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier,
@@ -65,7 +61,7 @@ fun TaskCompletionPage(
 
             Text(
                 // FIXME
-                text = taskViewModel.currentTask!!.workTime.asHHMM(),
+                text = "",//taskViewModel.currentTask!!.workTime.asHHMM(),
                 style = TextStyle(fontSize = 90.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier,
@@ -130,7 +126,7 @@ fun TaskCompletionPage(
             }
 
             Button(
-                onClick = { navController.navigate(PageRoutes.TaskList) },
+                onClick = { /*navController.navigate(PageRoutes.TaskList) */ },
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(20),
                 modifier = Modifier.fillMaxWidth(0.7f),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
@@ -150,6 +146,9 @@ fun TaskCompletionPage(
 
     }
 }
+
+
+
 /*
 @Preview
 @Composable

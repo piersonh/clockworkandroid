@@ -11,7 +11,9 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.domain.model.ExecutionStatus
+import com.wordco.clockworkandroid.domain.model.CompletedTask
+import com.wordco.clockworkandroid.domain.model.NewTask
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.domain.model.Task
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -154,26 +156,57 @@ class EditTaskViewModel (
                 return EditTaskResult.MissingName
             }
 
+            val name = taskName
+
+            val dueDate = dueDate?.let {
+                LocalDateTime.of(it, dueTime)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+            }
+
+            val difficulty = difficulty.toInt()
+
+            val color = Color.hsv(
+                colorSliderPos * 360,
+                1f,
+                1f
+            )
+
+            val userEstimate = null
+
             viewModelScope.launch {
                 taskRepository.updateTask(
-                    Task(
-                        taskId = taskId,
-                        name = taskName,
-                        // 2007-12-03T10:15:30.00Z
-                        dueDate = dueDate?.let {
-                            LocalDateTime.of(it, dueTime)
-                                .atZone(ZoneId.systemDefault())
-                                .toInstant()
-                        },
-                        difficulty = difficulty.toInt(),
-                        color = Color.hsv(
-                            colorSliderPos * 360,
-                            1f,
-                            1f),
-                        status = ExecutionStatus.NOT_STARTED,
-                        segments = listOf(),
-                        markers = listOf(),
-                    )
+                    when (_loadedTask) {
+                        is CompletedTask -> CompletedTask(
+                            taskId,
+                            name,
+                            dueDate,
+                            difficulty,
+                            color,
+                            userEstimate,
+                            segments = emptyList(),
+                            markers = emptyList()
+                        )
+                        is NewTask -> NewTask(
+                            taskId,
+                            name,
+                            dueDate,
+                            difficulty,
+                            color,
+                            userEstimate
+                        )
+                        is StartedTask -> StartedTask(
+                            taskId,
+                            name,
+                            dueDate,
+                            difficulty,
+                            color,
+                            userEstimate,
+                            segments = emptyList(),
+                            markers = emptyList()
+                        )
+                    }
+
                 )
             }
         }

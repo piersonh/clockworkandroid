@@ -5,24 +5,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.wordco.clockworkandroid.ui.PageRoutes
 import com.wordco.clockworkandroid.ui.TaskListRoute
-import com.wordco.clockworkandroid.ui.TaskViewModel
 import com.wordco.clockworkandroid.ui.createNewTaskPage
 import com.wordco.clockworkandroid.ui.editTaskPage
 import com.wordco.clockworkandroid.ui.navigateToCreateNewTask
 import com.wordco.clockworkandroid.ui.navigateToEdit
 import com.wordco.clockworkandroid.ui.navigateToTimer
-import com.wordco.clockworkandroid.ui.pages.TaskCompletionPage
 import com.wordco.clockworkandroid.ui.taskListPage
 import com.wordco.clockworkandroid.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.ui.timerPage
@@ -32,9 +27,6 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // FIXME: Change to TaskListViewModel and instantiate like the timerVM
-        val taskViewModel: TaskViewModel by viewModels { TaskViewModel.Factory }
 
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
@@ -84,9 +76,9 @@ class MainActivity : ComponentActivity() {
                         onBackClick = navController::navigateUp
                     )
 
-                    composable<PageRoutes.TaskComplete> {
-                        TaskCompletionPage(navController, taskViewModel)
-                    }
+                    //composable<PageRoutes.TaskComplete> {
+                    //    TaskCompletionPage(navController, taskViewModel)
+                    //}
                 }
             }
         }

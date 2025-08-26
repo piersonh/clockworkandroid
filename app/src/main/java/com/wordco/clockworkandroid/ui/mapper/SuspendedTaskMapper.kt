@@ -1,9 +1,9 @@
 package com.wordco.clockworkandroid.ui.mapper
 
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.domain.model.StartedTask
 import com.wordco.clockworkandroid.ui.SuspendedTaskListItem
 
-fun Task.toSuspendedTaskListItem() : SuspendedTaskListItem {
+fun StartedTask.toSuspendedTaskListItem() : SuspendedTaskListItem {
     return SuspendedTaskListItem(
         taskId = taskId,
         name = name,

@@ -1,10 +1,10 @@
 package com.wordco.clockworkandroid.ui.mapper
 
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.domain.model.NewTask
 import com.wordco.clockworkandroid.ui.NewTaskListItem
 import java.time.Duration
 
-fun Task.toNewTaskListItem() : NewTaskListItem {
+fun NewTask.toNewTaskListItem() : NewTaskListItem {
     return NewTaskListItem(
         taskId = taskId,
         name = name,

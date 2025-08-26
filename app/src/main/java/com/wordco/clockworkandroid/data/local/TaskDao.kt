@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
 
-    // TODO: UPSERT??
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(taskEntity: TaskEntity)
 
@@ -48,11 +46,51 @@ interface TaskDao {
     }
 
 
-    @Query("SELECT EXISTS (SELECT 1 FROM TaskEntity WHERE status IN (1,2))")
+    @Query("""
+        SELECT EXISTS (
+            WITH LastSegment AS (
+                SELECT
+                    taskId,
+                    type,
+                    ROW_NUMBER() OVER(PARTITION BY taskId ORDER BY segmentId DESC) as rn
+                FROM
+                    SegmentEntity
+            )
+            SELECT
+                T.*
+            FROM
+                TaskEntity T
+            JOIN
+                LastSegment LS ON T.taskId = LS.taskID
+            WHERE
+                LS.rn = 1
+                AND LS.type IN (0,1)
+        )
+    """)
     suspend fun hasActiveTask() : Boolean
 
-    @Query("SELECT * FROM TaskEntity WHERE status IN (1,2) LIMIT 1")
-    fun getActiveTask() : Flow<TaskWithExecutionDataObject?>
+    @Transaction
+    @Query("""
+        WITH LastSegment AS (
+            SELECT
+                taskId,
+                type,
+                ROW_NUMBER() OVER(PARTITION BY taskId ORDER BY segmentId DESC) as rn
+            FROM
+                SegmentEntity
+        )
+        SELECT
+            T.*
+        FROM
+            TaskEntity T
+        JOIN
+            LastSegment LS ON T.taskId = LS.taskID
+        WHERE
+            LS.rn = 1
+            AND LS.type IN (0,1)
+        LIMIT 1
+    """)
+    fun getActiveTask() : Flow<TaskWithExecutionDataObject>
 
 
     @Transaction

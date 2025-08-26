@@ -8,8 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.domain.model.ExecutionStatus
-import com.wordco.clockworkandroid.domain.model.Task
+import com.wordco.clockworkandroid.domain.model.NewTask
 import com.wordco.clockworkandroid.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -117,7 +116,7 @@ class CreateNewTaskViewModel (
 
             viewModelScope.launch {
                 taskRepository.insertNewTask(
-                    Task(
+                    NewTask(
                         taskId = 0,
                         name = taskName,
                         // 2007-12-03T10:15:30.00Z
@@ -130,10 +129,9 @@ class CreateNewTaskViewModel (
                         color = Color.hsv(
                             colorSliderPos * 360,
                             1f,
-                            1f),
-                        status = ExecutionStatus.NOT_STARTED,
-                        segments = listOf(),
-                        markers = listOf(),
+                            1f
+                        ),
+                        userEstimate = null,
                     )
                 )
             }
