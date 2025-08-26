@@ -63,17 +63,17 @@ class MainActivity : ComponentActivity() {
                     )
 
                     createNewTaskPage (
-                        onBackClick = navController::navigateUp,
+                        onBackClick = navController::popBackStack,
                     )
 
 
                     timerPage(
-                        onBackClick = navController::navigateUp,
+                        onBackClick = navController::popBackStack,
                         onEditClick = navController::navigateToEdit
                     )
 
                     editTaskPage(
-                        onBackClick = navController::navigateUp
+                        onBackClick = navController::popBackStack
                     )
 
                     //composable<PageRoutes.TaskComplete> {
