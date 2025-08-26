@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 data object CreateNewTaskRoute
 
 fun NavController.navigateToCreateNewTask(
-    navOptions: NavOptionsBuilder.() -> Unit = {}
+    navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
 ) {
     navigate(route = CreateNewTaskRoute) {
         navOptions()

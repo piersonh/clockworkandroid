@@ -18,7 +18,7 @@ data class EditTaskRoute(val id: Long)
 
 fun NavController.navigateToEdit(
     taskId: Long,
-    navOptions: NavOptionsBuilder.() -> Unit = {}
+    navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
 ) {
     navigate(route = EditTaskRoute(taskId)) {
         navOptions()

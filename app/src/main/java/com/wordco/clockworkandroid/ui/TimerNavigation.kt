@@ -18,7 +18,7 @@ data class TimerRoute(val id: Long)
 
 fun NavController.navigateToTimer(
     taskId: Long,
-    navOptions: NavOptionsBuilder.() -> Unit = {}
+    navOptions: NavOptionsBuilder.() -> Unit = {launchSingleTop = true}
 ) {
     navigate(route = TimerRoute(taskId)) {
         navOptions()
