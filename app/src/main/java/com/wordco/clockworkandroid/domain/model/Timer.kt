@@ -115,7 +115,7 @@ class Timer(
                     workTime.seconds.toInt()
                 }
                 _elapsedBreakMinutes.update {
-                    breakTime.seconds.plus(sinceStarted).toInt()
+                    breakTime.toMinutes().plus(sinceStarted / 60).toInt()
                 }
             }
             SegmentType.SUSPEND -> {

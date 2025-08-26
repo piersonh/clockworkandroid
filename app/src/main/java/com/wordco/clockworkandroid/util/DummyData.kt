@@ -41,5 +41,27 @@ object DummyData {
         NewTask(5, "Homework -1", Instant.parse("2025-04-17T18:29:04Z"), 3, Color.Black, null),
         NewTask(6, "Homework 100", Instant.parse("2025-04-17T18:29:04Z"), 3, Color.Red, null),
         NewTask(7, "Evil Homework 101", Instant.parse("2025-04-17T18:29:04Z"), 3, Color.Magenta, null),
-        NewTask(8, "Super Homework 102", Instant.parse("2025-04-17T18:29:04Z"), 3, Color.Yellow, null),)
+        NewTask(8, "Super Homework 102", Instant.parse("2025-04-17T18:29:04Z"), 3, Color.Yellow, null),
+    )
+
+    val RELOADRUNNING = listOf(
+        StartedTask(
+            taskId = 1,
+            name = "Running",
+            dueDate = null,
+            difficulty = 1,
+            color = Color.Green,
+            userEstimate = null,
+            segments = listOf(
+                Segment(
+                    segmentId = 0,
+                    taskId = 1,
+                    startTime = Instant.now().minusSeconds(5*60*60 + 5*60),
+                    duration = null,
+                    type = SegmentType.BREAK
+                )
+            ),
+            markers = emptyList()
+        )
+    )
 }
