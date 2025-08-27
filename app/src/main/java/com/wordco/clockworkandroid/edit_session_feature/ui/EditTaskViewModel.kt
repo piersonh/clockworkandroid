@@ -1,8 +1,6 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -16,6 +14,9 @@ import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.hue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,32 +24,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-
-
-private fun Color.hue() : Float {
-    val hsl = FloatArray(3)
-    ColorUtils.colorToHSL(this.toArgb(), hsl)
-    return hsl[0]
-}
-
-sealed interface EditTaskUiState {
-    data object Retrieving : EditTaskUiState
-
-    data class Retrieved (
-        override val taskName: String,
-        override val colorSliderPos: Float,
-        override val difficulty: Float,
-        override val dueDate: LocalDate?,
-        override val dueTime: LocalTime?,
-        override val currentModal: PickerModal?,
-        override val estimate: UserEstimate?,
-    ) : EditTaskUiState, EditTaskFormUiState
-}
 
 
 class EditTaskViewModel (

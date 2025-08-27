@@ -10,29 +10,19 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.data.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.NewTask
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.random.Random
-
-
-data class CreateNewTaskUiState (
-    override val taskName: String,
-    override val colorSliderPos: Float,
-    override val difficulty: Float,
-    override val dueDate: LocalDate?,
-    override val dueTime: LocalTime,
-    override val currentModal: PickerModal?,
-    override val estimate: UserEstimate?
-) : EditTaskFormUiState
 
 
 class CreateNewTaskViewModel (

@@ -10,7 +10,6 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,39 +20,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
-
-sealed interface TimerState {
-    sealed interface Empty : TimerState
-
-    data object Dormant : Empty
-
-    // TODO: use this to show when the timer is preparing to start a task
-    data object Preparing : Empty
-
-    data object Closing : Empty
-
-    sealed interface HasTask : TimerState {
-        val task: StartedTask
-        val elapsedWorkSeconds: Int
-        val elapsedBreakMinutes: Int
-    }
-
-    data class Running(
-        override val task: StartedTask,
-        override val elapsedWorkSeconds: Int,
-        override val elapsedBreakMinutes: Int
-    ) : HasTask
-
-    data class Paused(
-        override val task: StartedTask,
-        override val elapsedWorkSeconds: Int,
-        override val elapsedBreakMinutes: Int
-    ) : HasTask
-}
 
 
 class Timer(
@@ -164,36 +133,6 @@ class Timer(
                     ExecutionStatus.PAUSED -> { setPaused() }
                 }
             } ?: _internalState.update { State.DORMANT }
-//            if (taskRepository.hasActiveTask()) {
-//                _internalState.update { State.PREPARING }
-//                val task = taskRepository.getActiveTask().let { flow ->
-//                    flow.stateIn(
-//                        coroutineScope,
-//                        SharingStarted.WhileSubscribed(),
-//                        flow.first()
-//                    )
-//                }
-//
-//                setLoadedTask(task)
-//
-//                loadElapsedTimes(
-//                    workTime = task.value.workTime,
-//                    breakTime = task.value.breakTime,
-//                    lastSegment = task.value.segments.last()
-//                )
-//
-//                when (task.value.status()) {
-//                    ExecutionStatus.NOT_STARTED,
-//                    ExecutionStatus.SUSPENDED,
-//                    ExecutionStatus.COMPLETED -> error(
-//                        "Attempted to restore an unrestorable task on load ${task.value}"
-//                    )
-//                    ExecutionStatus.RUNNING -> { setRunning() }
-//                    ExecutionStatus.PAUSED -> { setPaused() }
-//                }
-//            } else {
-//                _internalState.update { State.DORMANT }
-//            }
         }
     }
 
@@ -476,48 +415,5 @@ class Timer(
         replaceWith?.let{ replacement ->
             prepareAndStart(replacement)
         } ?: clearTask()
-    }
-}
-
-
-private fun interface Incrementer {
-    operator fun invoke(): suspend CoroutineScope.() -> Unit
-
-    companion object {
-        fun of(
-            interval: Long,
-            initialOffset: () -> Long,
-            stateField: MutableStateFlow<Int>
-        ) : Incrementer = Incrementer {
-            runOnInterval(
-                interval = interval,
-                initialOffset = initialOffset
-            ) {
-                stateField.update { it + 1 }
-            }
-        }
-
-        /**
-         * Invokes the provided function [block] every [interval] milliseconds
-         *
-         * @param interval time in milliseconds between triggers
-         * @param initialOffset time in milliseconds to offset first interval
-         */
-        private fun runOnInterval(
-            interval: Long,
-            initialOffset: () -> Long,
-            block: () -> Unit,
-        ): suspend CoroutineScope.() -> Unit {
-            return {
-                // Wait for next minute
-                delay(interval - (initialOffset() % interval))
-
-                // Start after synchronized with minute
-                while (isActive) {
-                    block()
-                    delay(interval)
-                }
-            }
-        }
     }
 }

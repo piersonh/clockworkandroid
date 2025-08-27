@@ -13,9 +13,6 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.timer.Timer
 import com.wordco.clockworkandroid.core.domain.timer.TimerState
-import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.model.NewTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toActiveTaskItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
@@ -28,29 +25,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-
-sealed interface TaskListUiState {
-
-    data object Retrieving : TaskListUiState
-
-    sealed interface Retrieved : TaskListUiState {
-        val newTasks: List<NewTaskListItem>
-        val suspendedTasks: List<SuspendedTaskListItem>
-    }
-
-    data class TimerDormant(
-        override val newTasks: List<NewTaskListItem>,
-        override val suspendedTasks: List<SuspendedTaskListItem>,
-    ) : Retrieved
-
-    data class TimerActive(
-        override val newTasks: List<NewTaskListItem>,
-        override val suspendedTasks: List<SuspendedTaskListItem>,
-        val activeTask: ActiveTaskListItem,
-    ) : Retrieved
-}
-
 
 
 class TaskListViewModel(

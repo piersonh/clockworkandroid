@@ -1,5 +1,7 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -14,11 +16,3 @@ interface EditTaskFormUiState {
 }
 
 
-data class UserEstimate (
-    val minutes: Int,
-    val hours: Int,
-)
-
-enum class PickerModal {
-    DATE, TIME
-}

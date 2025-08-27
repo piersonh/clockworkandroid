@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -138,7 +139,7 @@ private fun EditTaskPagePreview() {
                 dueDate = LocalDate.parse("2025-12-05"),
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
-                estimate = UserEstimate(15,2)
+                estimate = UserEstimate(15, 2)
             ),
             onBackClick = { },
             onTaskNameChange = { },

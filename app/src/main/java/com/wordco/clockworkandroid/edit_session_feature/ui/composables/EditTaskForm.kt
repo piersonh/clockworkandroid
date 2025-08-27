@@ -45,8 +45,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.wordco.clockworkandroid.edit_session_feature.ui.EditTaskFormUiState
-import com.wordco.clockworkandroid.edit_session_feature.ui.PickerModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
