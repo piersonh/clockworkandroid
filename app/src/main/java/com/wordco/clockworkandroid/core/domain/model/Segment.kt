@@ -8,5 +8,9 @@ data class Segment(
     val taskId: Long,
     val startTime: Instant,
     var duration: Duration?,
-    val type: SegmentType
-)
+    val type: Type
+) {
+    enum class Type {
+        WORK, BREAK, SUSPEND
+    }
+}

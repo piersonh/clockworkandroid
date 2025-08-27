@@ -3,7 +3,6 @@ package com.wordco.clockworkandroid.core.data.util
 import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
-import com.wordco.clockworkandroid.core.domain.model.SegmentType
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import java.time.Duration
 import java.time.Instant
@@ -23,14 +22,14 @@ object DummyData {
                     taskId = 1,
                     startTime = Instant.parse("2025-04-17T18:31:04Z"),
                     duration = Duration.ofSeconds(12345),
-                    type = SegmentType.WORK
+                    type = Segment.Type.WORK
                 ),
                 Segment(
                     segmentId = 0,
                     taskId = 1,
                     startTime = Instant.parse("2025-04-17T18:31:04Z").plusSeconds(12345),
                     duration = null,
-                    type = SegmentType.SUSPEND
+                    type = Segment.Type.SUSPEND
                 )
             ),
             emptyList()
@@ -107,7 +106,7 @@ object DummyData {
                     taskId = 1,
                     startTime = Instant.now().minusSeconds(5 * 60 * 60 + 5 * 60),
                     duration = null,
-                    type = SegmentType.BREAK
+                    type = Segment.Type.BREAK
                 )
             ),
             markers = emptyList()

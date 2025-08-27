@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
-import com.wordco.clockworkandroid.core.domain.model.SegmentType
+import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import java.time.Duration
@@ -42,12 +42,12 @@ fun toColor(color: Int): Color {
     return Color(color)
 }
 
-fun fromSegmentType(variant: SegmentType): Int {
+fun fromSegmentType(variant: Segment.Type): Int {
     return variant.ordinal
 }
 
-fun toSegmentType(ordinal: Int): SegmentType {
-    return SegmentType.entries[ordinal]
+fun toSegmentType(ordinal: Int): Segment.Type {
+    return Segment.Type.entries[ordinal]
 }
 
 fun Task.getStatus() : Int {

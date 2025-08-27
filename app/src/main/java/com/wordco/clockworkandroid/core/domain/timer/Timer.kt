@@ -4,7 +4,6 @@ import com.wordco.clockworkandroid.core.data.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
-import com.wordco.clockworkandroid.core.domain.model.SegmentType
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -76,7 +75,7 @@ class Timer(
         val sinceStarted = Duration.between(lastSegment.startTime, Instant.now()).seconds
 
         when (lastSegment.type) {
-            SegmentType.WORK -> {
+            Segment.Type.WORK -> {
                 _elapsedWorkSeconds.update {
                     workTime.seconds.plus(sinceStarted).toInt()
                 }
@@ -84,7 +83,7 @@ class Timer(
                     breakTime.toMinutes().toInt()
                 }
             }
-            SegmentType.BREAK -> {
+            Segment.Type.BREAK -> {
                 _elapsedWorkSeconds.update {
                     workTime.seconds.toInt()
                 }
@@ -92,7 +91,7 @@ class Timer(
                     breakTime.toMinutes().plus(sinceStarted / 60).toInt()
                 }
             }
-            SegmentType.SUSPEND -> {
+            Segment.Type.SUSPEND -> {
                 _elapsedWorkSeconds.update {
                     workTime.seconds.toInt()
                 }
@@ -212,7 +211,7 @@ class Timer(
     /*
         TASK REGISTRY UTILITIES
      */
-     private suspend fun StartedTask.endLastSegmentAndStartNew(type: SegmentType) : StartedTask {
+     private suspend fun StartedTask.endLastSegmentAndStartNew(type: Segment.Type) : StartedTask {
         val now = Instant.now()
         val lastSegment = segments.last().run {
             copy(duration = Duration.between(startTime, now))
@@ -307,7 +306,7 @@ class Timer(
                         breakTime = task.breakTime,
                         lastSegment = task.segments.last()
                     )
-                    task.endLastSegmentAndStartNew(SegmentType.WORK)
+                    task.endLastSegmentAndStartNew(Segment.Type.WORK)
                 }
             }
 
@@ -331,7 +330,7 @@ class Timer(
             taskId = taskId,
             startTime = Instant.now(),
             duration = null,
-            type = SegmentType.WORK
+            type = Segment.Type.WORK
         )
 
         val task = StartedTask(
@@ -369,7 +368,7 @@ class Timer(
         setRunning()
 
         coroutineScope.launch {
-            _loadedTask.value!!.endLastSegmentAndStartNew(SegmentType.WORK)
+            _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.WORK)
         }
     }
 
@@ -388,7 +387,7 @@ class Timer(
         setPaused()
 
         coroutineScope.launch {
-            _loadedTask.value!!.endLastSegmentAndStartNew(SegmentType.BREAK)
+            _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.BREAK)
         }
     }
 
@@ -409,7 +408,7 @@ class Timer(
         setSuspended()
 
         coroutineScope.launch {
-            _loadedTask.value!!.endLastSegmentAndStartNew(SegmentType.SUSPEND)
+            _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.SUSPEND)
         }
 
         replaceWith?.let{ replacement ->
