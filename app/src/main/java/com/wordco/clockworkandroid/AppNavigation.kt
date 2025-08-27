@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.ui
+package com.wordco.clockworkandroid
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally

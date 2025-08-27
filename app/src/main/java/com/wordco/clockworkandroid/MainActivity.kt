@@ -9,7 +9,6 @@ import androidx.compose.material3.SnackbarDuration.Short
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.remember
-import com.wordco.clockworkandroid.core.ui.NavHost
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 
 class MainActivity : ComponentActivity() {
