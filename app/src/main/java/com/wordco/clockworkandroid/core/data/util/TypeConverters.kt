@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.local.entities.mapper
+package com.wordco.clockworkandroid.core.data.util
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb

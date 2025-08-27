@@ -25,9 +25,6 @@ interface TaskRepository {
 
     suspend fun hasActiveTask() : Boolean
 
-    /**
-     * ALWAYS CALL [hasActiveTask] FIRST
-     */
     suspend fun getActiveTask() : Flow<StartedTask>?
 
     suspend fun insertSegment(segment: Segment)

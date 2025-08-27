@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.core.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.core.ui.composables.ClockImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.composables.RunningImage
@@ -61,7 +60,7 @@ fun ActiveTaskUiItem(
             modifier = Modifier.height(30.dp),
         ) {
             when (task.status) {
-                ExecutionStatus.RUNNING -> {
+                ActiveTaskListItem.Status.RUNNING -> {
                     RunningImage()
                     Text(
                         "Running",
@@ -72,7 +71,7 @@ fun ActiveTaskUiItem(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                ExecutionStatus.PAUSED -> {
+                ActiveTaskListItem.Status.PAUSED -> {
                     MugImage()
                     Text(
                         "Paused",

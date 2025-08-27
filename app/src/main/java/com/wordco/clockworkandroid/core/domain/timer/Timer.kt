@@ -2,7 +2,6 @@ package com.wordco.clockworkandroid.core.domain.timer
 
 import com.wordco.clockworkandroid.core.data.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.SegmentType
@@ -124,13 +123,11 @@ class Timer(
                 )
 
                 when (task.value.status()) {
-                    ExecutionStatus.NOT_STARTED,
-                    ExecutionStatus.SUSPENDED,
-                    ExecutionStatus.COMPLETED -> error(
+                    StartedTask.Status.SUSPENDED -> error(
                         "Attempted to restore an unrestorable task on load ${task.value}"
                     )
-                    ExecutionStatus.RUNNING -> { setRunning() }
-                    ExecutionStatus.PAUSED -> { setPaused() }
+                    StartedTask.Status.RUNNING -> { setRunning() }
+                    StartedTask.Status.PAUSED -> { setPaused() }
                 }
             } ?: _internalState.update { State.DORMANT }
         }
@@ -215,7 +212,7 @@ class Timer(
     /*
         TASK REGISTRY UTILITIES
      */
-     private suspend fun StartedTask.endLastSegmentAndStartNew(type: SegmentType) {
+     private suspend fun StartedTask.endLastSegmentAndStartNew(type: SegmentType) : StartedTask {
         val now = Instant.now()
         val lastSegment = segments.last().run {
             copy(duration = Duration.between(startTime, now))
@@ -231,6 +228,10 @@ class Timer(
             existing = lastSegment,
             new = newSegment
         )
+
+        // TODO: does not update the last list item before adding the new one
+        //  I do not think it is necessary however
+        return copy(segments = segments + newSegment)
     }
 
 //    private fun enqueueDBWrite(writeOp: suspend CoroutineScope.() -> Unit) {
@@ -307,7 +308,6 @@ class Timer(
                         lastSegment = task.segments.last()
                     )
                     task.endLastSegmentAndStartNew(SegmentType.WORK)
-                    task
                 }
             }
 

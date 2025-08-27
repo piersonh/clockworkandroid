@@ -19,26 +19,21 @@ data class StartedTask (
     val breakTime: Duration = segments.filter { it.type == SegmentType.BREAK && it.duration != null}
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
 
-
-    fun status() : ExecutionStatus {
+    init {
         if (segments.isEmpty()) {
-            return ExecutionStatus.NOT_STARTED
-        }
-
-        return when (segments.last().type) {
-            SegmentType.WORK -> ExecutionStatus.RUNNING
-            SegmentType.BREAK -> ExecutionStatus.PAUSED
-            SegmentType.SUSPEND -> ExecutionStatus.SUSPENDED
+            error("Attempted to create a Started Task with no segments")
         }
     }
-}
 
-// TODO: rethink what the purpose of this task object is
-// and if it should have timer execution states or just completion states
-enum class ExecutionStatus {
-    NOT_STARTED,
-    RUNNING,
-    PAUSED,
-    SUSPENDED,
-    COMPLETED
+    enum class Status {
+        RUNNING, PAUSED, SUSPENDED,
+    }
+
+    fun status() : Status {
+        return when (segments.last().type) {
+            SegmentType.WORK -> Status.RUNNING
+            SegmentType.BREAK -> Status.PAUSED
+            SegmentType.SUSPEND -> Status.SUSPENDED
+        }
+    }
 }

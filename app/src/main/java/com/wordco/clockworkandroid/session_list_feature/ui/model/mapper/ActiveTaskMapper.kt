@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.session_list_feature.ui.model.mapper
 
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.util.toActiveTaskStatus
 
 fun StartedTask.toActiveTaskItem(
     elapsedWorkSeconds: Int,
@@ -12,7 +13,7 @@ fun StartedTask.toActiveTaskItem(
         elapsedWorkSeconds = elapsedWorkSeconds,
         elapsedBreakMinutes = elapsedBreakMinutes,
         taskId = taskId,
-        status = status(),
+        status = status().toActiveTaskStatus(),
         color = color,
     )
 }

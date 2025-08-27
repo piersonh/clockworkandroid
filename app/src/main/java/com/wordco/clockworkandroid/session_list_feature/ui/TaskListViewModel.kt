@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.data.repository.TaskRepository
-import com.wordco.clockworkandroid.core.domain.model.ExecutionStatus
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.timer.Timer
@@ -60,7 +59,7 @@ class TaskListViewModel(
 
 
                 val suspendedTasks = tasks.filter {
-                    it is StartedTask && it.status() == ExecutionStatus.SUSPENDED
+                    it is StartedTask && it.status() == StartedTask.Status.SUSPENDED
                 }.map { task -> (task as StartedTask).toSuspendedTaskListItem() }
 
 
