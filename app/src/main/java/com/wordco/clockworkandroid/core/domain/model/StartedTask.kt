@@ -14,9 +14,9 @@ data class StartedTask (
     val segments: List<Segment>,
     val markers: List<Marker>,
 ) : Task {
-    val workTime: Duration = segments.filter { it.type == SegmentType.WORK && it.duration != null}
+    val workTime: Duration = segments.filter { it.type == Segment.Type.WORK && it.duration != null}
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
-    val breakTime: Duration = segments.filter { it.type == SegmentType.BREAK && it.duration != null}
+    val breakTime: Duration = segments.filter { it.type == Segment.Type.BREAK && it.duration != null}
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
 
     init {
@@ -31,9 +31,9 @@ data class StartedTask (
 
     fun status() : Status {
         return when (segments.last().type) {
-            SegmentType.WORK -> Status.RUNNING
-            SegmentType.BREAK -> Status.PAUSED
-            SegmentType.SUSPEND -> Status.SUSPENDED
+            Segment.Type.WORK -> Status.RUNNING
+            Segment.Type.BREAK -> Status.PAUSED
+            Segment.Type.SUSPEND -> Status.SUSPENDED
         }
     }
 }
