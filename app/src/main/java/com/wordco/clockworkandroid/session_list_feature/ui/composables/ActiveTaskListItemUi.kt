@@ -82,7 +82,6 @@ fun ActiveTaskUiItem(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                else -> error("Invalid active task state")
             }
         }
 

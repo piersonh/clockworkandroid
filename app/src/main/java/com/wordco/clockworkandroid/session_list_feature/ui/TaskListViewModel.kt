@@ -66,7 +66,7 @@ class TaskListViewModel(
                 when (timerState) {
                     TimerState.Closing,
                     TimerState.Dormant,
-                    TimerState.Preparing -> {
+                    is TimerState.Preparing -> {
                         TaskListUiState.TimerDormant(
                             newTasks = newTasks,
                             suspendedTasks = suspendedTasks,

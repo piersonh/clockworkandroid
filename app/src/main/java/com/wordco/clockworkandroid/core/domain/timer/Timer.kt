@@ -34,12 +34,14 @@ class Timer(
 
 
     private enum class State {
-        INIT, DORMANT, PREPARING, READY, RUNNING, PAUSED, CLOSING
+        INIT, DORMANT, PREPARING, RUNNING, PAUSED, CLOSING
     }
 
-    private val _internalState = MutableStateFlow(State.PREPARING)
+    private val _internalState = MutableStateFlow(State.INIT)
 
     private var _loadedTask: StateFlow<StartedTask?> = MutableStateFlow(null)
+
+    private val _loadedTaskId: MutableStateFlow<Long?> = MutableStateFlow(null)
 
     private val _elapsedWorkSeconds = MutableStateFlow(0)
     private val _elapsedBreakMinutes = MutableStateFlow(0)
@@ -59,12 +61,10 @@ class Timer(
 
 
     private fun clearTask() {
-        cancelCollection()
-        _timerState.update { TimerState.Dormant }
         _internalState.update { State.DORMANT }
-        _loadedTask = MutableStateFlow(null)
         _elapsedWorkSeconds.update { 0 }
         _elapsedBreakMinutes.update { 0 }
+        setLoadedTask(null)
     }
 
 
@@ -107,7 +107,6 @@ class Timer(
     private fun restoreAfterExit() {
         coroutineScope.launch {
             taskRepository.getActiveTask()?.let { flow ->
-                _internalState.update { State.PREPARING }
                 val task = flow.stateIn(
                     coroutineScope,
                     SharingStarted.WhileSubscribed(),
@@ -139,14 +138,16 @@ class Timer(
             combine (
                 _internalState,
                 _loadedTask,
+                _loadedTaskId,
                 _elapsedWorkSeconds,
                 _elapsedBreakMinutes
-            ) { taskState, loadedTask, workTime, breakTime ->
+            ) { taskState, loadedTask, taskId, workTime, breakTime ->
                 when (taskState) {
                     State.DORMANT -> TimerState.Dormant
                     State.INIT,
-                    State.PREPARING,
-                    State.READY -> TimerState.Preparing
+                    State.PREPARING -> TimerState.Preparing(taskId?:error(
+                            "taskId must be set before timer can enter State.PREPARING"
+                    ))
                     State.CLOSING -> TimerState.Closing
                     State.RUNNING -> TimerState.Running(
                         task = loadedTask!!,
@@ -173,9 +174,9 @@ class Timer(
         collectionJob = null
     }
 
-    private fun setLoadedTask(taskFlow: StateFlow<StartedTask?>) {
+    private fun setLoadedTask(taskFlow: StateFlow<StartedTask>?) {
         cancelCollection()
-        _loadedTask = taskFlow
+        _loadedTask = taskFlow ?: MutableStateFlow(null)
         startCollection()
     }
 
@@ -210,9 +211,9 @@ class Timer(
 
 
     /*
-        TASK REGISTRY UTILITIES
+     *  TASK REGISTRY UTILITIES
      */
-     private suspend fun StartedTask.endLastSegmentAndStartNew(type: SegmentType) : StartedTask {
+    private suspend fun StartedTask.endLastSegmentAndStartNew(type: SegmentType) {
         val now = Instant.now()
         val lastSegment = segments.last().run {
             copy(duration = Duration.between(startTime, now))
@@ -228,35 +229,13 @@ class Timer(
             existing = lastSegment,
             new = newSegment
         )
-
-        // TODO: does not update the last list item before adding the new one
-        //  I do not think it is necessary however
-        return copy(segments = segments + newSegment)
     }
 
-//    private fun enqueueDBWrite(writeOp: suspend CoroutineScope.() -> Unit) {
-//        Log.i("DBWrite", "${dbWriteJob?.isActive?:false}")
-//        if (dbWriteJob?.isActive?:true) {
-//            dbWriteJob = coroutineScope.launch {
-//                writeOp()
-//
-//                while (dbWritesBuffer.isNotEmpty()) {
-//                    dbWritesBuffer.removeFirstOrNull()!!()
-//                }
-//            }
-//            dbWriteJob?.invokeOnCompletion{ throwable ->
-//                dbWriteJob = null
-//            }
-//        } else {
-//            dbWritesBuffer.add(writeOp)
-//        }
-//    }
+    private fun setPreparing(taskId: Long) {
+        _loadedTaskId.update { taskId }
+        _internalState.update { State.PREPARING }
+    }
 
-
-
-    /*
-        TIMER EXECUTION LOGIC
-     */
     private fun setRunning() {
         _internalState.update { State.RUNNING }
 
@@ -280,8 +259,7 @@ class Timer(
             State.DORMANT -> prepareAndStart(taskId)
             State.INIT,
             State.PREPARING,
-            State.CLOSING,
-            State.READY -> throw IllegalStateException(
+            State.CLOSING -> error(
                 "timer.start() must not be called in ${_timerState.value}"
             )
             State.PAUSED,
@@ -294,11 +272,11 @@ class Timer(
 
     private fun prepareAndStart(taskId: Long) {
         coroutineScope.launch {
-            _internalState.update { State.PREPARING }
+            setPreparing(taskId)
             val taskFlow = taskRepository.getTask(taskId)
             val task = taskFlow.first()
 
-            val startedTask = when (task) {
+            when (task) {
                 is CompletedTask -> error("Completed tasks may not be loaded into the timer")
                 is NewTask -> task.start()
                 is StartedTask -> {
@@ -316,7 +294,7 @@ class Timer(
                     stateIn(
                         coroutineScope,
                         SharingStarted.WhileSubscribed(),
-                        startedTask
+                        first()
                     )
                 }
             )
@@ -325,7 +303,7 @@ class Timer(
         }
     }
 
-    private suspend fun NewTask.start() : StartedTask {
+    private suspend fun NewTask.start() {
         val segment = Segment(
             segmentId = 0,
             taskId = taskId,
@@ -350,8 +328,6 @@ class Timer(
 
         _elapsedWorkSeconds.update { 0 }
         _elapsedBreakMinutes.update { 0 }
-
-        return task
     }
 
 
@@ -362,8 +338,7 @@ class Timer(
             State.PREPARING,
             State.RUNNING,
             State.CLOSING -> error("timer.resume() must not be called in ${_timerState.value}")
-            State.PAUSED,
-            State.READY -> {}
+            State.PAUSED -> {}
         }
 
         setRunning()
@@ -380,8 +355,7 @@ class Timer(
             State.DORMANT,
             State.PREPARING,
             State.PAUSED,
-            State.CLOSING,
-            State.READY -> error("timer.pause() must not be called in ${_timerState.value}")
+            State.CLOSING -> error("timer.pause() must not be called in ${_timerState.value}")
             State.RUNNING -> {}
         }
 
@@ -398,8 +372,7 @@ class Timer(
             State.INIT,
             State.DORMANT,
             State.PREPARING,
-            State.CLOSING,
-            State.READY -> throw IllegalStateException(
+            State.CLOSING -> error(
                 "timer.suspend() must not be called in ${_timerState.value}"
             )
             State.RUNNING,

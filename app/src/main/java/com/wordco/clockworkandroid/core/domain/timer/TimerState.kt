@@ -7,8 +7,9 @@ sealed interface TimerState {
 
     data object Dormant : Empty
 
-    // TODO: use this to show when the timer is preparing to start a task
-    data object Preparing : Empty
+    data class Preparing(
+        val taskId: Long
+    ) : Empty
 
     data object Closing : Empty
 

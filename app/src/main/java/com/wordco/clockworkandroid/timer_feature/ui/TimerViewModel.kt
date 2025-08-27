@@ -55,7 +55,8 @@ class TimerViewModel (
                 if (task is NewTask) {
                     return@combine TimerUiState.New(
                         task.name,
-                        0
+                        0,
+                        timerState is TimerState.Preparing && timerState.taskId == taskId
                     )
                 }
 
@@ -64,11 +65,13 @@ class TimerViewModel (
                 when (timerState) {
                     is TimerState.Empty -> TimerUiState.Suspended(
                         task.name,
-                        task.workTime.seconds.toInt()
+                        task.workTime.seconds.toInt(),
+                        timerState is TimerState.Preparing && timerState.taskId == taskId
                     )
                     is TimerState.HasTask if timerState.task.taskId != taskId -> TimerUiState.Suspended(
                         task.name,
-                        task.workTime.seconds.toInt()
+                        task.workTime.seconds.toInt(),
+                        false
                     )
                     is TimerState.Paused -> TimerUiState.Paused(
                         task.name,

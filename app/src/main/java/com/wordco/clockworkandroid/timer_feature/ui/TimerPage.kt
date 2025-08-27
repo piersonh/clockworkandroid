@@ -162,7 +162,8 @@ private fun SuspendedTimerPagePreview() {
         TimerPage(
             uiState = TimerUiState.Suspended(
                 taskName = "Ooga Booga",
-                elapsedSeconds = 1000
+                elapsedSeconds = 1000,
+                false
             ),
             onBackClick = {},
             onEditClick = {},

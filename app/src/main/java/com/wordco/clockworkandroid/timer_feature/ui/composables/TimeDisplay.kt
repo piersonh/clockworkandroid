@@ -44,6 +44,7 @@ fun TimeDisplay(
             // TODO: Revisit this it seems ehh
             val statusText = when (uiState) {
                 is TimerUiState.Paused -> "Taking Break"
+                is TimerUiState.Shelved if uiState.isPreparing -> "Preparing..."
                 is TimerUiState.Suspended -> "Suspended"
                 else -> null
             }

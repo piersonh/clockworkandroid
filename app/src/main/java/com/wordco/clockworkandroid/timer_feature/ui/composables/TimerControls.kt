@@ -36,7 +36,8 @@ fun TimerControls(
     when (uiState) {
         is TimerUiState.New -> InitControls (
             modifier,
-            onInitClick
+            onInitClick,
+            uiState.isPreparing
         )
         is TimerUiState.Running -> RunningControls(
             modifier,
@@ -53,7 +54,8 @@ fun TimerControls(
         is TimerUiState.Suspended -> SuspendedControls(
             modifier,
             onInitClick,
-            onFinishClick
+            onFinishClick,
+            uiState.isPreparing
         )
     }
 }
@@ -62,7 +64,8 @@ fun TimerControls(
 @Composable
 fun InitControls(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isPreparing: Boolean,
 ) {
     Column(
         modifier,
@@ -71,12 +74,16 @@ fun InitControls(
     )
     {
         RectangleButton(
-            onClick,
+            if (isPreparing) {{}} else onClick,
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            Text("Start", style = TextStyle(fontSize = 48.sp), fontFamily = LATO)
+            Text(
+                if (isPreparing) "Preparing..."  else "Start",
+                style = TextStyle(fontSize = 48.sp),
+                fontFamily = LATO
+            )
         }
         Spacer(modifier = Modifier.weight(1f))
     }
@@ -167,7 +174,8 @@ fun PausedControls(
 fun SuspendedControls(
     modifier: Modifier = Modifier,
     onResumeClick: () -> Unit,
-    onFinishClick: () -> Unit
+    onFinishClick: () -> Unit,
+    isPreparing: Boolean,
 ) {
     Column(
         modifier,
@@ -176,12 +184,16 @@ fun SuspendedControls(
     )
     {
         RectangleButton(
-            onResumeClick,
+            if (isPreparing) {{}} else onResumeClick,
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            Text("Resume", style = TextStyle(fontSize = 48.sp), fontFamily = LATO)
+            Text(
+                if (isPreparing) "Preparing..." else "Resume" ,
+                style = TextStyle(fontSize = 48.sp),
+                fontFamily = LATO
+            )
         }
 
         RectangleButton(

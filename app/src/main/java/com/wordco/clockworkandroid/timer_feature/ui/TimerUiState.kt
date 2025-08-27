@@ -8,14 +8,24 @@ sealed interface TimerUiState {
         val elapsedSeconds: Int
     }
 
+    sealed interface Shelved : Retrieved {
+        val isPreparing: Boolean
+    }
+
     data class New (
         override val taskName: String,
-        override val elapsedSeconds: Int
+        override val elapsedSeconds: Int,
+        override val isPreparing: Boolean,
     ) : Shelved
 
-    sealed interface Active : Retrieved
+    data class Suspended (
+        override val taskName: String,
+        override val elapsedSeconds: Int,
+        override val isPreparing: Boolean,
+    ) : Shelved
 
-    sealed interface Shelved : Retrieved
+
+    sealed interface Active : Retrieved
 
     data class Running (
         override val taskName: String,
@@ -26,9 +36,4 @@ sealed interface TimerUiState {
         override val taskName: String,
         override val elapsedSeconds: Int
     ) : Active
-
-    data class Suspended (
-        override val taskName: String,
-        override val elapsedSeconds: Int
-    ) : Shelved
 }
