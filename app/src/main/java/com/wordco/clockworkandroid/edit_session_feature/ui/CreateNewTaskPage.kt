@@ -3,6 +3,8 @@ package com.wordco.clockworkandroid.edit_session_feature.ui
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,6 +71,8 @@ fun CreateNewTaskPage(
     onEstimateChange: (UserEstimate) -> Unit,
     onCreateTaskClick: () -> CreateNewTaskViewModel.CreateTaskResult,
 ) {
+    val scrollState = rememberScrollState()
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary, topBar = {
             TopAppBar(
@@ -90,7 +94,8 @@ fun CreateNewTaskPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(innerPadding)
-                .padding(horizontal = 30.dp, vertical = 20.dp),
+                .padding(horizontal = 30.dp, vertical = 20.dp)
+                .verticalScroll(scrollState),
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,

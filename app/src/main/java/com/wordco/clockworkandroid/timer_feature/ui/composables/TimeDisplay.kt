@@ -10,6 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -59,6 +63,9 @@ fun TimeDisplay(
                 )
             }
 
+            var textStyle by remember { mutableStateOf(
+                TextStyle(fontSize = 120.sp, textAlign = TextAlign.Center)
+            ) }
 
             Text(
                 text = uiState.elapsedSeconds.let {
@@ -72,10 +79,18 @@ fun TimeDisplay(
                         secs.toHours(), secs.toMinutesInHour()
                     )
                 },
-                style = TextStyle(fontSize = 120.sp, textAlign = TextAlign.Center),
+                style = textStyle,
                 fontFamily = ROBOTO,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.fillMaxWidth()
+                softWrap = false,
+                modifier = Modifier.fillMaxWidth(),
+                onTextLayout = { result ->
+                    if (result.didOverflowWidth) {
+                        textStyle = textStyle.run{
+                            copy(fontSize = fontSize * 0.95)
+                        }
+                    }
+                }
             )
         }
     }
