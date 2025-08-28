@@ -163,8 +163,8 @@ class EditTaskViewModel (
                             difficulty,
                             color,
                             userEstimate,
-                            segments = emptyList(),
-                            markers = emptyList()
+                            segments = (_loadedTask as CompletedTask).segments,
+                            markers = (_loadedTask as CompletedTask).markers,
                         )
                         is NewTask -> NewTask(
                             taskId,
@@ -181,8 +181,8 @@ class EditTaskViewModel (
                             difficulty,
                             color,
                             userEstimate,
-                            segments = emptyList(),
-                            markers = emptyList()
+                            segments = (_loadedTask as StartedTask).segments,
+                            markers = (_loadedTask as StartedTask).markers
                         )
                     }
 
