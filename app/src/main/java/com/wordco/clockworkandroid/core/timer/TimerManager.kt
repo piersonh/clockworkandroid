@@ -1,11 +1,11 @@
 package com.wordco.clockworkandroid.core.timer
 
-import TimerState
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,11 +35,13 @@ class TimerManager(private val context: Context) {
                     _state.update { serviceState }
                 }
             }
+            Log.i("TimerServiceConnection", "Timer Service Connected")
         }
 
         override fun onServiceDisconnected(p0: ComponentName?) {
             isBound = false
             timerService = null
+            Log.i("TimerServiceConnection", "Timer Service Disconnected")
         }
 
     }
@@ -56,6 +58,7 @@ class TimerManager(private val context: Context) {
                 Context.BIND_AUTO_CREATE,
             )
         }
+        Log.i("TimerManagerInit", "Timer Manager Initialized")
     }
 
     fun start(taskId: Long) = timerService?.start(taskId)

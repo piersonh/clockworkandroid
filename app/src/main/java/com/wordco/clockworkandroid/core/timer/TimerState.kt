@@ -1,3 +1,5 @@
+package com.wordco.clockworkandroid.core.timer
+
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 
 sealed interface TimerState {
