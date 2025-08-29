@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
-            ClockworkTheme {
+             ClockworkTheme {
                 val snackbarHostState = remember { SnackbarHostState() }
                 NavHost(onShowSnackbar = { message, action ->
                     snackbarHostState.showSnackbar(

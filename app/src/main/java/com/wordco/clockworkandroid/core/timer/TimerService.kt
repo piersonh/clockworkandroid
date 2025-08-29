@@ -1,10 +1,10 @@
 package com.wordco.clockworkandroid.core.timer
 
-import TimerState
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.data.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
@@ -60,12 +60,14 @@ class TimerService() : Service() {
         super.onCreate()
         notificationManager = TimerNotificationManager(this)
         taskRepository = (application as MainApplication).taskRepository
+        Log.i("TimerService", "Timer Service Created")
+        restoreAfterExit()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            "ACTION_RESUME" -> {}
-            "ACTION_PAUSE" -> {}
+            "ACTION_RESUME" -> resume()
+            "ACTION_PAUSE" -> pause()
         }
 
         return START_NOT_STICKY
@@ -76,14 +78,9 @@ class TimerService() : Service() {
     }
 
     override fun onBind(p0: Intent?): IBinder {
+        Log.i("TimerServiceBinder", "onBind Called")
         return binder
     }
-
-
-    init {
-        restoreAfterExit()
-    }
-
 
     private fun clearTask() {
         _internalState.update { State.DORMANT }
@@ -323,19 +320,23 @@ class TimerService() : Service() {
                     stateIn(
                         coroutineScope,
                         SharingStarted.WhileSubscribed(),
-                        first()
+                        first().also {
+                            startForeground(
+                                TimerNotificationManager.NOTIFICATION_ID,
+                                notificationManager.buildNotification(
+                                    TimerState.Running(
+                                        task = it,
+                                        elapsedWorkSeconds = _elapsedWorkSeconds.value,
+                                        elapsedBreakMinutes = _elapsedBreakMinutes.value
+                                    )
+                                )
+                            )
+                        }
                     )
                 }
             )
 
             setRunning()
-
-            startForeground(
-                TimerNotificationManager.NOTIFICATION_ID,
-                notificationManager.buildNotification(
-                    _state.value as TimerState.Active
-                )
-            )
         }
     }
 

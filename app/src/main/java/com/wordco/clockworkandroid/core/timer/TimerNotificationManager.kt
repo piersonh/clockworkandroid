@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.core.timer
 
-import TimerState
 import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
@@ -10,6 +9,9 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.TaskStackBuilder
+import androidx.navigation.NavDeepLinkBuilder
+import com.wordco.clockworkandroid.R
 
 class TimerNotificationManager(
     private val context: Context
@@ -47,7 +49,6 @@ class TimerNotificationManager(
     }
 
     fun buildNotification(timerState: TimerState.Active): Notification {
-
         val resumePauseAction = when (timerState) {
             is TimerState.Running -> {
                 val pauseIntent = createServiceIntent("ACTION_PAUSE")
@@ -67,13 +68,24 @@ class TimerNotificationManager(
             }
         }
 
+        val content = when (timerState) {
+            is TimerState.Paused -> "On Break: ${timerState.elapsedBreakMinutes}"
+            is TimerState.Running -> "Working: ${timerState.elapsedWorkSeconds}"
+        }
+
+        val icon = when (timerState) {
+            is TimerState.Paused -> R.drawable.mug
+            is TimerState.Running -> R.drawable.running
+        }
+
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("My Notification")
-            .setContentText("My notification content")
+            .setContentTitle(content)
             .setOngoing(true)
+            .setSmallIcon(icon)
+            //.setSound(null)
             // .setColor()  //accent with task color?
-            .setSilent(true)
+            //.setSilent(true)
             .addAction(resumePauseAction) // resume/pause
             // .addAction() // suspend
             // .addAction() // finish?
