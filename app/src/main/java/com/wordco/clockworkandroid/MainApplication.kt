@@ -1,11 +1,11 @@
 package com.wordco.clockworkandroid
 
 import android.app.Application
-import com.wordco.clockworkandroid.core.data.local.AppDatabase
-import com.wordco.clockworkandroid.core.data.local.TaskDao
-import com.wordco.clockworkandroid.core.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Timer
+import com.wordco.clockworkandroid.database.data.local.AppDatabase
+import com.wordco.clockworkandroid.database.data.local.TaskDao
+import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.timer_feature.ui.timer.TimerManager
 
 class MainApplication : Application() {
