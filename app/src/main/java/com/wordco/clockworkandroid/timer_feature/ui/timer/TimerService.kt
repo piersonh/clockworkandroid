@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.timer
+package com.wordco.clockworkandroid.timer_feature.ui.timer
 
 import android.app.Service
 import android.content.Intent
@@ -6,11 +6,12 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -278,6 +279,7 @@ class TimerService() : Service() {
         _internalState.update { State.CLOSING }
 
         cancelIncrementer()
+        notificationManager.cancelNotification()
     }
 
     fun start(taskId: Long) {
@@ -320,18 +322,7 @@ class TimerService() : Service() {
                     stateIn(
                         coroutineScope,
                         SharingStarted.WhileSubscribed(),
-                        first().also {
-                            startForeground(
-                                TimerNotificationManager.NOTIFICATION_ID,
-                                notificationManager.buildNotification(
-                                    TimerState.Running(
-                                        task = it,
-                                        elapsedWorkSeconds = _elapsedWorkSeconds.value,
-                                        elapsedBreakMinutes = _elapsedBreakMinutes.value
-                                    )
-                                )
-                            )
-                        }
+                        first()
                     )
                 }
             )

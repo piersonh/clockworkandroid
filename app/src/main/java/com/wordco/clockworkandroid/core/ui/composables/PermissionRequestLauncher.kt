@@ -1,13 +1,11 @@
 package com.wordco.clockworkandroid.core.ui.composables
 
-import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 
 @Composable
@@ -27,10 +25,10 @@ fun runIfPermitted(
 ) {
     if (ActivityCompat.checkSelfPermission(
             context,
-            Manifest.permission.POST_NOTIFICATIONS
+            permission
         ) != PackageManager.PERMISSION_GRANTED
     ) {
-        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        launcher.launch(permission)
     } else {
         block()
     }

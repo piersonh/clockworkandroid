@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".core.timer.TimerService"
+            android:name=".timer_feature.ui.timer.TimerService"
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
     </application>
