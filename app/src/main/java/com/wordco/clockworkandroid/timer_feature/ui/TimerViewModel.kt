@@ -8,11 +8,11 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
-import com.wordco.clockworkandroid.core.timer.TimerManager
-import com.wordco.clockworkandroid.core.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.Timer
+import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 
 class TimerViewModel (
     private val taskId: Long,
-    private val timer: TimerManager,
+    private val timer: Timer,
     private val taskRepository: TaskRepository,
     //private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {

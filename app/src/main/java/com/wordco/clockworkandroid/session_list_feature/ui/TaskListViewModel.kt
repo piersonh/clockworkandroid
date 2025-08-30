@@ -7,11 +7,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
-import com.wordco.clockworkandroid.core.timer.TimerManager
-import com.wordco.clockworkandroid.core.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.Timer
+import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toActiveTaskItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 class TaskListViewModel(
     private val taskRepository: TaskRepository,
-    private val timer: TimerManager,
+    private val timer: Timer,
 ) : ViewModel() {
 
 

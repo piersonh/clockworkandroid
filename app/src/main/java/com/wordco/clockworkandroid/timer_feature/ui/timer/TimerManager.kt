@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.timer
+package com.wordco.clockworkandroid.timer_feature.ui.timer
 
 import android.content.ComponentName
 import android.content.Context
@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
+import com.wordco.clockworkandroid.core.ui.timer.Timer
+import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,14 +15,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class TimerManager(private val context: Context) {
+class TimerManager(private val context: Context) : Timer {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     private var timerService: TimerService? = null
     private var isBound = false
 
     private val _state = MutableStateFlow<TimerState>(TimerState.Dormant)
-    val state = _state.asStateFlow()
+    override val state = _state.asStateFlow()
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(
@@ -61,8 +63,8 @@ class TimerManager(private val context: Context) {
         Log.i("TimerManagerInit", "Timer Manager Initialized")
     }
 
-    fun start(taskId: Long) = timerService?.start(taskId)
-    fun resume() = timerService?.resume()
-    fun pause() = timerService?.pause()
-    fun suspend(replaceWith: Long? = null) = timerService?.suspend(replaceWith)
+    override fun start(taskId: Long) = timerService?.start(taskId) ?: Unit
+    override fun resume() = timerService?.resume() ?: Unit
+    override fun pause() = timerService?.pause() ?: Unit
+    override fun suspend(replaceWith: Long?) = timerService?.suspend(replaceWith) ?: Unit
 }
