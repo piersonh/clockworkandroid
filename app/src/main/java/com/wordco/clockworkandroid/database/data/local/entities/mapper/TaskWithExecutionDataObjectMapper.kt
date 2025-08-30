@@ -1,12 +1,12 @@
-package com.wordco.clockworkandroid.core.data.local.entities.mapper
+package com.wordco.clockworkandroid.database.data.local.entities.mapper
 
-import com.wordco.clockworkandroid.core.data.local.entities.TaskWithExecutionDataObject
-import com.wordco.clockworkandroid.core.data.util.toColor
-import com.wordco.clockworkandroid.core.data.util.toOptionalInstant
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
+import com.wordco.clockworkandroid.database.data.local.entities.TaskWithExecutionDataObject
+import com.wordco.clockworkandroid.database.data.util.toColor
+import com.wordco.clockworkandroid.database.data.util.toOptionalInstant
 
 fun TaskWithExecutionDataObject.toTask() : Task {
     return when (taskEntity.status) {

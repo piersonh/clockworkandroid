@@ -1,9 +1,9 @@
-package com.wordco.clockworkandroid.core.data.local.entities.mapper
+package com.wordco.clockworkandroid.database.data.local.entities.mapper
 
-import com.wordco.clockworkandroid.core.data.local.entities.MarkerEntity
-import com.wordco.clockworkandroid.core.data.util.fromInstant
-import com.wordco.clockworkandroid.core.data.util.toInstant
 import com.wordco.clockworkandroid.core.domain.model.Marker
+import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
+import com.wordco.clockworkandroid.database.data.util.fromInstant
+import com.wordco.clockworkandroid.database.data.util.toInstant
 
 fun MarkerEntity.toMarker() : Marker {
     return Marker(

@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.local
+package com.wordco.clockworkandroid.database.data.local
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -6,10 +6,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.wordco.clockworkandroid.core.data.local.entities.MarkerEntity
-import com.wordco.clockworkandroid.core.data.local.entities.SegmentEntity
-import com.wordco.clockworkandroid.core.data.local.entities.TaskEntity
-import com.wordco.clockworkandroid.core.data.local.entities.TaskWithExecutionDataObject
+import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
+import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
+import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
+import com.wordco.clockworkandroid.database.data.local.entities.TaskWithExecutionDataObject
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.util
+package com.wordco.clockworkandroid.database.data.util
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -10,11 +10,11 @@ import com.wordco.clockworkandroid.core.domain.model.Task
 import java.time.Duration
 import java.time.Instant
 
-fun fromDuration(duration: Duration?): Long? {
+fun fromOptionalDuration(duration: Duration?): Long? {
     return duration?.toMillis()
 }
 
-fun toDuration(millis: Long?): Duration? {
+fun toOptionalDuration(millis: Long?): Duration? {
     return millis?.let { Duration.ofMillis(it) }
 }
 
@@ -50,8 +50,8 @@ fun toSegmentType(ordinal: Int): Segment.Type {
     return Segment.Type.entries[ordinal]
 }
 
-fun Task.getStatus() : Int {
-    return when (this) {
+fun fromTaskStatus(task: Task) : Int {
+    return when (task) {
         is NewTask -> 0
         is StartedTask -> 1
         is CompletedTask -> 2

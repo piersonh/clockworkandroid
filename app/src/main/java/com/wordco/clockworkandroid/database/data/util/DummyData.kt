@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.util
+package com.wordco.clockworkandroid.database.data.util
 
 import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.NewTask

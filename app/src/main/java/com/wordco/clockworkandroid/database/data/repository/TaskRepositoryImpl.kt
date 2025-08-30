@@ -1,16 +1,16 @@
-package com.wordco.clockworkandroid.core.data.repository
+package com.wordco.clockworkandroid.database.data.repository
 
-import com.wordco.clockworkandroid.core.data.local.TaskDao
-import com.wordco.clockworkandroid.core.data.local.entities.mapper.toMarkerEntity
-import com.wordco.clockworkandroid.core.data.local.entities.mapper.toSegmentEntity
-import com.wordco.clockworkandroid.core.data.local.entities.mapper.toTask
-import com.wordco.clockworkandroid.core.data.local.entities.mapper.toTaskEntity
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.database.data.local.TaskDao
+import com.wordco.clockworkandroid.database.data.local.entities.mapper.toMarkerEntity
+import com.wordco.clockworkandroid.database.data.local.entities.mapper.toSegmentEntity
+import com.wordco.clockworkandroid.database.data.local.entities.mapper.toTask
+import com.wordco.clockworkandroid.database.data.local.entities.mapper.toTaskEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
