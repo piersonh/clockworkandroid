@@ -6,8 +6,8 @@ import android.app.NotificationManager
 import android.os.Build
 import com.wordco.clockworkandroid.core.data.local.AppDatabase
 import com.wordco.clockworkandroid.core.data.local.TaskDao
-import com.wordco.clockworkandroid.core.data.repository.TaskRepository
-import com.wordco.clockworkandroid.core.data.repository.impl.TaskRepositoryImpl
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.core.timer.TimerManager
 import com.wordco.clockworkandroid.core.timer.TimerNotificationManager
 

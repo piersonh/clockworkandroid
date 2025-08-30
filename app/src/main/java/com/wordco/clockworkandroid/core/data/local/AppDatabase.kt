@@ -8,7 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wordco.clockworkandroid.core.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.core.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.core.data.local.entities.TaskEntity
-import com.wordco.clockworkandroid.core.data.repository.impl.TaskRepositoryImpl
+import com.wordco.clockworkandroid.core.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.core.data.util.DummyData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

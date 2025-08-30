@@ -1,6 +1,6 @@
 package com.wordco.clockworkandroid.core.domain.timer
 
-import com.wordco.clockworkandroid.core.data.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
