@@ -6,7 +6,7 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.data.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
