@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.core.data.local.entities.mapper
 
 import com.wordco.clockworkandroid.core.data.local.entities.TaskWithExecutionDataObject
 import com.wordco.clockworkandroid.core.data.util.toColor
+import com.wordco.clockworkandroid.core.data.util.toDuration
 import com.wordco.clockworkandroid.core.data.util.toOptionalInstant
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
@@ -16,7 +17,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
             dueDate = toOptionalInstant(taskEntity.dueDate),
             difficulty = taskEntity.difficulty,
             color = toColor(taskEntity.color),
-            userEstimate = null,
+            userEstimate = toDuration(taskEntity.userEstimate)
         )
         1 -> StartedTask(
             taskId = taskEntity.taskId,
@@ -24,7 +25,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
             dueDate = toOptionalInstant(taskEntity.dueDate),
             difficulty = taskEntity.difficulty,
             color = toColor(taskEntity.color),
-            userEstimate = null,
+            userEstimate = toDuration(taskEntity.userEstimate),
             segments = segments.map { segmentEntity -> segmentEntity.toSegment() },
             markers = markers.map { markerEntity -> markerEntity.toMarker() },
         )
@@ -34,7 +35,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
             dueDate = toOptionalInstant(taskEntity.dueDate),
             difficulty = taskEntity.difficulty,
             color = toColor(taskEntity.color),
-            userEstimate = null,
+            userEstimate = toDuration(taskEntity.userEstimate),
             segments = segments.map { segmentEntity -> segmentEntity.toSegment() },
             markers = markers.map { markerEntity -> markerEntity.toMarker() },
         )
