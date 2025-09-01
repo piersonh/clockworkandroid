@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
         SegmentEntity::class,
         MarkerEntity::class
                ],
-    version = 9)
+    version = 10)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 

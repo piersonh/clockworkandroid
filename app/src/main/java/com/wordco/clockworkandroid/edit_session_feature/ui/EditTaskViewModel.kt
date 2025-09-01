@@ -64,10 +64,7 @@ class EditTaskViewModel (
                             atZone(ZoneId.systemDefault())?.toLocalTime()
                         } ?: LocalTime.MIDNIGHT,
                         currentModal = null,
-                        estimate = UserEstimate(
-                            minutes = 15,
-                            hours = 0
-                        )
+                        estimate = UserEstimate.fromDuration(userEstimate)
                     )
                 }
             }
