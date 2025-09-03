@@ -7,11 +7,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.data.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
-import com.wordco.clockworkandroid.core.domain.timer.Timer
-import com.wordco.clockworkandroid.core.domain.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.Timer
+import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toActiveTaskItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
@@ -36,7 +36,7 @@ class TaskListViewModel(
 
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
-    private val _timerState = timer.timerState
+    private val _timerState = timer.state
 
     private val _tasks = taskRepository.getTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)

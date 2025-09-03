@@ -1,13 +1,21 @@
-package com.wordco.clockworkandroid.core.domain.timer
+package com.wordco.clockworkandroid.timer_feature.ui.timer
 
-import com.wordco.clockworkandroid.core.data.repository.TaskRepository
+import android.app.Service
+import android.content.Intent
+import android.os.Binder
+import android.os.IBinder
+import android.util.Log
+import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
-import kotlinx.coroutines.CoroutineDispatcher
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,14 +30,12 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 
+class TimerService() : Service() {
 
-class Timer(
-    private val dispatcher: CoroutineDispatcher,
-    private val taskRepository: TaskRepository
-) {
-
-    private val _timerState = MutableStateFlow<TimerState>(TimerState.Dormant)
-    val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
+    private val binder = TimerBinder()
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private lateinit var notificationManager: TimerNotificationManager
+    private lateinit var taskRepository: TaskRepository
 
 
     private enum class State {
@@ -45,25 +51,44 @@ class Timer(
     private val _elapsedWorkSeconds = MutableStateFlow(0)
     private val _elapsedBreakMinutes = MutableStateFlow(0)
 
-    private val coroutineScope = CoroutineScope(dispatcher)
-
     private var incJob: Job? = null
     private var collectionJob: Job? = null
 
-//    private var dbWriteJob: Job? = null
-//    private val dbWritesBuffer = mutableListOf<suspend CoroutineScope.() -> Unit>()
+    private val _state = MutableStateFlow<TimerState>(TimerState.Dormant)
+    val state = _state.asStateFlow()
 
-
-    init {
+    override fun onCreate() {
+        super.onCreate()
+        notificationManager = TimerNotificationManager(this)
+        taskRepository = (application as MainApplication).taskRepository
+        Log.i("TimerService", "Timer Service Created")
         restoreAfterExit()
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            "ACTION_RESUME" -> resume()
+            "ACTION_PAUSE" -> pause()
+        }
+
+        return START_NOT_STICKY
+    }
+
+    inner class TimerBinder : Binder() {
+        fun getService(): TimerService = this@TimerService
+    }
+
+    override fun onBind(p0: Intent?): IBinder {
+        Log.i("TimerServiceBinder", "onBind Called")
+        return binder
+    }
 
     private fun clearTask() {
         _internalState.update { State.DORMANT }
         _elapsedWorkSeconds.update { 0 }
         _elapsedBreakMinutes.update { 0 }
         setLoadedTask(null)
+        stopSelf()
     }
 
 
@@ -145,7 +170,7 @@ class Timer(
                     State.DORMANT -> TimerState.Dormant
                     State.INIT,
                     State.PREPARING -> TimerState.Preparing(taskId?:error(
-                            "taskId must be set before timer can enter State.PREPARING"
+                        "taskId must be set before timer can enter State.PREPARING"
                     ))
                     State.CLOSING -> TimerState.Closing
                     State.RUNNING -> TimerState.Running(
@@ -162,7 +187,11 @@ class Timer(
             }.catch {
                 throw it
             }.collect { state ->
-                _timerState.update { state }
+                _state.update { state }
+
+                if (state is TimerState.Active) {
+                    notificationManager.showNotification(state)
+                }
             }
         }
     }
@@ -188,7 +217,6 @@ class Timer(
         initialOffset = { _loadedTask.value!!.workTime.toMillis() },
         stateField = _elapsedWorkSeconds
     )
-
 
     private val breakTimer = Incrementer.of(
         interval = 60000,
@@ -251,6 +279,7 @@ class Timer(
         _internalState.update { State.CLOSING }
 
         cancelIncrementer()
+        notificationManager.cancelNotification()
     }
 
     fun start(taskId: Long) {
@@ -259,7 +288,7 @@ class Timer(
             State.INIT,
             State.PREPARING,
             State.CLOSING -> error(
-                "timer.start() must not be called in ${_timerState.value}"
+                "timer.start() must not be called in ${_state.value}"
             )
             State.PAUSED,
             State.RUNNING -> suspend(
@@ -336,7 +365,7 @@ class Timer(
             State.DORMANT,
             State.PREPARING,
             State.RUNNING,
-            State.CLOSING -> error("timer.resume() must not be called in ${_timerState.value}")
+            State.CLOSING -> error("timer.resume() must not be called in ${_state.value}")
             State.PAUSED -> {}
         }
 
@@ -354,7 +383,7 @@ class Timer(
             State.DORMANT,
             State.PREPARING,
             State.PAUSED,
-            State.CLOSING -> error("timer.pause() must not be called in ${_timerState.value}")
+            State.CLOSING -> error("timer.pause() must not be called in ${_state.value}")
             State.RUNNING -> {}
         }
 
@@ -372,7 +401,7 @@ class Timer(
             State.DORMANT,
             State.PREPARING,
             State.CLOSING -> error(
-                "timer.suspend() must not be called in ${_timerState.value}"
+                "timer.suspend() must not be called in ${_state.value}"
             )
             State.RUNNING,
             State.PAUSED -> { }

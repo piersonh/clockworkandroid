@@ -1,12 +1,12 @@
 package com.wordco.clockworkandroid
 
 import android.app.Application
-import com.wordco.clockworkandroid.core.data.local.AppDatabase
-import com.wordco.clockworkandroid.core.data.local.TaskDao
-import com.wordco.clockworkandroid.core.data.repository.TaskRepository
-import com.wordco.clockworkandroid.core.data.repository.impl.TaskRepositoryImpl
-import com.wordco.clockworkandroid.core.domain.timer.Timer
-import kotlinx.coroutines.Dispatchers
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.Timer
+import com.wordco.clockworkandroid.database.data.local.AppDatabase
+import com.wordco.clockworkandroid.database.data.local.TaskDao
+import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
+import com.wordco.clockworkandroid.timer_feature.ui.timer.TimerManager
 
 class MainApplication : Application() {
 
@@ -24,12 +24,9 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         db = AppDatabase.getDatabase(applicationContext)
-//        CoroutineScope(Dispatchers.IO).launch {
-//            db.clearAllTables()
-//        }
         taskDao = db.taskDao()
         taskRepository = TaskRepositoryImpl(taskDao)
 
-        timer = Timer(Dispatchers.Default, taskRepository)
+        timer = TimerManager(this)
     }
 }

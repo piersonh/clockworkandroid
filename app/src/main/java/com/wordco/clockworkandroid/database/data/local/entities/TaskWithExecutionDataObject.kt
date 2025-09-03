@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.local.entities
+package com.wordco.clockworkandroid.database.data.local.entities
 
 import androidx.room.Embedded
 import androidx.room.Relation

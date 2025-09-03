@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.domain.timer
+package com.wordco.clockworkandroid.timer_feature.ui.timer
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -13,7 +13,7 @@ internal fun interface Incrementer {
         fun of(
             interval: Long,
             initialOffset: () -> Long,
-            stateField: MutableStateFlow<Int>
+            stateField: MutableStateFlow<Int>,
         ) : Incrementer = Incrementer {
             runOnInterval(
                 interval = interval,

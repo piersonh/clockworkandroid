@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.repository
+package com.wordco.clockworkandroid.core.domain.repository
 
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask

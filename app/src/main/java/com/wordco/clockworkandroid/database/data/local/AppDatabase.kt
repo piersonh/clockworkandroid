@@ -1,15 +1,15 @@
-package com.wordco.clockworkandroid.core.data.local
+package com.wordco.clockworkandroid.database.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.wordco.clockworkandroid.core.data.local.entities.MarkerEntity
-import com.wordco.clockworkandroid.core.data.local.entities.SegmentEntity
-import com.wordco.clockworkandroid.core.data.local.entities.TaskEntity
-import com.wordco.clockworkandroid.core.data.repository.impl.TaskRepositoryImpl
-import com.wordco.clockworkandroid.core.data.util.DummyData
+import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
+import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
+import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
+import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
+import com.wordco.clockworkandroid.database.data.util.DummyData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

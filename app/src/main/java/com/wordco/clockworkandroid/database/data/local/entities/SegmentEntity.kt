@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.data.local.entities
+package com.wordco.clockworkandroid.database.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -17,8 +17,6 @@ import androidx.room.PrimaryKey
 data class SegmentEntity (
     @PrimaryKey(autoGenerate = true) val segmentId: Long = 0,
     val taskId: Long,
-    // TODO change the type converters to a mapper where the entity classes use
-    //  database native types
     var startTime: Long,
     var duration: Long?,
     val type: Int
