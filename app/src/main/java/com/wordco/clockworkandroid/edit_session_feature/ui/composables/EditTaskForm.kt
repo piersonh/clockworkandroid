@@ -85,6 +85,8 @@ fun EditTaskForm(
             )
         )
     }
+    val hoursList = remember { (0..99).reversed().toList() }
+    val minutesList = remember { (0..99).reversed().toList() }
 
     Column(
         modifier = modifier,
@@ -377,7 +379,7 @@ fun EditTaskForm(
                 InfiniteCircularList(
                     width = 40.dp,
                     itemHeight = 60.dp,
-                    items = (0..99).toList(),
+                    items = hoursList,
                     initialItem = est.hours,
                     textStyle = TextStyle(fontSize = 23.sp),
                     textColor = MaterialTheme.colorScheme.primaryContainer,
@@ -400,7 +402,7 @@ fun EditTaskForm(
                 InfiniteCircularList(
                     width = 40.dp,
                     itemHeight = 70.dp,
-                    items = (0..59).toList(),
+                    items = minutesList,
                     initialItem = est.minutes,
                     textStyle = TextStyle(fontSize = 23.sp),
                     textColor = MaterialTheme.colorScheme.primaryContainer,

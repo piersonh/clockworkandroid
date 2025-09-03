@@ -6,15 +6,16 @@ data class UserEstimate (
     val minutes: Int,
     val hours: Int,
 ) {
-    companion object {
-        fun fromDuration(data: Duration?): UserEstimate? {
-            if (data == null){
-                return null
-            }
-            return UserEstimate(
-                minutes = (data.toMinutes() % 60).toInt(),
-                hours = data.toHours().toInt()
-            )
-        }
+
+    fun toDuration() : Duration {
+        return Duration.ofHours(hours.toLong())
+            .plusMinutes(minutes.toLong())
     }
+}
+
+fun Duration.toEstimate() : UserEstimate {
+    return UserEstimate(
+        minutes = (toMinutes() % 60).toInt(),
+        hours = toHours().toInt()
+    )
 }

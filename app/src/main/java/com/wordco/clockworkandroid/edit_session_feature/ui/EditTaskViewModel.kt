@@ -16,6 +16,7 @@ import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.toEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.hue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,7 +65,7 @@ class EditTaskViewModel (
                             atZone(ZoneId.systemDefault())?.toLocalTime()
                         } ?: LocalTime.MIDNIGHT,
                         currentModal = null,
-                        estimate = UserEstimate.fromDuration(userEstimate)
+                        estimate = userEstimate?.toEstimate()
                     )
                 }
             }
@@ -148,7 +149,7 @@ class EditTaskViewModel (
                 1f
             )
 
-            val userEstimate = null
+            val userEstimate = estimate?.toDuration()
 
             viewModelScope.launch {
                 taskRepository.updateTask(
