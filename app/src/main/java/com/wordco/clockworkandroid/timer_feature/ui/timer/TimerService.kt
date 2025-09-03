@@ -264,18 +264,27 @@ class TimerService() : Service() {
     }
 
     private fun setRunning() {
+        if (_loadedTask.value == null) {
+            error("Attempted to enter invalid state: Running without a loaded session")
+        }
         _internalState.update { State.RUNNING }
 
         setIncrementer(workTimer)
     }
 
     private fun setPaused() {
+        if (_loadedTask.value == null) {
+            error("Attempted to enter invalid state: Paused without a loaded session")
+        }
         _internalState.update { State.PAUSED }
 
         setIncrementer(breakTimer)
     }
 
     private fun setSuspended() {
+        if (_loadedTask.value == null) {
+            error("Attempted to enter invalid state: Suspended without a loaded session")
+        }
         _internalState.update { State.CLOSING }
 
         cancelIncrementer()
