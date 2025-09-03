@@ -32,4 +32,10 @@ sealed interface TimerState {
         override val elapsedWorkSeconds: Int,
         override val elapsedBreakMinutes: Int
     ) : Active
+
+    data class Finished(
+        override val task: StartedTask,
+        override val elapsedWorkSeconds: Int,
+        override val elapsedBreakMinutes: Int
+    ) : Active
 }

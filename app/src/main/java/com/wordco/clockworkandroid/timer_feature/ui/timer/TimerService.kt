@@ -39,7 +39,7 @@ class TimerService() : Service() {
 
 
     private enum class State {
-        INIT, DORMANT, PREPARING, RUNNING, PAUSED, CLOSING
+        INIT, DORMANT, PREPARING, RUNNING, PAUSED, CLOSING, FINISHED
     }
 
     private val _internalState = MutableStateFlow(State.INIT)
@@ -183,6 +183,11 @@ class TimerService() : Service() {
                         elapsedWorkSeconds = workTime,
                         elapsedBreakMinutes = breakTime
                     )
+                    State.FINISHED -> TimerState.Finished(
+                        task = loadedTask!!,
+                        elapsedWorkSeconds = workTime,
+                        elapsedBreakMinutes = breakTime
+                    )
                 }
             }.catch {
                 throw it
@@ -296,7 +301,8 @@ class TimerService() : Service() {
             State.DORMANT -> prepareAndStart(taskId)
             State.INIT,
             State.PREPARING,
-            State.CLOSING -> error(
+            State.CLOSING,
+            State.FINISHED -> error(
                 "timer.start() must not be called in ${_state.value}"
             )
             State.PAUSED,
@@ -374,7 +380,8 @@ class TimerService() : Service() {
             State.DORMANT,
             State.PREPARING,
             State.RUNNING,
-            State.CLOSING -> error("timer.resume() must not be called in ${_state.value}")
+            State.CLOSING,
+            State.FINISHED-> error("timer.resume() must not be called in ${_state.value}")
             State.PAUSED -> {}
         }
 
@@ -392,7 +399,8 @@ class TimerService() : Service() {
             State.DORMANT,
             State.PREPARING,
             State.PAUSED,
-            State.CLOSING -> error("timer.pause() must not be called in ${_state.value}")
+            State.CLOSING,
+            State.FINISHED -> error("timer.pause() must not be called in ${_state.value}")
             State.RUNNING -> {}
         }
 
@@ -409,7 +417,8 @@ class TimerService() : Service() {
             State.INIT,
             State.DORMANT,
             State.PREPARING,
-            State.CLOSING -> error(
+            State.CLOSING,
+            State.FINISHED -> error(
                 "timer.suspend() must not be called in ${_state.value}"
             )
             State.RUNNING,
@@ -425,5 +434,19 @@ class TimerService() : Service() {
         replaceWith?.let{ replacement ->
             prepareAndStart(replacement)
         } ?: clearTask()
+    }
+    //FIXME
+    fun finish() {
+        when (_internalState.value) {
+            State.INIT,
+            State.DORMANT,
+            State.PREPARING,
+            State.PAUSED,
+            State.FINISHED -> error("timer.finish() must not be called in ${_state.value}")
+
+            State.RUNNING,
+            State.CLOSING -> {
+            }
+        }
     }
 }
