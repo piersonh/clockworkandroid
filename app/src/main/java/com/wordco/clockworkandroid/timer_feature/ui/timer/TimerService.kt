@@ -445,12 +445,12 @@ class TimerService() : Service() {
             State.INIT,
             State.DORMANT,
             State.PREPARING,
-            State.PAUSED,
-            State.FINISHED -> error("timer.finish() must not be called in ${_state.value}")
-
+            State.CLOSING,
+            State.FINISHED -> error(
+                "timer.finish() must not be called in ${_state.value}"
+            )
             State.RUNNING,
-            State.CLOSING -> {
-            }
+            State.PAUSED -> { }
         }
     }
 }
