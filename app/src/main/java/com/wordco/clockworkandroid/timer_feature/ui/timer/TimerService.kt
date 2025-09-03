@@ -124,6 +124,10 @@ class TimerService() : Service() {
                     breakTime.toMinutes().toInt()
                 }
             }
+            //FIXME
+            Segment.Type.FINISHED -> {
+
+            }
         }
     }
 
