@@ -121,7 +121,7 @@ class CreateNewTaskViewModel (
                             1f,
                             1f
                         ),
-                        userEstimate = null,
+                        userEstimate = estimate?.toDuration(),
                     )
                 )
             }

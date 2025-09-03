@@ -79,41 +79,40 @@ fun <T> InfiniteCircularList(
     ) {
         items(
             count = Int.MAX_VALUE,
-            itemContent = { i ->
-                val item = itemsState[i % itemsState.size]
-                Box(
-                    modifier = Modifier
-                        .height(itemHeight)
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coordinates ->
-                            val y = coordinates.positionInParent().y - itemHalfHeight
-                            val parentHalfHeight = (itemHalfHeight * numberOfDisplayedItems)
-                            val isSelected = (y > parentHalfHeight - itemHalfHeight && y < parentHalfHeight + itemHalfHeight)
-                            val index = i - 1
-                            if (isSelected && lastSelectedIndex != index) {
-                                onItemSelected(index % itemsState.size, item)
-                                lastSelectedIndex = index
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = item.toString(),
-                        style = textStyle,
-                        color = if (lastSelectedIndex == i) {
-                            selectedTextColor
-                        } else {
-                            textColor
-                        },
-                        fontSize = if (lastSelectedIndex == i) {
-                            textStyle.fontSize * itemScaleFact
-                        } else {
-                            textStyle.fontSize
+        ) { i ->
+            val item = itemsState[i % itemsState.size]
+            Box(
+                modifier = Modifier
+                    .height(itemHeight)
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coordinates ->
+                        val y = coordinates.positionInParent().y - itemHalfHeight
+                        val parentHalfHeight = (itemHalfHeight * numberOfDisplayedItems)
+                        val isSelected = (y > parentHalfHeight - itemHalfHeight && y < parentHalfHeight + itemHalfHeight)
+                        val index = i - 1
+                        if (isSelected && lastSelectedIndex != index) {
+                            onItemSelected(index % itemsState.size, itemsState[index % itemsState.size])
+                            lastSelectedIndex = index
                         }
-                    )
-                }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = item.toString(),
+                    style = textStyle,
+                    color = if (lastSelectedIndex == i) {
+                        selectedTextColor
+                    } else {
+                        textColor
+                    },
+                    fontSize = if (lastSelectedIndex == i) {
+                        textStyle.fontSize * itemScaleFact
+                    } else {
+                        textStyle.fontSize
+                    }
+                )
             }
-        )
+        }
     }
 }
 
