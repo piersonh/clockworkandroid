@@ -33,6 +33,7 @@ sealed interface TimerState {
         override val elapsedBreakMinutes: Int
     ) : Active
 
+    //FIXME
     data class Finished(
         override val task: StartedTask,
         override val elapsedWorkSeconds: Int,
