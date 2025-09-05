@@ -54,7 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)
 
-                            val resetOnStart = false
+                            val resetOnStart = true
                             val taskDao = getDatabase(context).taskDao()
                             val taskRepo = TaskRepositoryImpl(taskDao)
                             if (resetOnStart) {
