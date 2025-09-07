@@ -78,7 +78,7 @@ fun UpcomingTaskUIListItem(
         {
             UserImage()
             Text(
-                task.userEstimate.asHHMM(),
+                task.userEstimate?.asHHMM()?: "––:––",  // These are en dashes
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
