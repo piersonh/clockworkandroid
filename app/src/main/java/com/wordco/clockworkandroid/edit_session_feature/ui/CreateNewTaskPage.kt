@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -11,11 +10,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +29,7 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -73,6 +77,8 @@ fun CreateNewTaskPage(
     onCreateTaskClick: () -> CreateNewTaskViewModel.CreateTaskResult,
 ) {
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -95,7 +101,8 @@ fun CreateNewTaskPage(
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
         EditTaskForm(
             uiState = uiState,
@@ -122,7 +129,13 @@ fun CreateNewTaskPage(
                         ),
                     onClick = {
                         when (onCreateTaskClick()) {
-                            CreateNewTaskViewModel.CreateTaskResult.MissingName -> {}
+                            CreateNewTaskViewModel.CreateTaskResult.MissingName -> {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        "Failed to save session: Missing Name"
+                                    )
+                                }
+                            }
                             CreateNewTaskViewModel.CreateTaskResult.Success -> onBackClick()
                         }
                     }

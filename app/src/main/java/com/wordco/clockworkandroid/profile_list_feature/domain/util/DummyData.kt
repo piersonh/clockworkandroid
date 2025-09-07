@@ -2,7 +2,6 @@ package com.wordco.clockworkandroid.profile_list_feature.domain.util
 
 import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.NewTask
-import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.profile_list_feature.domain.model.Profile
 
 object DummyData {

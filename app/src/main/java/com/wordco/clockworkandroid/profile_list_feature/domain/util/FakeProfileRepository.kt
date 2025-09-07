@@ -5,7 +5,6 @@ import com.wordco.clockworkandroid.profile_list_feature.domain.repository.Profil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 
 class FakeProfileRepository(
     initialValues: List<Profile>,

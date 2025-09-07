@@ -1,34 +1,24 @@
 package com.wordco.clockworkandroid
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
-import com.wordco.clockworkandroid.core.ui.composables.CalImage
-import com.wordco.clockworkandroid.core.ui.composables.StarImage
 import com.wordco.clockworkandroid.edit_session_feature.ui.createNewTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.editTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTask
@@ -86,11 +76,11 @@ enum class TopLevelDestination(
 
 @Composable
 fun NavHost(
-    appState: AppState,
     modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
 ) {
     NavHost(
-        navController = appState.navController,
+        navController = navController,
         startDestination = TaskListRoute,
         modifier = modifier,
         enterTransition = {
@@ -104,7 +94,6 @@ fun NavHost(
             )
         },
     ) {
-        val navController = appState.navController
         val navBar = @Composable { currentDestination: TopLevelDestination ->
             NavBar(
                 items = TopLevelDestination.entries,
