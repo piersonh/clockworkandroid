@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -77,29 +78,26 @@ private fun TaskListPage(
         topBar = {
             TopAppBar(
                 title = {
-                    Row (
-                        verticalAlignment = Alignment.CenterVertically
+                    Text(
+                        "Task Sessions",
+                        fontFamily = LATO,
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = onCreateNewTaskClick
                     ) {
-                        Text(
-                            "Task Sessions",
-                            fontFamily = LATO,
-                            color = MaterialTheme.colorScheme.onSecondary
+                        PlusImage(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .fillMaxSize()
                         )
-                        Spacer(
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(
-                            onClick = onCreateNewTaskClick
-                        ) {
-                            PlusImage(
-                                modifier = Modifier
-                                    .aspectRatio(1f)
-                                    .fillMaxSize()
-                            )
-                        }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondary)
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
             )
         },
         bottomBar = {

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.LocalDate
@@ -72,18 +73,24 @@ private fun EditTaskPage(
     val scrollState = rememberScrollState()
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primary, topBar = {
+        containerColor = MaterialTheme.colorScheme.primary,
+        topBar = {
             TopAppBar(
+                title = {
+                    Text(
+                        "Edit Session",
+                        fontFamily = LATO
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        BackImage()
+                    }
+                },
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                ), title = {
-                    Row(modifier = Modifier.padding(end = 10.dp)) {
-                        IconButton(onClick = onBackClick) {
-                            BackImage()
-                        }
-                    }
-                }
+                ),
             )
         }
     ) { innerPadding ->

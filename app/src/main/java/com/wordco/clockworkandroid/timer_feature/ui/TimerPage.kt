@@ -16,6 +16,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -75,21 +76,23 @@ private fun TimerPage(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
             TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                ),
                 title = {
-                    Row(modifier = Modifier.padding(end = 10.dp)) {
-                        IconButton(onClick = onBackClick) {
-                            BackImage()
-                        }
-
-                        Spacer(Modifier.weight(1f))
-                        if (uiState is TimerUiState.Shelved) {
+                    Text(
+                        "Session Timer",
+                        fontFamily = LATO,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        BackImage()
+                    }
+                },
+                actions = {
+                    if (uiState is TimerUiState.Shelved) {
+                        TextButton(
+                            onClick = onEditClick
+                        ) {
                             Text(
-                                modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                                    .clickable(onClick = onEditClick),
                                 text = "Edit",
                                 style = TextStyle(fontSize = 25.sp),
                                 textAlign = TextAlign.Right,
@@ -98,7 +101,11 @@ private fun TimerPage(
                             )
                         }
                     }
-                }
+                },
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
             )
         }
     ) { innerPadding ->
