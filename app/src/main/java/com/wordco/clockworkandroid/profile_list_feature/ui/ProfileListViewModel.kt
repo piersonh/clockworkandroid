@@ -5,15 +5,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.profile_list_feature.domain.repository.FakeProfileRepository
+import com.wordco.clockworkandroid.profile_list_feature.domain.util.FakeProfileRepository
 import com.wordco.clockworkandroid.profile_list_feature.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -58,7 +56,7 @@ class ProfileListViewModel(
                 //val timer = (this[APPLICATION_KEY] as MainApplication).timer
 
                 ProfileListViewModel (
-                    profileRepository = FakeProfileRepository(),
+                    profileRepository = FakeProfileRepository.factory(),
                     //timer = timer,
                     //savedStateHandle = savedStateHandle
                 )

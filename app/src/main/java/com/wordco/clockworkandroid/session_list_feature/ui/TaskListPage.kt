@@ -39,6 +39,7 @@ import java.time.Duration
 @Composable
 fun TaskListPage(
     taskListViewModel: TaskListViewModel,
+    navBar: @Composable () -> Unit,
     onTaskClick: (Long) -> Unit,
     onCreateNewTaskClick: () -> Unit,
 ) {
@@ -46,6 +47,7 @@ fun TaskListPage(
 
     TaskListPage(
         uiState = uiState,
+        navBar = navBar,
         onTaskClick = onTaskClick,
         onCreateNewTaskClick = onCreateNewTaskClick,
     )
@@ -56,6 +58,7 @@ fun TaskListPage(
 @Composable
 private fun TaskListPage(
     uiState: TaskListUiState,
+    navBar: @Composable () -> Unit,
     onTaskClick: (Long) -> Unit,
     onCreateNewTaskClick: () -> Unit,
 ) {
@@ -73,7 +76,8 @@ private fun TaskListPage(
             )
         },
         bottomBar = {
-            TaskBottomBar(onCreateNewTaskClick)
+            navBar()
+            //TaskBottomBar(onCreateNewTaskClick)
         },
         modifier = Modifier.fillMaxSize()
     ) {
@@ -199,6 +203,7 @@ private fun TaskListPagePreview() {
                     )
                 ),
             ),
+            navBar = {},
             onTaskClick = {},
             onCreateNewTaskClick = {}
         )

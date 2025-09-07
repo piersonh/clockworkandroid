@@ -34,6 +34,7 @@ import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfil
 @Composable
 fun ProfileListPage(
     profileListViewModel: ProfileListViewModel,
+    navBar: @Composable () -> Unit,
     onProfileClick: (Long) -> Unit,
     onCreateNewProfileClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -42,6 +43,7 @@ fun ProfileListPage(
 
     ProfileListPage(
         uiState = uiState,
+        navBar = navBar,
         onProfileClick = onProfileClick,
         onCreateNewProfileClick = onCreateNewProfileClick,
         onBackClick = onBackClick,
@@ -53,6 +55,7 @@ fun ProfileListPage(
 @Composable
 private fun ProfileListPage (
     uiState: ProfileListUiState,
+    navBar: @Composable () -> Unit,
     onProfileClick: (Long) -> Unit,
     onCreateNewProfileClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -71,6 +74,7 @@ private fun ProfileListPage (
             )
         },
         bottomBar = {
+            navBar()
             //TaskBottomBar(onCreateNewTaskClick)
         },
         modifier = Modifier.fillMaxSize()
@@ -137,6 +141,7 @@ private fun ProfileListPagePreview() {
             uiState = ProfileListUiState.Retrieved(
                 profiles = DummyData.PROFILES.map { it.toProfileListItem() }
             ),
+            navBar = {},
             onProfileClick = { },
             onCreateNewProfileClick = { },
             onBackClick = { },

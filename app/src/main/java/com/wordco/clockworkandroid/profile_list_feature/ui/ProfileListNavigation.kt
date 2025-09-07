@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.profile_list_feature.ui
 
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -19,7 +20,8 @@ fun NavController.navigateToProfileList(
 }
 
 
-fun NavGraphBuilder.taskListPage(
+fun NavGraphBuilder.profileListPage(
+    navBar: @Composable () -> Unit,
     onProfileClick: (Long) -> Unit,
     onCreateNewProfileClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -35,6 +37,7 @@ fun NavGraphBuilder.taskListPage(
 
         ProfileListPage(
             profileListViewModel = profileListViewModel,
+            navBar = navBar,
             onProfileClick = onProfileClick,
             onCreateNewProfileClick = onCreateNewProfileClick,
             onBackClick = onBackClick,
