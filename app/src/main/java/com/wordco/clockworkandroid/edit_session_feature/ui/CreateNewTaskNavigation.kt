@@ -1,5 +1,8 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -28,7 +31,28 @@ fun NavController.navigateToCreateNewTask(
 fun NavGraphBuilder.createNewTaskPage(
     onBackClick: () -> Unit
 ) {
-    composable<CreateNewTaskRoute> {
+    composable<CreateNewTaskRoute>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it }, animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it }, animationSpec = tween(300)
+            )
+        }
+    ) {
         entry ->
         val createNewTaskViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,

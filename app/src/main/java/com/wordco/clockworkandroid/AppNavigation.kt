@@ -2,6 +2,8 @@ package com.wordco.clockworkandroid
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
@@ -92,23 +94,13 @@ fun NavHost(
         startDestination = TaskListRoute,
         modifier = modifier,
         enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { it }, animationSpec = tween(300)
+            fadeIn(
+                initialAlpha = 1f
             )
         },
         exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { -it }, animationSpec = tween(300)
-            )
-        },
-        popExitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { it }, animationSpec = tween(300)
-            )
-        },
-        popEnterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { -it }, animationSpec = tween(300)
+            fadeOut(
+                targetAlpha = 1f
             )
         },
     ) {

@@ -1,5 +1,8 @@
 package com.wordco.clockworkandroid.timer_feature.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.navigation.NavController
@@ -32,7 +35,28 @@ fun NavGraphBuilder.timerPage(
     onBackClick: () -> Unit,
     onEditClick: (Long) -> Unit
 ) {
-    composable<TimerRoute> {
+    composable<TimerRoute>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it }, animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it }, animationSpec = tween(300)
+            )
+        }
+    ) {
         entry ->
         val taskId = entry.toRoute<TimerRoute>().id
 
