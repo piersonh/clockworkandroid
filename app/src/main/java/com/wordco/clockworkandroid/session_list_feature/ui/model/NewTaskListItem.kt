@@ -10,6 +10,6 @@ data class NewTaskListItem(
     val dueDate: Instant?,
     val difficulty: Int,
     val color: Color,
-    val userEstimate: Duration,
+    val userEstimate: Duration?,
     val appEstimate: Duration
 )
