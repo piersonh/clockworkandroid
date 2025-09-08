@@ -23,6 +23,8 @@ interface TaskRepository {
 
     fun getTasks() : Flow<List<Task>>
 
+    fun getProfileSessions(profileId: Long) : Flow<List<Task>>
+
     suspend fun hasActiveTask() : Boolean
 
     suspend fun getActiveTask() : Flow<StartedTask>?

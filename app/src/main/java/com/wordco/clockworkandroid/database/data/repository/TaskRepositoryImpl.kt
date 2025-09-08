@@ -56,6 +56,10 @@ class TaskRepositoryImpl (
             }
     }
 
+    override fun getProfileSessions(profileId: Long): Flow<List<Task>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun hasActiveTask(): Boolean {
         return taskDao.hasActiveTask()
     }

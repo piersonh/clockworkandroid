@@ -10,5 +10,6 @@ data class NewTask(
     override val dueDate: Instant?,
     override val difficulty: Int,
     override val color: Color,
-    override val userEstimate: Duration?
+    override val userEstimate: Duration?,
+    override val profileId: Long?
 ) : Task

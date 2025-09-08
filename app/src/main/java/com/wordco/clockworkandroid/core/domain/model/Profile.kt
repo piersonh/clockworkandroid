@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.profile_list_feature.domain.model
+package com.wordco.clockworkandroid.core.domain.model
 
 import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.Task

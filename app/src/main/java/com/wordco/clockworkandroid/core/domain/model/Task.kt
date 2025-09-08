@@ -6,6 +6,7 @@ import java.time.Instant
 
 sealed interface Task {
     val taskId: Long
+    val profileId: Long?
     val name: String
     val dueDate: Instant?
     val difficulty: Int
