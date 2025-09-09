@@ -81,6 +81,10 @@ class TimerViewModel (
                         task.name,
                         timerState.elapsedWorkSeconds
                     )
+                    is TimerState.Finished -> TimerUiState.Finished(
+                        task.name,
+                        timerState.elapsedWorkSeconds
+                    )
                 }
             }.collect {
                 _uiState.value = it
@@ -111,7 +115,7 @@ class TimerViewModel (
     }
 
     fun finish() {
-
+        timer.finish()
     }
 
 

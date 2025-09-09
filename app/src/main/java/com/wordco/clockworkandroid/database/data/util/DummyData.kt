@@ -112,7 +112,7 @@ object DummyData {
                     taskId = 9,
                     startTime = Instant.parse("2025-04-18T11:00:00Z"),
                     duration = null,
-                    type = Segment.Type.FINISHED
+                    type = Segment.Type.FINISH
                 )
             ),
             markers = listOf(
