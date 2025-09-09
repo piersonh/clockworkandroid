@@ -34,7 +34,7 @@ data class StartedTask (
             Segment.Type.WORK -> Status.RUNNING
             Segment.Type.BREAK -> Status.PAUSED
             Segment.Type.SUSPEND -> Status.SUSPENDED
-            Segment.Type.FINISHED -> Status.FINISHED
+            Segment.Type.FINISH -> Status.FINISHED
         }
     }
 }

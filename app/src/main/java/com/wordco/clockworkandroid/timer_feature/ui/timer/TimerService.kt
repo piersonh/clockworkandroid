@@ -125,7 +125,14 @@ class TimerService() : Service() {
                 }
             }
             //FIXME
-            Segment.Type.FINISHED -> { }
+            Segment.Type.FINISH -> {
+                _elapsedWorkSeconds.update {
+                    workTime.seconds.toInt()
+                }
+                _elapsedBreakMinutes.update {
+                    breakTime.toMinutes().toInt()
+                }
+            }
         }
     }
 
@@ -447,6 +454,7 @@ class TimerService() : Service() {
             prepareAndStart(replacement)
         } ?: clearTask()
     }
+
     //FIXME
     fun finish() {
         when (_internalState.value) {
@@ -459,6 +467,12 @@ class TimerService() : Service() {
             )
             State.RUNNING,
             State.PAUSED -> { }
+        }
+
+        setFinished()
+
+        coroutineScope.launch {
+            _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.FINISH)
         }
     }
 }

@@ -30,9 +30,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTaskUiItem
+import com.wordco.clockworkandroid.session_list_feature.ui.composables.CompletedTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.TaskBottomBar
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.model.CompletedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
 import java.time.Duration
 
@@ -178,6 +180,30 @@ private fun TaskList(
             )
         }
 
+        item {
+            Text(
+                "COMPLETED",
+                fontFamily = LATO,
+                fontSize = 25.sp,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+        }
+
+        items (
+            uiState.finishedTasks,
+            key = { task -> task.taskId }
+        ) {
+            CompletedTaskUIListItem(
+                it,
+                Modifier
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(10.dp))
+                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .height(100.dp)
+                    .clickable(onClick = {onTaskClick(it.taskId)})
+            )
+        }
     }
 }
 
@@ -198,6 +224,15 @@ private fun TaskListPagePreview() {
                         breakTime = Duration.ZERO
                     )
                 ),
+                finishedTasks = listOf(
+                    CompletedTaskListItem(
+                        taskId = 0,
+                        name = "Awooga",
+                        color = Color(40, 50, 160),
+                        workTime = Duration.ZERO,
+                        breakTime = Duration.ZERO
+                    )
+                )
             ),
             onTaskClick = {},
             onCreateNewTaskClick = {}
