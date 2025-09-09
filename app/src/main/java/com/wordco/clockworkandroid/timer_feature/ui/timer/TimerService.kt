@@ -125,9 +125,7 @@ class TimerService() : Service() {
                 }
             }
             //FIXME
-            Segment.Type.FINISHED -> {
-
-            }
+            Segment.Type.FINISHED -> { }
         }
     }
 
@@ -155,6 +153,7 @@ class TimerService() : Service() {
                     )
                     StartedTask.Status.RUNNING -> { setRunning() }
                     StartedTask.Status.PAUSED -> { setPaused() }
+                    StartedTask.Status.FINISHED -> { setFinished() }
                 }
             } ?: _internalState.update { State.DORMANT }
         }
@@ -298,6 +297,15 @@ class TimerService() : Service() {
 
         cancelIncrementer()
         notificationManager.cancelNotification()
+    }
+
+    private fun setFinished() {
+        if (_loadedTask.value == null) {
+            error("Attempted to enter invalid state: Finished without a loaded session")
+        }
+        _internalState.update { State.FINISHED }
+
+        cancelIncrementer()
     }
 
     fun start(taskId: Long) {
