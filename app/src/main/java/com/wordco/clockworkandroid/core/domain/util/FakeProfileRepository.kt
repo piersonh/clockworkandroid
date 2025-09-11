@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 
 class FakeProfileRepository(
     initialValues: List<Profile>,
@@ -32,5 +33,9 @@ class FakeProfileRepository(
         return _profiles.map { profiles ->
             profiles.first { it.id == id }
         }
+    }
+
+    override suspend fun insertProfile(profile: Profile) {
+        _profiles.update { it.plus(profile) }
     }
 }

@@ -68,18 +68,21 @@ object DummyData {
             id = 1,
             name = "Profile 1",
             color = Color.hsv(0f, 1f, 1f),
+            defaultDifficulty = 0,
             sessions = SESSIONS.filter { it.profileId == 1L }
         ),
         Profile(
             id = 2,
             name = "Profile 2",
             color = Color.hsv(120f, 1f, 1f),
+            defaultDifficulty = 0,
             sessions = SESSIONS.filter { it.profileId == 2L }
         ),
         Profile(
             id = 3,
             name = "Profile 3",
             color = Color.hsv(240f, 1f, 1f),
+            defaultDifficulty = 0,
             sessions = SESSIONS.filter { it.profileId == 3L }
         ),
     )
