@@ -108,6 +108,7 @@ class CreateNewTaskViewModel (
                 taskRepository.insertNewTask(
                     NewTask(
                         taskId = 0,
+                        profileId = null,
                         name = taskName,
                         // 2007-12-03T10:15:30.00Z
                         dueDate = dueDate?.let {

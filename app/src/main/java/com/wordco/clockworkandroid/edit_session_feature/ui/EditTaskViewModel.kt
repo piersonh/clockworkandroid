@@ -163,6 +163,7 @@ class EditTaskViewModel (
                             userEstimate,
                             segments = (_loadedTask as CompletedTask).segments,
                             markers = (_loadedTask as CompletedTask).markers,
+                            _loadedTask.profileId,
                         )
                         is NewTask -> NewTask(
                             taskId,
@@ -170,7 +171,8 @@ class EditTaskViewModel (
                             dueDate,
                             difficulty,
                             color,
-                            userEstimate
+                            userEstimate,
+                            _loadedTask.profileId,
                         )
                         is StartedTask -> StartedTask(
                             taskId,
@@ -180,7 +182,8 @@ class EditTaskViewModel (
                             color,
                             userEstimate,
                             segments = (_loadedTask as StartedTask).segments,
-                            markers = (_loadedTask as StartedTask).markers
+                            markers = (_loadedTask as StartedTask).markers,
+                            _loadedTask.profileId,
                         )
                     }
 

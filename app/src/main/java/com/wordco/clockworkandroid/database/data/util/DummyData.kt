@@ -32,7 +32,8 @@ object DummyData {
                     type = Segment.Type.SUSPEND
                 )
             ),
-            emptyList()
+            emptyList(),
+            null,
         ),
         NewTask(
             2,
@@ -40,6 +41,7 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             2,
             Color.Companion.Blue,
+            null,
             null
         ),
         NewTask(
@@ -48,7 +50,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.White,
-            null
+            null,
+            null,
         ),
         NewTask(
             4,
@@ -56,7 +59,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Cyan,
-            null
+            null,
+            null,
         ),
         NewTask(
             5,
@@ -64,7 +68,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Black,
-            null
+            null,
+            null,
         ),
         NewTask(
             6,
@@ -72,7 +77,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Red,
-            null
+            null,
+            null,
         ),
         NewTask(
             7,
@@ -80,7 +86,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Magenta,
-            null
+            null,
+            null,
         ),
         NewTask(
             8,
@@ -88,7 +95,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Yellow,
-            null
+            null,
+            null,
         ),
     )
 
@@ -109,7 +117,8 @@ object DummyData {
                     type = Segment.Type.BREAK
                 )
             ),
-            markers = emptyList()
+            markers = emptyList(),
+            null,
         )
     )
 }

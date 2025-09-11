@@ -11,7 +11,6 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 class MainActivity : ComponentActivity() {
 
     @SuppressLint(
-        "UnusedMaterial3ScaffoldPaddingParameter",
         "SourceLockedOrientationActivity",
     )
     override fun onCreate(savedInstanceState: Bundle?) {

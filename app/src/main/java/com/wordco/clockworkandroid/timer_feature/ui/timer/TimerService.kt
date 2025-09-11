@@ -351,13 +351,14 @@ class TimerService() : Service() {
 
         val task = StartedTask(
             taskId = taskId,
+            profileId = profileId,
             name = name,
             dueDate = dueDate,
             difficulty = difficulty,
             color = color,
             userEstimate = userEstimate,
             segments = listOf(segment),
-            markers = emptyList()
+            markers = emptyList(),
         )
 
         taskRepository.insertSegment(segment)
