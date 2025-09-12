@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,22 +21,45 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode.Companion.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import java.time.LocalDate
+
+
+@Composable
+fun TaskCompletionPage(
+    onBackClick: () -> Unit,
+    onContinueClick: () -> Unit,
+    taskCompletionViewModel: TaskCompletionViewModel
+) {
+    val uiState = taskCompletionViewModel.uiState.collectAsStateWithLifecycle()
+
+    //FIXME
+    TaskCompletionPage(
+        uiState = uiState,
+        onBackClick = onBackClick,
+        onContinueClick = onContinueClick
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskCompletionPage(
-    taskId: Long,
-    onBackClick: () -> Unit = {},
-    onContinueClick: () -> Unit = {}
+private fun TaskCompletionPage(
+    uiState: TaskCompletionUiState,
+    onBackClick: () -> Unit,
+    onContinueClick: () -> Unit,
 ) {
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary, topBar = {
             TopAppBar(
@@ -69,7 +91,7 @@ fun TaskCompletionPage(
 
                 Text(
                     // FIXME
-                    text = "Task Name",//taskViewModel.currentTask!!.name,
+                    text = uiState.name,
                     style = TextStyle(fontSize = 40.sp),
                     textAlign = TextAlign.Center,
                     modifier = Modifier,
@@ -179,8 +201,19 @@ fun TaskCompletionPage(
 
 @Preview
 @Composable
-fun TaskCompletionPagePreview() {
+private fun TaskCompletionPagePreview() {
     ClockworkTheme {
-        TaskCompletionPage(taskId = 0)
+        TaskCompletionPage(uiState = TaskCompletionUiState.Retrieved(
+            name = "",
+            dueDate = LocalDate.now(),
+            difficulty = 0f,
+            color = Color.red,
+            estimate = UserEstimate(15, 2),
+            markers = listOf(),
+            segements = listOf()
+            ),
+            onBackClick = {},
+            onContinueClick = {}
+        )
     }
 }
