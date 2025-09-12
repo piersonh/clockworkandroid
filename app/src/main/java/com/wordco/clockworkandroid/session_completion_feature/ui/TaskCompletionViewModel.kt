@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 //FIXME
 class TaskCompletionViewModel (
@@ -45,7 +46,7 @@ class TaskCompletionViewModel (
                 _internalState.update {
                     TaskCompletionUiState.Retrieved(
                         name = name,
-                        dueDate = dueDate,
+                        dueDate = LocalDate.now(),
                         difficulty = difficulty.toFloat(),
                         color = color,
                         estimate = userEstimate?.toEstimate(),
