@@ -48,6 +48,7 @@ class ProfileSessionListViewModel(
                 } else {
                     ProfileSessionListUiState.Retrieved(
                         profileName = profile.name,
+                        profileColor = profile.color,
                         sessions = sessions.map {
                             it.toProfileSessionListItem()
                         },

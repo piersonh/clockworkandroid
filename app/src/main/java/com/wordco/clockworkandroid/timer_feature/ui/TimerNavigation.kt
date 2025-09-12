@@ -56,8 +56,8 @@ fun NavGraphBuilder.timerPage(
                 initialOffsetX = { -it }, animationSpec = tween(300)
             )
         }
-    ) {
-        entry ->
+    ) { entry ->
+
         val taskId = entry.toRoute<TimerRoute>().id
 
         val timerViewModel = ViewModelProvider.create(

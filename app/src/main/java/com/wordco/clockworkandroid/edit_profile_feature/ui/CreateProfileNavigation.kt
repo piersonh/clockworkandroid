@@ -49,8 +49,8 @@ fun NavGraphBuilder.createProfilePage(
                 initialOffsetX = { -it }, animationSpec = tween(300)
             )
         }
-    ) {
-            entry ->
+    ) { entry ->
+
         val createProfileViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
             factory = CreateProfileViewModel.Companion.Factory,

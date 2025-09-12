@@ -24,7 +24,6 @@ fun NavGraphBuilder.profileListPage(
     navBar: @Composable () -> Unit,
     onProfileClick: (Long) -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onBackClick: () -> Unit,
 ) {
     composable<ProfileListRoute> {
             entry ->
@@ -40,7 +39,6 @@ fun NavGraphBuilder.profileListPage(
             navBar = navBar,
             onProfileClick = onProfileClick,
             onCreateNewProfileClick = onCreateNewProfileClick,
-            onBackClick = onBackClick,
         )
     }
 }

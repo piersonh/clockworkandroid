@@ -18,6 +18,8 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTa
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEdit
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
@@ -116,13 +118,19 @@ fun NavHost(
 
         profileListPage(
             navBar = { navBar(ProfileListRoute) },
-            onProfileClick = { },
+            onProfileClick = navController::navigateToProfileSessionList,
             onCreateNewProfileClick = navController::navigateToCreateProfile,
-            onBackClick = {  },
         )
 
         createProfilePage(
             onBackClick = navController::popBackStack
+        )
+
+        profileSessionListPage(
+            onBackClick = navController::popBackStack,
+            onEditClick = {  },
+            onSessionClick = navController::navigateToTimer,
+            navBar = { navBar(ProfileListRoute) },
         )
     }
 }

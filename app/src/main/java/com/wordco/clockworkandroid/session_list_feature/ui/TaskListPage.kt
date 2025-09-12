@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -92,22 +91,13 @@ private fun TaskListPage(
                 ),
             )
         },
-        bottomBar = {
-            navBar()
-            //TaskBottomBar(onCreateNewTaskClick)
-        },
+        bottomBar = navBar,
         modifier = Modifier.fillMaxSize()
-    ) {
-        innerPadding ->
+    ) { paddingValues ->
 
         Box(
             modifier = Modifier
-                .padding(
-                    PaddingValues(
-                        top = innerPadding.calculateTopPadding(),
-                        bottom = innerPadding.calculateBottomPadding(),
-                    )
-                )
+                .padding(paddingValues)
                 .background(color = MaterialTheme.colorScheme.primary)
         )
         {
@@ -149,7 +139,8 @@ private fun TaskList(
             item {
                 ActiveTaskUiItem(
                     task = uiState.activeTask,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(10.dp))
                         .background(color = MaterialTheme.colorScheme.primaryContainer)
                         .height(100.dp)
