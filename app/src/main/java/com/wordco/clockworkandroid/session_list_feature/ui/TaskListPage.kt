@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
@@ -37,6 +39,7 @@ import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTas
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import java.time.Duration
 
 @Composable
@@ -121,10 +124,14 @@ private fun TaskList(
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier
-            .padding(5.dp)
+            .padding(horizontal = 5.dp)
             .background(color = MaterialTheme.colorScheme.primary)
             .fillMaxSize()
     ) {
+        item {
+            Spacer(Modifier)
+        }
+
         item {
             Text(
                 "STARTED",
@@ -165,6 +172,9 @@ private fun TaskList(
             )
         }
 
+        item {
+            Spacer(Modifier)
+        }
 
         item {
             Text(
@@ -191,6 +201,9 @@ private fun TaskList(
             )
         }
 
+        item {
+            Spacer(Modifier)
+        }
     }
 }
 
@@ -201,7 +214,7 @@ private fun TaskListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                newTasks = listOf(),
+                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
                         taskId = 0,

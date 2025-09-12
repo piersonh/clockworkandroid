@@ -22,6 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -168,8 +170,8 @@ private fun ProfileSessionListPageRetrieved(
                 .fillMaxSize()
         ) {
             val screens = listOf(
-                TabbedScreen(
-                    "Runnable"
+                TabbedScreenItem(
+                    "To-Do"
                 ) {
                     SessionList(
                         sessions = uiState.sessions,
@@ -178,20 +180,21 @@ private fun ProfileSessionListPageRetrieved(
                             .padding(5.dp)
                     )
                 },
-                TabbedScreen(
-                    "Completed"
+                TabbedScreenItem(
+                    "Complete"
                 ) {
                     Text("Completed Sessions")
                 }
             )
             TabbedScreen(
-                screens
+                screens,
+                tabIndicatorColor = uiState.profileColor
             )
         }
     }
 }
 
-data class TabbedScreen (
+data class TabbedScreenItem (
     val label: String,
     val screen: @Composable () -> Unit
 )
@@ -199,13 +202,26 @@ data class TabbedScreen (
 
 @Composable
 fun TabbedScreen(
-    screens: List<TabbedScreen>,
+    screens: List<TabbedScreenItem>,
+    tabIndicatorColor: Color,
 ) {
     val pagerState = rememberPagerState { screens.size }
     val coroutineScope = rememberCoroutineScope()
 
     Column {
-        TabRow(selectedTabIndex = pagerState.currentPage) {
+        TabRow(
+            selectedTabIndex = pagerState.currentPage,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    color = tabIndicatorColor,
+                    modifier = Modifier.tabIndicatorOffset(
+                        tabPositions[pagerState.currentPage]
+                    )
+                )
+            }
+        ) {
             screens.forEachIndexed { index, screen ->
                 Tab(
                     selected = (pagerState.currentPage == index),

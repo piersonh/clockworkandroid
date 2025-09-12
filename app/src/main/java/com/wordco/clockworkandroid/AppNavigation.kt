@@ -33,12 +33,12 @@ val topLevelDestinations = listOf(
     ),
     TopLevelDestination(
         route = TaskListRoute,
-        icon = R.drawable.cal,
-        label = "Sessions",
+        icon = R.drawable.todo_list,
+        label = "To-Do List",
     ),
     TopLevelDestination(
         route = ProfileListRoute,
-        icon = R.drawable.star,
+        icon = R.drawable.fanned_cards,
         label = "Profiles",
     ),
 
