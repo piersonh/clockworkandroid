@@ -29,9 +29,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTaskUiItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
@@ -219,7 +221,11 @@ private fun TaskListPagePreview() {
                     )
                 ),
             ),
-            navBar = {},
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit::class,
+                navigateTo = {},
+            ) },
             onTaskClick = {},
             onCreateNewTaskClick = {}
         )

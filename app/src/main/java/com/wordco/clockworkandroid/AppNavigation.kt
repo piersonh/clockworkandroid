@@ -1,24 +1,15 @@
 package com.wordco.clockworkandroid
 
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
+import com.wordco.clockworkandroid.core.ui.composables.NavBar
+import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
 import com.wordco.clockworkandroid.edit_profile_feature.ui.createProfilePage
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
 import com.wordco.clockworkandroid.edit_session_feature.ui.createNewTaskPage
@@ -26,55 +17,30 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.editTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTask
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEdit
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
-import com.wordco.clockworkandroid.profile_list_feature.ui.navigateToProfileList
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
-import com.wordco.clockworkandroid.session_list_feature.ui.navigateToTaskList
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
 import com.wordco.clockworkandroid.timer_feature.ui.timerPage
-import kotlin.reflect.KClass
 
-
-enum class TopLevelDestination(
-    val route: KClass<*>,
-    @param:DrawableRes val icon: Int,
-    val label: String,
-    val navigate: (NavController) -> Unit,
-) {
-
-    USER_STATS(
-        route = Unit::class,
+val topLevelDestinations = listOf(
+    TopLevelDestination(
+        route = Unit,
         icon = R.drawable.user,
         label = "Statistics",
-        navigate = { }
     ),
-    SESSION_LIST(
-        route = TaskListRoute::class,
+    TopLevelDestination(
+        route = TaskListRoute,
         icon = R.drawable.cal,
         label = "Sessions",
-        navigate = { it.navigateToTaskList { makeNavOptions(it) }}
     ),
-    PROFILE_LIST(
-        route = ProfileListRoute::class,
+    TopLevelDestination(
+        route = ProfileListRoute,
         icon = R.drawable.star,
         label = "Profiles",
-        navigate = {it.navigateToProfileList{ makeNavOptions(it) }}
     ),
-    ;
 
-    companion object {
-        private fun makeNavOptions(navController: NavController) : NavOptions {
-            return navOptions {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
-        }
-    }
-}
+)
 
 @Composable
 fun NavHost(
@@ -96,16 +62,36 @@ fun NavHost(
             )
         },
     ) {
-        val navBar = @Composable { currentDestination: TopLevelDestination ->
+        val navBar = @Composable { currentDestination: Any ->
             NavBar(
-                items = TopLevelDestination.entries,
-                navController = navController,
+                items = topLevelDestinations,
                 currentDestination = currentDestination,
+                navigateTo = { route ->
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+//                    val navOptions: NavOptionsBuilder.() -> Unit = {
+//                        popUpTo(navController.graph.findStartDestination().id) {
+//                            saveState = true
+//                        }
+//                        launchSingleTop = true
+//                        restoreState = true
+//                    }
+//
+//                    when (route) {
+//                        TaskListRoute -> navController.navigateToTaskList(navOptions)
+//                        ProfileListRoute -> navController.navigateToProfileList(navOptions)
+//                    }
+                }
             )
         }
 
         taskListPage(
-            navBar = { navBar(TopLevelDestination.SESSION_LIST) },
+            navBar = { navBar(TaskListRoute) },
             onTaskClick = navController::navigateToTimer,
             onCreateNewTaskClick = navController::navigateToCreateNewTask,
         )
@@ -129,7 +115,7 @@ fun NavHost(
         //}
 
         profileListPage(
-            navBar = { navBar(TopLevelDestination.PROFILE_LIST) },
+            navBar = { navBar(ProfileListRoute) },
             onProfileClick = { },
             onCreateNewProfileClick = navController::navigateToCreateProfile,
             onBackClick = {  },
@@ -138,37 +124,5 @@ fun NavHost(
         createProfilePage(
             onBackClick = navController::popBackStack
         )
-    }
-}
-
-
-@Composable
-private fun NavBar(
-    items: List<TopLevelDestination>,
-    navController: NavController,
-    currentDestination: TopLevelDestination,
-) {
-    NavigationBar {
-        items.forEach { destination ->
-            NavigationBarItem(
-                selected = destination == currentDestination,
-//                    navController.currentDestination?.hierarchy?.any {
-//                    it.hasRoute(
-//                        destination.route
-//                    )
-//                } ?: false,
-                label = { Text(destination.label) },
-                onClick = { destination.navigate(navController) },
-                icon = {
-                    Image(
-                        painter = painterResource(destination.icon),
-                        contentDescription = null,
-                        modifier = Modifier.width(50.dp)
-                        //modifier = Modifier.aspectRatio(0.7f),
-                        //colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    )
-               },
-            )
-        }
     }
 }

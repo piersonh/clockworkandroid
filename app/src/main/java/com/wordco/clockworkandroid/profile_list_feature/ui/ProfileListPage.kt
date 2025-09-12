@@ -28,9 +28,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
+import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.profile_list_feature.ui.elements.ProfileListItemUi
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
 
@@ -157,7 +159,11 @@ private fun ProfileListPagePreview() {
             uiState = ProfileListUiState.Retrieved(
                 profiles = DummyData.PROFILES.map { it.toProfileListItem() }
             ),
-            navBar = {},
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit::class,
+                navigateTo = {}
+            ) },
             onProfileClick = { },
             onCreateNewProfileClick = { },
             onBackClick = { },

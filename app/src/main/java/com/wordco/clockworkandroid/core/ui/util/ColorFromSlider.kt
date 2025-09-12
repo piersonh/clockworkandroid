@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.ui
+package com.wordco.clockworkandroid.core.ui.util
 
 import androidx.compose.ui.graphics.Color
 
