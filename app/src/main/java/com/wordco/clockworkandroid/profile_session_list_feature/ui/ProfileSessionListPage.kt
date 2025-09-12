@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -41,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -186,10 +189,61 @@ private fun ProfileSessionListPageRetrieved(
                     Text("Completed Sessions")
                 }
             )
-            TabbedScreen(
-                screens,
-                tabIndicatorColor = uiState.profileColor
-            )
+            Column(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Box (
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp, vertical = 20.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp)),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = uiState.profileName,
+                            style = TextStyle(fontSize = 48.sp),
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.primary)
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            fontFamily = LATO,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+
+                        Box (
+                            modifier = Modifier
+                                .background(color = uiState.profileColor)
+                                .fillMaxWidth()
+                                .height(10.dp)
+                        )
+                    }
+                }
+
+                Spacer(
+                    modifier = Modifier.height(10.dp)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .clip(
+                            shape = RoundedCornerShape(
+                                topStart = 10.dp,
+                                topEnd = 10.dp,
+                            )
+                        )
+                        .background(MaterialTheme.colorScheme.primary)
+                ) {
+                    TabbedScreen(
+                        screens,
+                        tabIndicatorColor = uiState.profileColor
+                    )
+                }
+            }
         }
     }
 }
@@ -212,7 +266,7 @@ fun TabbedScreen(
         TabRow(
             selectedTabIndex = pagerState.currentPage,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = MaterialTheme.colorScheme.background,
             indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(
                     color = tabIndicatorColor,
@@ -256,6 +310,10 @@ private fun SessionList(
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
+            item {
+                Spacer(Modifier)
+            }
+
             items(
                 items = sessions,
                 key = { it.id }
@@ -332,7 +390,7 @@ private fun ProfileSessionListPageRetrievedPreview() {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ProfileSessionListPageRetrievingPreview() {
     ClockworkTheme {

@@ -26,6 +26,7 @@ fun NavBar(
 ) {
     NavigationBar(
         tonalElevation = 5.dp,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) {
         items.forEach { destination ->
             NavigationBarItem(
