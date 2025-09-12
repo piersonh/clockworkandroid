@@ -203,7 +203,8 @@ private fun TaskCompletionPage(
 @Composable
 private fun TaskCompletionPagePreview() {
     ClockworkTheme {
-        TaskCompletionPage(uiState = TaskCompletionUiState.Retrieved(
+        TaskCompletionPage(
+            uiState = TaskCompletionUiState.Retrieved(
             name = "",
             dueDate = LocalDate.now(),
             difficulty = 0f,
