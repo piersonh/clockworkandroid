@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,17 +13,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -46,6 +52,7 @@ import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.ProfileSessionListUiItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ProfileSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toProfileSessionListItem
+import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 
@@ -160,12 +167,62 @@ private fun ProfileSessionListPageRetrieved(
                 .background(color = MaterialTheme.colorScheme.primary)
                 .fillMaxSize()
         ) {
-            SessionList(
-                sessions = uiState.sessions,
-                onSessionClick = onSessionClick,
-                modifier = Modifier
-                    .padding(5.dp)
+            val screens = listOf(
+                TabbedScreen(
+                    "Runnable"
+                ) {
+                    SessionList(
+                        sessions = uiState.sessions,
+                        onSessionClick = onSessionClick,
+                        modifier = Modifier
+                            .padding(5.dp)
+                    )
+                },
+                TabbedScreen(
+                    "Completed"
+                ) {
+                    Text("Completed Sessions")
+                }
             )
+            TabbedScreen(
+                screens
+            )
+        }
+    }
+}
+
+data class TabbedScreen (
+    val label: String,
+    val screen: @Composable () -> Unit
+)
+
+
+@Composable
+fun TabbedScreen(
+    screens: List<TabbedScreen>,
+) {
+    val pagerState = rememberPagerState { screens.size }
+    val coroutineScope = rememberCoroutineScope()
+
+    Column {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
+            screens.forEachIndexed { index, screen ->
+                Tab(
+                    selected = (pagerState.currentPage == index),
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = { Text(text = screen.label) },
+                )
+            }
+        }
+
+        HorizontalPager(
+            state = pagerState,
+        ) { page ->
+            screens[page].screen()
         }
     }
 }
