@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,12 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,11 +55,9 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.ProfileSessionListUiItem
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ProfileSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toProfileSessionListItem
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.util.contrastRatioWith
 import kotlinx.coroutines.launch
-import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun ProfileSessionListPage(
@@ -67,6 +65,7 @@ fun ProfileSessionListPage(
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onSessionClick: (Long) -> Unit,
+    onCreateNewSessionClick: () -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,7 +75,8 @@ fun ProfileSessionListPage(
         onBackClick = onBackClick,
         onEditClick = onEditClick,
         onSessionClick = onSessionClick,
-        navBar = navBar
+        onCreateNewSessionClick = onCreateNewSessionClick,
+        navBar = navBar,
     )
 }
 
@@ -86,6 +86,7 @@ private fun ProfileSessionListPage(
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onSessionClick: (Long) -> Unit,
+    onCreateNewSessionClick: () -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     when (uiState) {
@@ -94,6 +95,7 @@ private fun ProfileSessionListPage(
             onBackClick = onBackClick,
             onEditClick = onEditClick,
             onSessionClick = onSessionClick,
+            onCreateNewSessionClick = onCreateNewSessionClick,
             navBar = navBar,
         )
         ProfileSessionListUiState.Retrieving -> ProfileSessionListPageRetrieving(
@@ -111,6 +113,7 @@ private fun ProfileSessionListPageRetrieved(
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onSessionClick: (Long) -> Unit,
+    onCreateNewSessionClick: () -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     Scaffold (
@@ -119,10 +122,7 @@ private fun ProfileSessionListPageRetrieved(
                 Color.White,
                 Color.Black,
             ).maxBy {
-                val l1 = max(it.luminance(), uiState.profileColor.luminance())
-                val l2 = min(it.luminance(), uiState.profileColor.luminance())
-
-                ((l1 + 0.05f) / (l2 + 0.05f))
+                uiState.profileColor.contrastRatioWith(it)
             }
 
             TopAppBar(
@@ -147,6 +147,7 @@ private fun ProfileSessionListPageRetrieved(
                     Text(
                         uiState.profileName,
                         fontFamily = LATO,
+                        fontWeight = FontWeight.Black
                     )
                 },
                 actions = {
@@ -176,11 +177,12 @@ private fun ProfileSessionListPageRetrieved(
                 TabbedScreenItem(
                     "To-Do"
                 ) {
-                    SessionList(
-                        sessions = uiState.sessions,
+                    TodoList(
+                        uiState = uiState,
                         onSessionClick = onSessionClick,
+                        onCreateNewSessionClick = onCreateNewSessionClick,
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(horizontal = 5.dp)
                     )
                 },
                 TabbedScreenItem(
@@ -284,7 +286,10 @@ fun TabbedScreen(
                             pagerState.animateScrollToPage(index)
                         }
                     },
-                    text = { Text(text = screen.label) },
+                    text = { Text(
+                        text = screen.label,
+                        fontFamily = LATO,
+                    ) },
                 )
             }
         }
@@ -299,9 +304,10 @@ fun TabbedScreen(
 
 
 @Composable
-private fun SessionList(
-    sessions: List<ProfileSessionListItem>,
+private fun TodoList(
+    uiState: ProfileSessionListUiState.Retrieved,
     onSessionClick: (Long) -> Unit,
+    onCreateNewSessionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -311,11 +317,41 @@ private fun SessionList(
             verticalArrangement = Arrangement.spacedBy(5.dp),
         ) {
             item {
+                Spacer(Modifier.height(5.dp))
+            }
+
+            item {
+                TextButton(
+                    onClick = onCreateNewSessionClick,
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = uiState.profileColor,
+                        contentColor = listOf(
+                            Color.White,
+                            Color.Black
+                        ).maxBy {
+                            uiState.profileColor.contrastRatioWith(it)
+                        }
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .height(50.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Create New Session",
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 25.sp
+                    )
+                }
+            }
+
+            item {
                 Spacer(Modifier)
             }
 
             items(
-                items = sessions,
+                items = uiState.sessions,
                 key = { it.id }
             ) { session ->
                 ProfileSessionListUiItem(
@@ -366,14 +402,14 @@ private fun ProfileSessionListPageRetrieving(
 
 
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ProfileSessionListPageRetrievedPreview() {
     ClockworkTheme {
         ProfileSessionListPageRetrieved (
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
-                profileColor = Color.Red,
+                profileColor = Color.Yellow,
                 sessions = DummyData.SESSIONS
                     .filter { it.profileId != null }
                     .map { it.toProfileSessionListItem() },
@@ -381,6 +417,7 @@ private fun ProfileSessionListPageRetrievedPreview() {
             onBackClick = {},
             onEditClick = {},
             onSessionClick = {},
+            onCreateNewSessionClick = {},
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit,

@@ -130,6 +130,7 @@ fun NavHost(
             onBackClick = navController::popBackStack,
             onEditClick = {  },
             onSessionClick = navController::navigateToTimer,
+            onCreateNewSessionClick = navController::navigateToCreateNewTask,
             navBar = { navBar(ProfileListRoute) },
         )
     }
