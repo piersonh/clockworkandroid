@@ -50,8 +50,8 @@ class TaskCompletionViewModel (
                         difficulty = difficulty.toFloat(),
                         color = color,
                         estimate = userEstimate?.toEstimate(),
-                        segments = segments.toList(),
-                        markers = markers.toList()
+                        segments = segments,
+                        markers = markers
                     )
                 }
             }
