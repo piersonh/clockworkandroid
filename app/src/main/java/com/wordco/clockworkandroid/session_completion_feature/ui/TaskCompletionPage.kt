@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.model.Marker
+import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
@@ -218,10 +219,38 @@ private fun TaskCompletionPagePreview() {
                 color = Color.Red,
                 estimate = UserEstimate(60, 1),
                 markers = listOf(
-                    Marker(markerId = 1L, taskId = previewTaskId, startTime = now.minusSeconds(1800), label = "Halfway point"),
-                    Marker(markerId = 2L, taskId = previewTaskId, startTime = now.minusSeconds(600), label = "Quick check-in")
+                    Marker(
+                        markerId = 1L,
+                        taskId = previewTaskId,
+                        startTime = now.minusSeconds(1800),
+                        label = "Halfway point"),
+                    Marker(
+                        markerId = 2L,
+                        taskId = previewTaskId,
+                        startTime = now.minusSeconds(600),
+                        label = "Quick check-in")
                 ),
-                segments = listOf()
+                segments = listOf(
+                    Segment(
+                        segmentId = 1L,
+                        taskId = previewTaskId,
+                        startTime = now.minusSeconds(3600),
+                        null,
+                        Segment.Type.WORK
+                    ),
+                    Segment(
+                        segmentId = 2L,
+                        taskId = previewTaskId,
+                        startTime = now.minusSeconds(1800),
+                        duration = null,
+                        type = Segment.Type.BREAK),
+                    Segment(
+                        segmentId = 3L,
+                        taskId = previewTaskId,
+                        startTime = now.minusSeconds(600),
+                        duration = null,
+                        type = Segment.Type.FINISH)
+                )
             ),
             onBackClick = {},
             onContinueClick = {}
