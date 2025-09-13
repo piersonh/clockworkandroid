@@ -62,7 +62,7 @@ fun CompletedTaskUIListItem(
             ) {
             MoonImage()
             Text(
-                "Suspended",
+                "Completed",
                 fontFamily = LATO,
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

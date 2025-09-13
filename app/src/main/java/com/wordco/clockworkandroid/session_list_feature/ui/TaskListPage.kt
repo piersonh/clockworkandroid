@@ -217,7 +217,7 @@ private fun TaskListPagePreview() {
                 newTasks = listOf(),
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
-                        taskId = 0,
+                        taskId = 1,
                         name = "Awooga",
                         color = Color(40, 50, 160),
                         workTime = Duration.ZERO,
@@ -226,8 +226,8 @@ private fun TaskListPagePreview() {
                 ),
                 finishedTasks = listOf(
                     CompletedTaskListItem(
-                        taskId = 1,
-                        name = "Awooga",
+                        taskId = 2,
+                        name = "Awooga2",
                         color = Color(40, 50, 160),
                         workTime = Duration.ZERO,
                         breakTime = Duration.ZERO
