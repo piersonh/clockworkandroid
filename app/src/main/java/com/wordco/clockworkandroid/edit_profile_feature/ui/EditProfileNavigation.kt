@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_session_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -12,29 +12,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
-// See https://github.com/android/nowinandroid modularized navigation
-
-
 @Serializable
-data class EditTaskRoute(val id: Long)
+data class EditProfileRoute(val id: Long)
 
-fun NavController.navigateToEditSession(
-    taskId: Long,
+fun NavController.navigateToEditProfile(
+    id: Long,
     navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
 ) {
-    navigate(route = EditTaskRoute(taskId)) {
+    navigate(route = EditProfileRoute(id)) {
         navOptions()
     }
 }
 
-// See
-// https://search.brave.com/search?q=default+viewmodel+extras&conversation=e96cd8b99dbedd699a77a6&summary=1
 
-
-fun NavGraphBuilder.editTaskPage(
+fun NavGraphBuilder.editProfilePage(
     onBackClick: () -> Unit
 ) {
-    composable<EditTaskRoute>(
+    composable<EditProfileRoute>(
         enterTransition = {
             slideInHorizontally(
                 initialOffsetX = { it }, animationSpec = tween(300)
@@ -56,22 +50,22 @@ fun NavGraphBuilder.editTaskPage(
             )
         }
     ) {
-        entry ->
-        val taskId = entry.toRoute<EditTaskRoute>().id
+            entry ->
+        val taskId = entry.toRoute<EditProfileRoute>().id
 
-        val editTaskViewModel = ViewModelProvider.create(
+        val editProfileViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = EditTaskViewModel.Companion.Factory,
+            factory = EditProfileViewModel.Companion.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {
-                set(EditTaskViewModel.Companion.TASK_ID_KEY, taskId)
+                set(EditProfileViewModel.Companion.PROFILE_ID_KEY, taskId)
             }
-        )[EditTaskViewModel::class]
+        )[EditProfileViewModel::class]
 
-        EditTaskPage(
+        EditProfilePage(
             onBackClick = onBackClick,
-            editTaskViewModel = editTaskViewModel
+            viewModel = editProfileViewModel
         )
     }
 }

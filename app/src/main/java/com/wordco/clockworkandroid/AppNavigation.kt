@@ -11,11 +11,13 @@ import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
 import com.wordco.clockworkandroid.edit_profile_feature.ui.createProfilePage
+import com.wordco.clockworkandroid.edit_profile_feature.ui.editProfilePage
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
+import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
 import com.wordco.clockworkandroid.edit_session_feature.ui.createNewTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.editTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTask
-import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEdit
+import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEditSession
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
@@ -105,7 +107,7 @@ fun NavHost(
 
         timerPage(
             onBackClick = navController::popBackStack,
-            onEditClick = navController::navigateToEdit
+            onEditClick = navController::navigateToEditSession
         )
 
         editTaskPage(
@@ -126,9 +128,13 @@ fun NavHost(
             onBackClick = navController::popBackStack
         )
 
+        editProfilePage(
+            onBackClick = navController::popBackStack
+        )
+
         profileSessionListPage(
             onBackClick = navController::popBackStack,
-            onEditClick = {  },
+            onEditClick = navController::navigateToEditProfile,
             onSessionClick = navController::navigateToTimer,
             onCreateNewSessionClick = navController::navigateToCreateNewTask,
             navBar = { navBar(ProfileListRoute) },

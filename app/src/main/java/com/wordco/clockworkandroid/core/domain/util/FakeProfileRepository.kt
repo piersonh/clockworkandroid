@@ -38,4 +38,16 @@ class FakeProfileRepository(
     override suspend fun insertProfile(profile: Profile) {
         _profiles.update { it.plus(profile) }
     }
+
+    override suspend fun updateProfile(profile: Profile) {
+        _profiles.update { list ->
+            list.map {
+                if (it.id == profile.id) {
+                    profile
+                } else {
+                    it
+                }
+            }
+        }
+    }
 }

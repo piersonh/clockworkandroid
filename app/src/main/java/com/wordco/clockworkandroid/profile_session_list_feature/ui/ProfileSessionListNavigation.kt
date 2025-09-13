@@ -25,7 +25,7 @@ fun NavController.navigateToProfileSessionList(
 
 fun NavGraphBuilder.profileSessionListPage(
     onBackClick: () -> Unit,
-    onEditClick: () -> Unit,
+    onEditClick: (Long) -> Unit,
     onSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
     navBar: @Composable () -> Unit,
@@ -47,7 +47,7 @@ fun NavGraphBuilder.profileSessionListPage(
         ProfileSessionListPage(
             viewModel = profileSessionListViewModel,
             onBackClick = onBackClick,
-            onEditClick = onEditClick,
+            onEditClick = { onEditClick(profileId) },
             onSessionClick = onSessionClick,
             onCreateNewSessionClick = onCreateNewSessionClick,
             navBar = navBar,

@@ -9,4 +9,6 @@ interface ProfileRepository {
     fun getProfile(id: Long): Flow<Profile>
 
     suspend fun insertProfile(profile: Profile)
+
+    suspend fun updateProfile(profile: Profile)
 }
