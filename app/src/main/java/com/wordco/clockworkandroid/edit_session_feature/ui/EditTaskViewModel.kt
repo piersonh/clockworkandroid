@@ -14,10 +14,13 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.toEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,23 +42,13 @@ class EditTaskViewModel (
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
     private lateinit var _loadedTask: Task
 
-    // We might want to split these into their own MutableStateFlow()s
-    private val _internalState = MutableStateFlow(EditTaskUiState.Retrieved(
-        taskName = "",
-        colorSliderPos = 0f,
-        difficulty = 0f,
-        dueDate = null,
-        dueTime = null,
-        currentModal = null,
-        estimate = null
-    ))
 
     init {
         viewModelScope.launch {
-            _loadedTask = taskRepository.getTask(taskId).first()
+            taskRepository.getTask(taskId).first().run {
+                _loadedTask = this
 
-            with (_loadedTask) {
-                _internalState.update {
+                _uiState.update {
                     EditTaskUiState.Retrieved(
                         taskName = name,
                         colorSliderPos = color.hue()/360,
@@ -69,35 +62,32 @@ class EditTaskViewModel (
                     )
                 }
             }
-
-            _internalState.collect { state ->
-                _uiState.update { state }
-            }
         }
     }
 
+
     fun onTaskNameChange(newName: String) {
-        _internalState.update { it.copy(taskName = newName) }
+        _uiState.updateIfRetrieved { it.copy(taskName = newName) }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _internalState.update { it.copy(colorSliderPos = newPos) }
+        _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _internalState.update { it.copy(difficulty = newDifficulty) }
+        _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
     }
 
     fun onShowDatePicker() {
-        _internalState.update { it.copy(currentModal = PickerModal.DATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.DATE) }
     }
 
     fun onDismissDatePicker() {
-        _internalState.update { it.copy(currentModal = null) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
     fun onDueDateChange(newDate: Long?) {
-        _internalState.update { it.copy(dueDate = newDate?.let {
+        _uiState.updateIfRetrieved { it.copy(dueDate = newDate?.let {
             Instant.ofEpochMilli(newDate)
                 .atZone(ZoneOffset.UTC)
                 .toLocalDate()
@@ -105,30 +95,23 @@ class EditTaskViewModel (
     }
 
     fun onShowTimePicker() {
-        _internalState.update { it.copy(currentModal = PickerModal.TIME) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.TIME) }
     }
 
     fun onDismissTimePicker() {
-        _internalState.update { it.copy(currentModal = null) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
     fun onDueTimeChange(newTime: LocalTime) {
-        _internalState.update { it.copy(dueTime = newTime) }
+        _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
     }
 
     fun onEstimateChange(newEstimate: UserEstimate) {
-        _internalState.update { it.copy(estimate = newEstimate) }
-    }
-
-    sealed interface EditTaskResult {
-        data object Success : EditTaskResult
-        sealed interface Error : EditTaskResult
-        data object MissingName : Error
+        _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
     }
 
     fun onEditTaskClick() : EditTaskResult {
-        with(_internalState.value) {
-
+        return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
                 return EditTaskResult.MissingName
             }
@@ -189,9 +172,8 @@ class EditTaskViewModel (
 
                 )
             }
-        }
-
-        return EditTaskResult.Success
+            EditTaskResult.Success
+        } ?: error("Can only save if retrieved")
     }
 
 

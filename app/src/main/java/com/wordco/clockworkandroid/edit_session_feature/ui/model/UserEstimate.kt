@@ -13,9 +13,3 @@ data class UserEstimate (
     }
 }
 
-fun Duration.toEstimate() : UserEstimate {
-    return UserEstimate(
-        minutes = (toMinutes() % 60).toInt(),
-        hours = toHours().toInt()
-    )
-}

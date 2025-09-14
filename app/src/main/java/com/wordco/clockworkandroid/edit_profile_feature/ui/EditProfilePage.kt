@@ -33,6 +33,7 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.EditProfileResult
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,7 +61,7 @@ private fun EditProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onSaveClick: () -> EditProfileViewModel.EditProfileResult,
+    onSaveClick: () -> EditProfileResult,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -104,14 +105,14 @@ private fun EditProfilePage(
                         ),
                         onClick = {
                             when (onSaveClick()) {
-                                EditProfileViewModel.EditProfileResult.MissingName -> {
+                                EditProfileResult.MissingName -> {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save profile: Missing Name"
                                         )
                                     }
                                 }
-                                EditProfileViewModel.EditProfileResult.Success -> onBackClick()
+                                EditProfileResult.Success -> onBackClick()
                             }
                         },
                         shape = RoundedCornerShape(10.dp)
@@ -174,7 +175,7 @@ private fun EditProfilePagePreview() {
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onSaveClick = { EditProfileViewModel.EditProfileResult.Success},
+            onSaveClick = { EditProfileResult.Success},
         )
     }
 }

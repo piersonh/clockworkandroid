@@ -11,6 +11,7 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.CreateProfileResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -42,12 +43,6 @@ class CreateProfileViewModel (
         _uiState.update { it.copy(difficulty = newDifficulty) }
     }
 
-
-    sealed interface CreateProfileResult {
-        data object Success : CreateProfileResult
-        sealed interface Error : CreateProfileResult
-        data object MissingName : Error
-    }
 
     fun onCreateProfileClick() : CreateProfileResult {
         with(_uiState.value) {

@@ -33,6 +33,7 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -77,7 +78,7 @@ private fun EditTaskPage(
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate) -> Unit,
-    onEditTaskClick: () -> EditTaskViewModel.EditTaskResult,
+    onEditTaskClick: () -> EditTaskResult,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -119,14 +120,14 @@ private fun EditTaskPage(
                         ),
                         onClick = {
                             when (onEditTaskClick()) {
-                                EditTaskViewModel.EditTaskResult.MissingName -> {
+                                EditTaskResult.MissingName -> {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save session: Missing Name"
                                         )
                                     }
                                 }
-                                EditTaskViewModel.EditTaskResult.Success -> onBackClick()
+                                EditTaskResult.Success -> onBackClick()
                             }
                         },
                         shape = RoundedCornerShape(10.dp)
@@ -198,7 +199,7 @@ private fun EditTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onEditTaskClick = { EditTaskViewModel.EditTaskResult.Success }
+            onEditTaskClick = { EditTaskResult.Success }
         )
     }
 }

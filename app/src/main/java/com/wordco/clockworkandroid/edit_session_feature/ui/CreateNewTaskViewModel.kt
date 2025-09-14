@@ -11,6 +11,7 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreateTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -90,12 +91,6 @@ class CreateNewTaskViewModel (
 
     fun onEstimateChange(newEstimate: UserEstimate) {
         _uiState.update { it.copy(estimate = newEstimate) }
-    }
-
-    sealed interface CreateTaskResult {
-        data object Success : CreateTaskResult
-        sealed interface Error : CreateTaskResult
-        data object MissingName : Error
     }
 
     fun onCreateTaskClick() : CreateTaskResult {

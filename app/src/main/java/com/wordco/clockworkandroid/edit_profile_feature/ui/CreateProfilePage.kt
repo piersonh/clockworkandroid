@@ -33,6 +33,7 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.CreateProfileResult
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,7 +61,7 @@ private fun CreateProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onCreateProfileClick: () -> CreateProfileViewModel.CreateProfileResult,
+    onCreateProfileClick: () -> CreateProfileResult,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -104,14 +105,14 @@ private fun CreateProfilePage(
                         ),
                         onClick = {
                             when (onCreateProfileClick()) {
-                                CreateProfileViewModel.CreateProfileResult.MissingName -> {
+                                CreateProfileResult.MissingName -> {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save profile: Missing Name"
                                         )
                                     }
                                 }
-                                CreateProfileViewModel.CreateProfileResult.Success -> onBackClick()
+                                CreateProfileResult.Success -> onBackClick()
                             }
                         },
                         shape = RoundedCornerShape(10.dp)
@@ -167,7 +168,7 @@ private fun CreateProfilePagePreview() {
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onCreateProfileClick = { CreateProfileViewModel.CreateProfileResult.Success},
+            onCreateProfileClick = { CreateProfileResult.Success},
         )
     }
 }

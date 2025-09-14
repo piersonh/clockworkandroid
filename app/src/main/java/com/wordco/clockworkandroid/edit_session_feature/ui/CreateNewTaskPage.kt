@@ -33,6 +33,7 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreateTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -79,7 +80,7 @@ fun CreateNewTaskPage(
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate) -> Unit,
-    onCreateTaskClick: () -> CreateNewTaskViewModel.CreateTaskResult,
+    onCreateTaskClick: () -> CreateTaskResult,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -122,14 +123,14 @@ fun CreateNewTaskPage(
                         ),
                         onClick = {
                             when (onCreateTaskClick()) {
-                                CreateNewTaskViewModel.CreateTaskResult.MissingName -> {
+                                CreateTaskResult.MissingName -> {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save session: Missing Name"
                                         )
                                     }
                                 }
-                                CreateNewTaskViewModel.CreateTaskResult.Success -> onBackClick()
+                                CreateTaskResult.Success -> onBackClick()
                             }
                         },
                         shape = RoundedCornerShape(10.dp)
@@ -199,7 +200,7 @@ private fun CreateNewTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onCreateTaskClick = { CreateNewTaskViewModel.CreateTaskResult.Success }
+            onCreateTaskClick = { CreateTaskResult.Success }
         )
     }
 }

@@ -12,9 +12,10 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
+import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_profile_feature.ui.util.runIfRetrieved
-import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateRetrieved
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.EditProfileResult
+import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -53,30 +54,24 @@ class EditProfileViewModel (
 
 
     fun onNameChange(newName: String) {
-        _uiState.updateRetrieved {
+        _uiState.updateIfRetrieved {
             it.copy(name = newName)
         }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.updateRetrieved { it.copy(colorSliderPos = newPos) }
+        _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateRetrieved { it.copy(difficulty = newDifficulty) }
+        _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
     }
 
-
-    sealed interface EditProfileResult {
-        data object Success : EditProfileResult
-        sealed interface Error : EditProfileResult
-        data object MissingName : Error
-    }
 
     fun onSaveClick() : EditProfileResult {
-        return _uiState.runIfRetrieved {
+        return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
             if (name.isBlank()) {
-                return@runIfRetrieved EditProfileResult.MissingName
+                return EditProfileResult.MissingName
             }
 
             viewModelScope.launch {
@@ -90,8 +85,8 @@ class EditProfileViewModel (
                     )
                 )
             }
-            return@runIfRetrieved EditProfileResult.Success
-        }
+            EditProfileResult.Success
+        } ?: error("Can only save if retrieved")
     }
 
 
