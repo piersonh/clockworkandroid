@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import java.time.Duration
 import java.time.Instant
 
-data class ProfileSessionListItem(
+data class TodoSessionListItem(
     val id: Long,
     val name: String,
     val dueDate: Instant?,

@@ -48,7 +48,7 @@ class FakeSessionRepository(
         return _sessions.asStateFlow()
     }
 
-    override fun getProfileSessions(profileId: Long): Flow<List<Task>> {
+    override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
         return _sessions.map { sessions ->
             sessions.filter{ it.profileId == profileId }
         }

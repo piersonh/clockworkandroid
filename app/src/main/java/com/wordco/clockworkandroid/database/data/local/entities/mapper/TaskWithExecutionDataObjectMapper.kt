@@ -13,7 +13,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
     return when (taskEntity.status) {
         0 -> NewTask(
             taskId = taskEntity.taskId,
-            profileId = null,
+            profileId = taskEntity.profileId,
             name = taskEntity.name,
             dueDate = toOptionalInstant(taskEntity.dueDate),
             difficulty = taskEntity.difficulty,
@@ -22,7 +22,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
         )
         1 -> StartedTask(
             taskId = taskEntity.taskId,
-            profileId = null,
+            profileId = taskEntity.profileId,
             name = taskEntity.name,
             dueDate = toOptionalInstant(taskEntity.dueDate),
             difficulty = taskEntity.difficulty,
@@ -33,7 +33,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
         )
         2 -> CompletedTask(
             taskId = taskEntity.taskId,
-            profileId = null,
+            profileId = taskEntity.profileId,
             name = taskEntity.name,
             dueDate = toOptionalInstant(taskEntity.dueDate),
             difficulty = taskEntity.difficulty,

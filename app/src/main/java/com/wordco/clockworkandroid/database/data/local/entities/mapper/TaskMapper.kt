@@ -16,5 +16,6 @@ fun Task.toTaskEntity() : TaskEntity {
         color = fromColor(color),
         status = fromTaskStatus(this),
         userEstimate = fromOptionalDuration(userEstimate),
+        profileId = profileId,
     )
 }

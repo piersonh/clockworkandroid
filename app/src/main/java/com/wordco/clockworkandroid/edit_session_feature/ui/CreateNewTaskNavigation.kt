@@ -62,7 +62,7 @@ fun NavGraphBuilder.createNewTaskPage(
 
         CreateNewTaskPage(
             onBackClick = onBackClick,
-            createNewTaskViewModel = createNewTaskViewModel
+            viewModel = createNewTaskViewModel
         )
     }
 }

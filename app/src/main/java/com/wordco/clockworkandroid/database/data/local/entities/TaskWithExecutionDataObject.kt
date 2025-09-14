@@ -17,4 +17,4 @@ data class TaskWithExecutionDataObject(
         entityColumn = "taskId"
     )
     val markers: List<MarkerEntity>
-    )
+)

@@ -22,13 +22,13 @@ import com.wordco.clockworkandroid.core.ui.composables.CalImage
 import com.wordco.clockworkandroid.core.ui.composables.ComputerImage
 import com.wordco.clockworkandroid.core.ui.composables.UserImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ProfileSessionListItem
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.TodoSessionListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.util.asHHMM
 import com.wordco.clockworkandroid.session_list_feature.ui.util.asTaskDueFormat
 
 @Composable
-fun ProfileSessionListUiItem(
-    session: ProfileSessionListItem,
+fun TodoSessionListUiItem(
+    session: TodoSessionListItem,
     modifier: Modifier = Modifier,
 ) {
     Box (

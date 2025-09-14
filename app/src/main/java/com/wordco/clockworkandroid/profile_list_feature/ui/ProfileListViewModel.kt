@@ -2,11 +2,12 @@ package com.wordco.clockworkandroid.profile_list_feature.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.domain.util.FakeProfileRepository
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,11 +53,12 @@ class ProfileListViewModel(
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                //val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
                 //val timer = (this[APPLICATION_KEY] as MainApplication).timer
 
+
                 ProfileListViewModel (
-                    profileRepository = FakeProfileRepository.factory(),
+                    profileRepository = profileRepository,
                     //timer = timer,
                     //savedStateHandle = savedStateHandle
                 )

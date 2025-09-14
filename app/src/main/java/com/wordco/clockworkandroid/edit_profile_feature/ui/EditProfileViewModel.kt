@@ -3,13 +3,14 @@ package com.wordco.clockworkandroid.edit_profile_feature.ui
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.domain.util.FakeProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.runIfRetrieved
@@ -84,7 +85,7 @@ class EditProfileViewModel (
                         id = _loadedProfile.id,
                         name = name,
                         color = Color.fromSlider(colorSliderPos),
-                        defaultDifficulty = (4 * difficulty).toInt(),
+                        defaultDifficulty = difficulty.toInt(),
                         sessions = _loadedProfile.sessions,
                     )
                 )
@@ -102,9 +103,8 @@ class EditProfileViewModel (
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                //val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
                 val profileId = this[PROFILE_ID_KEY] as Long
-                val profileRepository = FakeProfileRepository.factory()
+                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
 
                 EditProfileViewModel (
                     profileRepository = profileRepository,

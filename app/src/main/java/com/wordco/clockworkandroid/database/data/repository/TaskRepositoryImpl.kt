@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class TaskRepositoryImpl (
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
 ) : TaskRepository {
     override suspend fun insertTask(task: Task) {
         taskDao.insertTask(task.toTaskEntity())
@@ -56,8 +56,10 @@ class TaskRepositoryImpl (
             }
     }
 
-    override fun getProfileSessions(profileId: Long): Flow<List<Task>> {
-        TODO("Not yet implemented")
+    override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
+        return taskDao.getSessionsForProfile(profileId).map { taskList ->
+            taskList.map { it.toTask() }
+        }
     }
 
     override suspend fun hasActiveTask(): Boolean {

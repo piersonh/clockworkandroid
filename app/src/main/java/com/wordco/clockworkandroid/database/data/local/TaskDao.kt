@@ -101,4 +101,8 @@ interface TaskDao {
     @Transaction
     @Query("SELECT * FROM TaskEntity")
     fun getTasksWithExecutionData() : Flow<List<TaskWithExecutionDataObject>>
+
+    @Transaction
+    @Query("SELECT * FROM TaskEntity WHERE profileId = :profileId")
+    fun getSessionsForProfile(profileId: Long) : Flow<List<TaskWithExecutionDataObject>>
 }

@@ -117,7 +117,7 @@ class CreateNewTaskViewModel (
                                 .atZone(ZoneId.systemDefault())
                                 .toInstant()
                         },
-                        difficulty = (4 * difficulty).toInt(),
+                        difficulty = difficulty.toInt(),
                         color = Color.fromSlider(colorSliderPos),
                         userEstimate = estimate?.toDuration(),
                     )

@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
+import com.wordco.clockworkandroid.database.data.local.entities.ProfileEntity
 import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
 import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
@@ -18,11 +19,14 @@ import kotlinx.coroutines.launch
     entities = [
         TaskEntity::class,
         SegmentEntity::class,
-        MarkerEntity::class
+        MarkerEntity::class,
+        ProfileEntity::class,
                ],
-    version = 10)
+    version = 11)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
+
+    abstract fun profileDao() : ProfileDao
 
     companion object {
         @Volatile

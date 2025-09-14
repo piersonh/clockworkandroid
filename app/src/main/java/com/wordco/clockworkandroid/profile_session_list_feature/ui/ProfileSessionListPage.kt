@@ -54,8 +54,8 @@ import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.ProfileSessionListUiItem
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toProfileSessionListItem
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.TodoSessionListUiItem
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.util.contrastRatioWith
 import kotlinx.coroutines.launch
 
@@ -351,10 +351,10 @@ private fun TodoList(
             }
 
             items(
-                items = uiState.sessions,
+                items = uiState.todoSessions,
                 key = { it.id }
             ) { session ->
-                ProfileSessionListUiItem(
+                TodoSessionListUiItem(
                     session = session,
                     Modifier
                         .fillMaxWidth()
@@ -410,9 +410,10 @@ private fun ProfileSessionListPageRetrievedPreview() {
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
                 profileColor = Color.Yellow,
-                sessions = DummyData.SESSIONS
+                todoSessions = DummyData.SESSIONS
                     .filter { it.profileId != null }
-                    .map { it.toProfileSessionListItem() },
+                    .map { it.toTodoSessionListItem() },
+                completeSessions = emptyList(),
             ),
             onBackClick = {},
             onEditClick = {},
