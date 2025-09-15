@@ -27,7 +27,7 @@ fun NavGraphBuilder.profileSessionListPage(
     onBackClick: () -> Unit,
     onEditClick: (Long) -> Unit,
     onSessionClick: (Long) -> Unit,
-    onCreateNewSessionClick: () -> Unit,
+    onCreateNewSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     composable<ProfileSessionListRoute> { entry ->
@@ -49,7 +49,7 @@ fun NavGraphBuilder.profileSessionListPage(
             onBackClick = onBackClick,
             onEditClick = { onEditClick(profileId) },
             onSessionClick = onSessionClick,
-            onCreateNewSessionClick = onCreateNewSessionClick,
+            onCreateNewSessionClick = { onCreateNewSessionClick(profileId) },
             navBar = navBar,
         )
     }

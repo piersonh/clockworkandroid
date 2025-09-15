@@ -118,7 +118,7 @@ fun CreateNewTaskPage(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateNewTaskPageRetrieved(
-    uiState: EditTaskFormUiState,
+    uiState: EditTaskUiState.Retrieved,
     onBackClick: () -> Unit,
     skipProfilePicker: Boolean,
     onProfileChange: (Long?) -> Unit,
@@ -238,7 +238,7 @@ private fun CreateNewTaskPageRetrieved(
                     onEstimateChange = onEstimateChange,
                 )
                 0 -> ProfilePicker(
-                    profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
+                    profiles = uiState.profiles,
                     onProfileClick = { profileId ->
                         onProfileChange(profileId)
                         coroutineScope.launch {

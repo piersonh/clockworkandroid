@@ -35,25 +35,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlin.collections.first
 import kotlin.random.Random
-
-private val FIELD_DEFAULTS = object : EditTaskFormUiState {
-    override val taskName: String = ""
-    override val profileName: String? = null
-    override val colorSliderPos: Float
-        get() {
-            return Random.nextFloat()
-        }
-    override val difficulty: Float = 0f
-    override val dueDate: LocalDate? = null
-    override val dueTime: LocalTime? = LocalTime.MIDNIGHT
-    override val currentModal: PickerModal? = null
-    override val estimate: UserEstimate? = UserEstimate(
-        minutes = 15,
-        hours = 0
-    )
-}
-
 
 
 class CreateNewTaskViewModel (
@@ -62,11 +45,15 @@ class CreateNewTaskViewModel (
     private var profileId: Long?
 ) : ViewModel() {
 
+    private val _rng = Random(System.currentTimeMillis())
+
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
 
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
 
     private lateinit var _profiles: StateFlow<List<Profile>>
+
+    private lateinit var _fieldDefaults: EditTaskFormUiState
 
     init {
         viewModelScope.launch {
@@ -76,25 +63,21 @@ class CreateNewTaskViewModel (
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
                     first().also { profiles ->
-                        val templateProfile = profileId?.let{ id -> profiles.first { it.id == id } }
-
-                        val taskName = templateProfile?.name ?: FIELD_DEFAULTS.taskName
-                        val profileName = templateProfile?.name
-                        val colorSliderPos =
-                            templateProfile?.color?.hue()?.div(360) ?: FIELD_DEFAULTS.colorSliderPos
-                        val difficulty = templateProfile?.defaultDifficulty ?: FIELD_DEFAULTS.difficulty
+                        _fieldDefaults = getDefaultFields(
+                            profileId?.let{ id -> profiles.first { it.id == id } }
+                        )
 
                         _uiState.update {
                             EditTaskUiState.Retrieved(
                                 profiles = profiles.map { it.toProfilePickerItem() },
-                                taskName = taskName,
-                                profileName = profileName,
-                                colorSliderPos = colorSliderPos,
-                                difficulty = difficulty.toFloat(),
-                                dueDate = FIELD_DEFAULTS.dueDate,
-                                dueTime = FIELD_DEFAULTS.dueTime,
-                                currentModal = FIELD_DEFAULTS.currentModal,
-                                estimate = FIELD_DEFAULTS.estimate,
+                                taskName = _fieldDefaults.taskName,
+                                profileName = _fieldDefaults.profileName,
+                                colorSliderPos = _fieldDefaults.colorSliderPos,
+                                difficulty = _fieldDefaults.difficulty,
+                                dueDate = _fieldDefaults.dueDate,
+                                dueTime = _fieldDefaults.dueTime,
+                                currentModal = _fieldDefaults.currentModal,
+                                estimate = _fieldDefaults.estimate,
                             )
                         }
                     }
@@ -110,6 +93,26 @@ class CreateNewTaskViewModel (
         }
     }
 
+    private fun getDefaultFields(
+        profile: Profile?
+    ) = object : EditTaskFormUiState {
+        override val taskName: String = profile?.let { profile ->
+            // TODO replace this with a truth from the database so that the quantity
+            //  is retained after sessions are deleted or switched profiles
+            "${ profile.name} ${profile.sessions.size + 1}"
+        } ?: ""
+        override val profileName: String? = profile?.name
+        override val colorSliderPos: Float = profile?.color?.hue()?.div(360) ?: _rng.nextFloat()
+        override val difficulty: Float = profile?.defaultDifficulty?.toFloat() ?: 0f
+        override val dueDate: LocalDate? = null
+        override val dueTime: LocalTime? = LocalTime.MIDNIGHT
+        override val currentModal: PickerModal? = null
+        override val estimate: UserEstimate? = UserEstimate(
+            minutes = 15,
+            hours = 0
+        )
+    }
+
 
     fun onTaskNameChange(newName: String) {
         _uiState.updateIfRetrieved { it.copy(taskName = newName) }
@@ -121,32 +124,31 @@ class CreateNewTaskViewModel (
         }
 
         _uiState.updateIfRetrieved { uiState ->
-            val templateProfile = newProfileId?.let{ id -> _profiles.value.first { it.id == id } }
-            val oldProfile = profileId?.let{ id -> _profiles.value.first { it.id == id } }
+            val oldDefaults = _fieldDefaults
 
-            val profileName = templateProfile?.name
+            _fieldDefaults = getDefaultFields(
+                profileId?.let{ id -> _profiles.value.first { it.id == newProfileId } }
+            )
 
-            val taskName = if (uiState.taskName == (oldProfile?.name ?: FIELD_DEFAULTS.taskName)) {
-                templateProfile?.name ?: FIELD_DEFAULTS.taskName
+            val profileName = _fieldDefaults.profileName
+
+            val taskName = if (uiState.taskName == oldDefaults.taskName) {
+                _fieldDefaults.taskName
             } else uiState.taskName
 
-            val colorSliderPos = if (uiState.colorSliderPos == (oldProfile?.color?.hue()?.div(360)
-                    ?: FIELD_DEFAULTS.colorSliderPos)
-            ) {
-                templateProfile?.color?.hue()?.div(360) ?: FIELD_DEFAULTS.colorSliderPos
+            val colorSliderPos = if (uiState.colorSliderPos == oldDefaults.colorSliderPos) {
+                _fieldDefaults.colorSliderPos
             } else uiState.colorSliderPos
 
-            val difficulty = if (uiState.difficulty == (oldProfile?.defaultDifficulty
-                    ?: FIELD_DEFAULTS.difficulty)
-            ) {
-                templateProfile?.defaultDifficulty ?: FIELD_DEFAULTS.difficulty
+            val difficulty = if (uiState.difficulty == oldDefaults.difficulty) {
+                _fieldDefaults.difficulty
             } else uiState.difficulty
 
             uiState.copy(
                 profileName = profileName,
                 taskName = taskName,
                 colorSliderPos = colorSliderPos,
-                difficulty = difficulty.toFloat(),
+                difficulty = difficulty,
             )
         }
     }
