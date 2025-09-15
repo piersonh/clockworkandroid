@@ -134,9 +134,9 @@ private fun TaskCompletionPage(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
 
+                    // TODO: Print hours/mins
                     Text(
-                        // TODO: app estimation
-                        text = "TODO",
+                        text = uiState.estimate.toString(),
                         style = TextStyle(fontSize = 34.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
