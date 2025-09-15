@@ -223,12 +223,14 @@ private fun TaskCompletionPagePreview() {
                         markerId = 1L,
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(1800),
-                        label = "Halfway point"),
+                        label = "Halfway point"
+                    ),
                     Marker(
                         markerId = 2L,
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(600),
-                        label = "Quick check-in")
+                        label = "Quick check-in"
+                    )
                 ),
                 segments = listOf(
                     Segment(
