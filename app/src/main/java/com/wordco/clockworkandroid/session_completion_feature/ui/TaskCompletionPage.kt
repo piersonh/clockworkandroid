@@ -243,13 +243,15 @@ private fun TaskCompletionPagePreview() {
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(1800),
                         duration = null,
-                        type = Segment.Type.BREAK),
+                        type = Segment.Type.BREAK
+                    ),
                     Segment(
                         segmentId = 3L,
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(600),
                         duration = null,
-                        type = Segment.Type.FINISH)
+                        type = Segment.Type.FINISH
+                    )
                 )
             ),
             onBackClick = {},

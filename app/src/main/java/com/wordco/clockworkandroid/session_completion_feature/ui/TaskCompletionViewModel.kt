@@ -38,7 +38,6 @@ class TaskCompletionViewModel (
         markers = listOf()
     ))
 
-    //FIXME
     init {
         viewModelScope.launch {
             _loadedTask = taskRepository.getTask(taskId).first() as CompletedTask
