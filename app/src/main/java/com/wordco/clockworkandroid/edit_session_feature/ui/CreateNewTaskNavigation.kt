@@ -8,13 +8,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 // See https://github.com/android/nowinandroid modularized navigation
 
 
 @Serializable
-data object CreateNewTaskRoute
+data class CreateNewTaskRoute(val withProfile: Long? = null)
 
 fun NavController.navigateToCreateNewTask(
     navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
@@ -52,8 +53,10 @@ fun NavGraphBuilder.createNewTaskPage(
                 initialOffsetX = { -it }, animationSpec = tween(300)
             )
         }
-    ) {
-        entry ->
+    ) { entry ->
+
+        val profileId = entry.toRoute<CreateNewTaskRoute>().withProfile
+
         val createNewTaskViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
             factory = CreateNewTaskViewModel.Companion.Factory,
@@ -62,7 +65,8 @@ fun NavGraphBuilder.createNewTaskPage(
 
         CreateNewTaskPage(
             onBackClick = onBackClick,
-            viewModel = createNewTaskViewModel
+            viewModel = createNewTaskViewModel,
+            skipProfilePicker = profileId != null,
         )
     }
 }

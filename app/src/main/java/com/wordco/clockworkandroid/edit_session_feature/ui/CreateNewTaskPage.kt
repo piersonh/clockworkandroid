@@ -3,6 +3,8 @@ package com.wordco.clockworkandroid.edit_session_feature.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,12 +31,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreateTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -43,13 +48,15 @@ import java.time.LocalTime
 @Composable
 fun CreateNewTaskPage (
     onBackClick: () -> Unit,
-    viewModel: CreateNewTaskViewModel
+    viewModel: CreateNewTaskViewModel,
+    skipProfilePicker: Boolean = false,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     CreateNewTaskPage(
         uiState = uiState,
         onBackClick = onBackClick,
+        skipProfilePicker = skipProfilePicker,
         onTaskNameChange = viewModel::onTaskNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
@@ -68,7 +75,8 @@ fun CreateNewTaskPage (
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateNewTaskPage(
-    uiState: CreateNewTaskUiState,
+    uiState: EditTaskUiState,
+    skipProfilePicker: Boolean,
     onBackClick: () -> Unit,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
@@ -82,9 +90,53 @@ fun CreateNewTaskPage(
     onEstimateChange: (UserEstimate) -> Unit,
     onCreateTaskClick: () -> CreateTaskResult,
 ) {
-    val scrollState = rememberScrollState()
+    when (uiState) {
+        is EditTaskUiState.Retrieved -> CreateNewTaskPageRetrieved(
+            uiState = uiState,
+            onBackClick = onBackClick,
+            skipProfilePicker = skipProfilePicker,
+            onTaskNameChange = onTaskNameChange,
+            onColorSliderChange = onColorSliderChange,
+            onDifficultyChange = onDifficultyChange,
+            onShowDatePicker = onShowDatePicker,
+            onDismissDatePicker = onDismissDatePicker,
+            onDueDateChange = onDueDateChange,
+            onShowTimePicker = onShowTimePicker,
+            onDismissTimePicker = onDismissTimePicker,
+            onDueTimeChange = onDueTimeChange,
+            onEstimateChange = onEstimateChange,
+            onCreateTaskClick = onCreateTaskClick
+        )
+        EditTaskUiState.Retrieving -> Text("Loading...")
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateNewTaskPageRetrieved(
+    uiState: EditTaskFormUiState,
+    onBackClick: () -> Unit,
+    skipProfilePicker: Boolean,
+    onTaskNameChange: (String) -> Unit,
+    onColorSliderChange: (Float) -> Unit,
+    onDifficultyChange: (Float) -> Unit,
+    onShowDatePicker: () -> Unit,
+    onDismissDatePicker: () -> Unit,
+    onDueDateChange: (Long?) -> Unit,
+    onShowTimePicker: () -> Unit,
+    onDismissTimePicker: () -> Unit,
+    onDueTimeChange: (LocalTime) -> Unit,
+    onEstimateChange: (UserEstimate) -> Unit,
+    onCreateTaskClick: () -> CreateTaskResult,
+) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+    val pagerState = rememberPagerState(
+        initialPage = if (skipProfilePicker) 1 else 0,
+        pageCount = { 2 }
+    )
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -124,7 +176,7 @@ fun CreateNewTaskPage(
                         onClick = {
                             when (onCreateTaskClick()) {
                                 CreateTaskResult.MissingName -> {
-                                    scope.launch {
+                                    coroutineScope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save session: Missing Name"
                                         )
@@ -151,45 +203,71 @@ fun CreateNewTaskPage(
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
-        EditTaskForm(
-            uiState = uiState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-                .padding(horizontal = 30.dp, vertical = 20.dp)
-                .verticalScroll(scrollState),
-            onTaskNameChange = onTaskNameChange,
-            onColorSliderChange = onColorSliderChange,
-            onDifficultyChange = onDifficultyChange,
-            onShowDatePicker = onShowDatePicker,
-            onDismissDatePicker = onDismissDatePicker,
-            onDueDateChange = onDueDateChange,
-            onShowTimePicker = onShowTimePicker,
-            onDismissTimePicker = onDismissTimePicker,
-            onDueTimeChange = onDueTimeChange,
-            onEstimateChange = onEstimateChange,
-            confirmButton = {
 
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .padding(innerPadding),
+            userScrollEnabled = false,
+        ) { page ->
+            when (page) {
+                1 -> EditTaskForm(
+                    uiState = uiState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 30.dp, vertical = 20.dp)
+                        .verticalScroll(scrollState),
+                    /* onProfileFieldClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(0)
+                        }
+                    }
+                    * */
+                    onTaskNameChange = onTaskNameChange,
+                    onColorSliderChange = onColorSliderChange,
+                    onDifficultyChange = onDifficultyChange,
+                    onShowDatePicker = onShowDatePicker,
+                    onDismissDatePicker = onDismissDatePicker,
+                    onDueDateChange = onDueDateChange,
+                    onShowTimePicker = onShowTimePicker,
+                    onDismissTimePicker = onDismissTimePicker,
+                    onDueTimeChange = onDueTimeChange,
+                    onEstimateChange = onEstimateChange,
+                    confirmButton = { }
+                )
+                0 -> ProfilePicker(
+                    profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
+                    onProfileClick = { profileId ->
+                        //onProfileChange(profileId)
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }
+                    }
+                )
             }
-        )
+        }
     }
 }
+
 
 @Preview
 @Composable
 private fun CreateNewTaskPagePreview() {
     ClockworkTheme {
         CreateNewTaskPage(
-            uiState = CreateNewTaskUiState(
+            uiState = EditTaskUiState.Retrieved(
                 taskName = "",
                 colorSliderPos = 0f,
                 difficulty = 0f,
                 dueDate = LocalDate.parse("2025-12-05"),
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
-                estimate = UserEstimate(15, 2)
+                estimate = UserEstimate(15, 2),
+                profileName = "Preview",
+                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
             ),
             onBackClick = { },
+            skipProfilePicker = false,
             onTaskNameChange = { },
             onColorSliderChange = { },
             onDifficultyChange = { },

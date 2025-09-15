@@ -7,6 +7,7 @@ import java.time.LocalTime
 
 data class CreateNewTaskUiState (
     override val taskName: String,
+    val profileName: String?,
     override val colorSliderPos: Float,
     override val difficulty: Float,
     override val dueDate: LocalDate?,
