@@ -10,7 +10,6 @@ import java.time.LocalDate
 sealed interface TaskCompletionUiState {
     data object Retrieving : TaskCompletionUiState
 
-    //FIXME
     data class Retrieved (
         val name: String,
         val dueDate: LocalDate?,
