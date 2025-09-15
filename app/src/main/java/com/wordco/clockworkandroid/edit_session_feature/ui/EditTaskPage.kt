@@ -29,12 +29,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -167,7 +169,7 @@ private fun EditTaskPage(
                 onDismissTimePicker = onDismissTimePicker,
                 onDueTimeChange = onDueTimeChange,
                 onEstimateChange = onEstimateChange,
-                confirmButton = { }
+                onShowProfilePicker = {},
             )
         }
 
@@ -181,12 +183,14 @@ private fun EditTaskPagePreview() {
         EditTaskPage(
             uiState = EditTaskUiState.Retrieved(
                 taskName = "",
+                profileName = "Preview",
                 colorSliderPos = 0f,
                 difficulty = 0f,
                 dueDate = LocalDate.parse("2025-12-05"),
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
-                estimate = UserEstimate(15, 2)
+                estimate = UserEstimate(15, 2),
+                profiles = DummyData.PROFILES.map{ it.toProfilePickerItem() }
             ),
             onBackClick = { },
             onTaskNameChange = { },

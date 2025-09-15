@@ -11,7 +11,7 @@ sealed interface EditTaskUiState {
 
     data class Retrieved (
         override val taskName: String,
-        val profileName: String?,
+        override val profileName: String?,
         override val colorSliderPos: Float,
         override val difficulty: Float,
         override val dueDate: LocalDate?,

@@ -26,52 +26,40 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerIt
 @Composable
 fun ProfilePickerUiItem(
     profile: ProfilePickerItem,
+    modifier: Modifier = Modifier,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(10.dp))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .height(100.dp)
+    Box(
+        modifier = modifier
     ) {
-        Box(
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .background(color = profile.color)
-                .fillMaxHeight()
-                .width(10.dp)
-        )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier.padding(2.dp)
-        )
-        {
-            Text(
-                profile.name,
-                fontFamily = LATO,
-                fontSize = 23.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(10.dp))
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                .height(100.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(color = profile.color)
+                    .fillMaxHeight()
+                    .width(10.dp)
             )
-
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.spacedBy(5.dp),
-//                modifier = Modifier.height(30.dp),
-//
-//                ) {
-//                //MoonImage()
-//                Text(
-//                    "${profile.numSessions} sessions",
-//                    fontFamily = LATO,
-//                    fontSize = 20.sp,
-//                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-//                    overflow = TextOverflow.Ellipsis,
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier.padding(2.dp)
+            )
+            {
+                Text(
+                    profile.name,
+                    fontFamily = LATO,
+                    fontSize = 23.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

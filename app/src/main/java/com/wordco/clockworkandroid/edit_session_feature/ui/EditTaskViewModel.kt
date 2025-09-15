@@ -51,14 +51,16 @@ class EditTaskViewModel (
                 _uiState.update {
                     EditTaskUiState.Retrieved(
                         taskName = name,
-                        colorSliderPos = color.hue()/360,
+                        colorSliderPos = color.hue() / 360,
                         difficulty = difficulty.toFloat(),
                         dueDate = dueDate?.atZone(ZoneId.systemDefault())?.toLocalDate(),
                         dueTime = dueDate?.run {
                             atZone(ZoneId.systemDefault())?.toLocalTime()
                         } ?: LocalTime.MIDNIGHT,
                         currentModal = null,
-                        estimate = userEstimate?.toEstimate()
+                        estimate = userEstimate?.toEstimate(),
+                        profileName = null, // TODO
+                        profiles = emptyList() // TODO
                     )
                 }
             }

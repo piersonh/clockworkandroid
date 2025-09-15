@@ -57,6 +57,7 @@ fun CreateNewTaskPage (
         uiState = uiState,
         onBackClick = onBackClick,
         skipProfilePicker = skipProfilePicker,
+        onProfileChange = viewModel::onProfileChange,
         onTaskNameChange = viewModel::onTaskNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
@@ -78,6 +79,7 @@ fun CreateNewTaskPage(
     uiState: EditTaskUiState,
     skipProfilePicker: Boolean,
     onBackClick: () -> Unit,
+    onProfileChange: (Long?) -> Unit,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
@@ -95,6 +97,7 @@ fun CreateNewTaskPage(
             uiState = uiState,
             onBackClick = onBackClick,
             skipProfilePicker = skipProfilePicker,
+            onProfileChange = onProfileChange,
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,
@@ -118,6 +121,7 @@ private fun CreateNewTaskPageRetrieved(
     uiState: EditTaskFormUiState,
     onBackClick: () -> Unit,
     skipProfilePicker: Boolean,
+    onProfileChange: (Long?) -> Unit,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
@@ -217,12 +221,11 @@ private fun CreateNewTaskPageRetrieved(
                         .fillMaxWidth()
                         .padding(horizontal = 30.dp, vertical = 20.dp)
                         .verticalScroll(scrollState),
-                    /* onProfileFieldClick = {
+                    onShowProfilePicker = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(0)
                         }
-                    }
-                    * */
+                    },
                     onTaskNameChange = onTaskNameChange,
                     onColorSliderChange = onColorSliderChange,
                     onDifficultyChange = onDifficultyChange,
@@ -233,12 +236,11 @@ private fun CreateNewTaskPageRetrieved(
                     onDismissTimePicker = onDismissTimePicker,
                     onDueTimeChange = onDueTimeChange,
                     onEstimateChange = onEstimateChange,
-                    confirmButton = { }
                 )
                 0 -> ProfilePicker(
                     profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
                     onProfileClick = { profileId ->
-                        //onProfileChange(profileId)
+                        onProfileChange(profileId)
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(1)
                         }
@@ -267,7 +269,8 @@ private fun CreateNewTaskPagePreview() {
                 profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
             ),
             onBackClick = { },
-            skipProfilePicker = false,
+            skipProfilePicker = true,
+            onProfileChange = { },
             onTaskNameChange = { },
             onColorSliderChange = { },
             onDifficultyChange = { },

@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,7 +78,10 @@ fun ProfilePicker(
                 key = {it.profileId}
             ) {
                 ProfilePickerUiItem(
-                    profile = it
+                    profile = it,
+                    modifier = Modifier.clickable{
+                        onProfileClick(it.profileId)
+                    }
                 )
             }
         }

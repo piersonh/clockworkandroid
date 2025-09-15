@@ -39,6 +39,7 @@ import kotlin.random.Random
 
 private val FIELD_DEFAULTS = object : EditTaskFormUiState {
     override val taskName: String = ""
+    override val profileName: String? = null
     override val colorSliderPos: Float
         get() {
             return Random.nextFloat()

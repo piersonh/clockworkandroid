@@ -7,6 +7,7 @@ import java.time.LocalTime
 
 interface EditTaskFormUiState {
     val taskName: String
+    val profileName: String?
     val colorSliderPos: Float
     val difficulty: Float
     val dueDate: LocalDate?
