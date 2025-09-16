@@ -15,7 +15,7 @@ import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreateTaskResult
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -170,10 +170,10 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
     }
 
-    fun onCreateTaskClick() : CreateTaskResult {
+    fun onSaveClick() : EditTaskResult {
         return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
-                return CreateTaskResult.MissingName
+                return EditTaskResult.MissingName
             }
 
             viewModelScope.launch {
@@ -194,7 +194,7 @@ class CreateNewTaskViewModel (
                     )
                 )
             }
-            CreateTaskResult.Success
+            EditTaskResult.Success
         } ?: error("Can only save if retrieved")
     }
 

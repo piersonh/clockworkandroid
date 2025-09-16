@@ -52,8 +52,6 @@ class EditTaskViewModel (
 
     private lateinit var _profiles: StateFlow<List<Profile>>
 
-    private lateinit var _fieldDefaults: EditTaskFormUiState
-
 
     init {
         viewModelScope.launch {
@@ -65,7 +63,7 @@ class EditTaskViewModel (
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
                     first().also { profiles ->
-                        _fieldDefaults = getFieldDefaults(
+                        val fieldDefaults = getFieldDefaults(
                             _loadedTask.profileId?.let {
                                 id -> profiles.first { it.id == id }
                             }
@@ -77,15 +75,15 @@ class EditTaskViewModel (
                             EditTaskUiState.Retrieved(
                                 profiles = profiles.map { it.toProfilePickerItem() },
                                 taskName = _loadedTask.name,
-                                profileName = _fieldDefaults.profileName,
+                                profileName = fieldDefaults.profileName,
                                 colorSliderPos = _loadedTask.color.hue() / 360,
                                 difficulty = _loadedTask.difficulty.toFloat(),
                                 dueDate = _loadedTask.dueDate?.atZone(ZoneId.systemDefault())
                                     ?.toLocalDate(),
                                 dueTime = _loadedTask.dueDate?.run {
                                     atZone(ZoneId.systemDefault())?.toLocalTime()
-                                } ?: _fieldDefaults.dueTime,
-                                currentModal = _fieldDefaults.currentModal,
+                                } ?: fieldDefaults.dueTime,
+                                currentModal = fieldDefaults.currentModal,
                                 estimate = _loadedTask.userEstimate?.toEstimate(),
                             )
                         }
@@ -112,34 +110,15 @@ class EditTaskViewModel (
             return
         }
 
-       _uiState.updateIfRetrieved { uiState ->
-            val oldDefaults = _fieldDefaults
+        _uiState.updateIfRetrieved { uiState ->
+            _profileId = newProfileId
 
-           _profileId = newProfileId
-
-           _fieldDefaults = getFieldDefaults(
+            val profileName = getFieldDefaults(
                newProfileId?.let{ _profiles.value.first { it.id == newProfileId } }
-           )
-
-            val profileName = _fieldDefaults.profileName
-
-            val taskName = if (uiState.taskName == oldDefaults.taskName) {
-                _fieldDefaults.taskName
-            } else uiState.taskName
-
-            val colorSliderPos = if (uiState.colorSliderPos == oldDefaults.colorSliderPos) {
-                _fieldDefaults.colorSliderPos
-            } else uiState.colorSliderPos
-
-            val difficulty = if (uiState.difficulty == oldDefaults.difficulty) {
-                _fieldDefaults.difficulty
-            } else uiState.difficulty
+            ).profileName
 
             uiState.copy(
                 profileName = profileName,
-                //taskName = taskName,
-                //colorSliderPos = colorSliderPos,
-                difficulty = difficulty,
             )
         }
     }

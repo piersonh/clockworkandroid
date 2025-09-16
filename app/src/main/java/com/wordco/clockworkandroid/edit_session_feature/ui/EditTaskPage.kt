@@ -75,9 +75,11 @@ fun EditTaskPage (
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditTaskPage(
+internal fun EditTaskPage(
     uiState: EditTaskUiState,
     onBackClick: () -> Unit,
+    title: String = "Edit Session",
+    initialPage: Int = 1,
     onTaskNameChange: (String) -> Unit,
     onProfileChange: (Long?) -> Unit,
     onColorSliderChange: (Float) -> Unit,
@@ -99,7 +101,7 @@ private fun EditTaskPage(
             TopAppBar(
                 title = {
                     Text(
-                        "Edit Session",
+                        title,
                         fontFamily = LATO
                     )
                 },
@@ -123,11 +125,12 @@ private fun EditTaskPage(
             ) {
                 Text("Loading...")
             }
-            is EditTaskUiState.Retrieved ->EditSessionPageRetrieved(
+            is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
                 uiState = uiState,
                 innerPadding = innerPadding,
                 snackbarHostState = snackbarHostState,
                 onBackClick = onBackClick,
+                initialPage = initialPage,
                 onProfileChange = onProfileChange,
                 onTaskNameChange = onTaskNameChange,
                 onColorSliderChange = onColorSliderChange,
@@ -154,6 +157,7 @@ private fun EditSessionPageRetrieved(
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onProfileChange: (Long?) -> Unit,
+    initialPage: Int,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
@@ -168,7 +172,7 @@ private fun EditSessionPageRetrieved(
 ) {
     val scrollState = rememberScrollState()
     val pagerState = rememberPagerState(
-        initialPage = 1,
+        initialPage = if (uiState.profiles.isEmpty()) 1 else initialPage,
         pageCount = { 2 }
     )
     val coroutineScope = rememberCoroutineScope()
