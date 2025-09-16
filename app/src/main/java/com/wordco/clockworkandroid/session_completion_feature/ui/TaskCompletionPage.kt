@@ -38,7 +38,6 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.Instant
 import java.time.LocalDate
 
-
 @Composable
 fun TaskCompletionPage(
     onBackClick: () -> Unit,
@@ -106,24 +105,13 @@ private fun TaskCompletionPage(
                     Spacer(modifier = Modifier.weight(0.004f))
 
                     Text(
-                        text = "Completed!",
-                        style = TextStyle(fontSize = 26.sp),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-
-                    Spacer(modifier = Modifier.weight(0.03f))
-
-                    Text(
                         // FIXME
-                        text = "Total Time: 00:00",//taskViewModel.currentTask!!.workTime.asHHMM(),
+                        text = " ", //"$calculateTotalTime(uiState.segments)",
                         style = TextStyle(fontSize = 90.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
-
                     Spacer(modifier = Modifier.weight(0.03f))
 
                     Text(
@@ -205,6 +193,10 @@ private fun TaskCompletionPage(
     }
 }
 
+//private fun calculateTotalTime(segments: List<Segment>): java.time.Duration {
+  //  return segments.fold(java.time.Duration.ZERO) { acc, segment -> acc.plus(segment.duration) }
+//}
+
 @Preview
 @Composable
 private fun TaskCompletionPagePreview() {
@@ -237,24 +229,33 @@ private fun TaskCompletionPagePreview() {
                         segmentId = 1L,
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(3600),
-                        null,
-                        Segment.Type.WORK
+                        duration = java.time.Duration.between(
+                            now.minusSeconds(3600),
+                            now.minusSeconds(1800)),
+                        type = Segment.Type.WORK
                     ),
                     Segment(
                         segmentId = 2L,
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(1800),
-                        duration = null,
+                        duration = java.time.Duration.between(
+                            now.minusSeconds(1800),
+                            now.minusSeconds(600)),
                         type = Segment.Type.BREAK
                     ),
                     Segment(
                         segmentId = 3L,
                         taskId = previewTaskId,
                         startTime = now.minusSeconds(600),
-                        duration = null,
+                        duration = java.time.Duration.between(
+                            now.minusSeconds(600),
+                            now),
                         type = Segment.Type.FINISH
                     )
-                )
+                ),
+                workTime = java.time.Duration.ofSeconds(1800),
+                breakTime = java.time.Duration.ofSeconds(1200),
+                totalTime = java.time.Duration.ofSeconds(3600)
             ),
             onBackClick = {},
             onContinueClick = {}

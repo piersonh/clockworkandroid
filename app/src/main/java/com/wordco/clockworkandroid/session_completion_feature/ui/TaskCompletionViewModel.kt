@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.LocalDate
 
 //FIXME
@@ -35,7 +36,10 @@ class TaskCompletionViewModel (
         color = Color.Red,
         estimate = null,
         segments = listOf(),
-        markers = listOf()
+        markers = listOf(),
+        workTime = Duration.ZERO,
+        breakTime = Duration.ZERO,
+        totalTime = Duration.ZERO
     ))
 
     init {
@@ -50,7 +54,10 @@ class TaskCompletionViewModel (
                         color = color,
                         estimate = userEstimate?.toEstimate(),
                         segments = segments,
-                        markers = markers
+                        markers = markers,
+                        workTime = this.workTime,
+                        breakTime = this.breakTime,
+                        totalTime = this.workTime.plus(this.breakTime)
                     )
                 }
             }
