@@ -44,6 +44,7 @@ fun DifficultySlider(
             inactiveTickColor = MaterialTheme.colorScheme.primary,
             thumbColor = MaterialTheme.colorScheme.secondary
         ),
-        onValueChange = onValueChange
+        onValueChange = onValueChange,
+        //modifier = Modifier.padding(horizontal = 24.dp) // to patch the color picker track length
     )
 }

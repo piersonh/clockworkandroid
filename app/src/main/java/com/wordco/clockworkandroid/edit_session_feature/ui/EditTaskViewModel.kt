@@ -11,20 +11,26 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
+import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
+import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.getFieldDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -36,32 +42,61 @@ import java.time.ZoneOffset
 
 class EditTaskViewModel (
     private val taskRepository: TaskRepository,
+    private val profileRepository: ProfileRepository,
     private val taskId: Long
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
     private lateinit var _loadedTask: Task
+    private var _profileId: Long? = null
+
+    private lateinit var _profiles: StateFlow<List<Profile>>
+
+    private lateinit var _fieldDefaults: EditTaskFormUiState
 
 
     init {
         viewModelScope.launch {
-            taskRepository.getTask(taskId).first().run {
-                _loadedTask = this
+            _loadedTask = taskRepository.getTask(taskId).first()
 
-                _uiState.update {
-                    EditTaskUiState.Retrieved(
-                        taskName = name,
-                        colorSliderPos = color.hue() / 360,
-                        difficulty = difficulty.toFloat(),
-                        dueDate = dueDate?.atZone(ZoneId.systemDefault())?.toLocalDate(),
-                        dueTime = dueDate?.run {
-                            atZone(ZoneId.systemDefault())?.toLocalTime()
-                        } ?: LocalTime.MIDNIGHT,
-                        currentModal = null,
-                        estimate = userEstimate?.toEstimate(),
-                        profileName = null, // TODO
-                        profiles = emptyList() // TODO
-                    )
+            // Set defaults when done loading
+            _profiles = profileRepository.getProfiles().run {
+                stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(),
+                    first().also { profiles ->
+                        _fieldDefaults = getFieldDefaults(
+                            _loadedTask.profileId?.let {
+                                id -> profiles.first { it.id == id }
+                            }
+                        )
+
+                        _profileId = _loadedTask.profileId
+
+                        _uiState.update {
+                            EditTaskUiState.Retrieved(
+                                profiles = profiles.map { it.toProfilePickerItem() },
+                                taskName = _loadedTask.name,
+                                profileName = _fieldDefaults.profileName,
+                                colorSliderPos = _loadedTask.color.hue() / 360,
+                                difficulty = _loadedTask.difficulty.toFloat(),
+                                dueDate = _loadedTask.dueDate?.atZone(ZoneId.systemDefault())
+                                    ?.toLocalDate(),
+                                dueTime = _loadedTask.dueDate?.run {
+                                    atZone(ZoneId.systemDefault())?.toLocalTime()
+                                } ?: _fieldDefaults.dueTime,
+                                currentModal = _fieldDefaults.currentModal,
+                                estimate = _loadedTask.userEstimate?.toEstimate(),
+                            )
+                        }
+                    }
+                )
+            }
+
+            // Watch for updates to profiles (probably won't happen)
+            _profiles.collect { profiles ->
+                _uiState.updateIfRetrieved { uiState ->
+                    uiState.copy(profiles = profiles.map { it.toProfilePickerItem() })
                 }
             }
         }
@@ -71,6 +106,44 @@ class EditTaskViewModel (
     fun onTaskNameChange(newName: String) {
         _uiState.updateIfRetrieved { it.copy(taskName = newName) }
     }
+
+    fun onProfileChange(newProfileId: Long?) {
+        if (newProfileId == _profileId) {
+            return
+        }
+
+       _uiState.updateIfRetrieved { uiState ->
+            val oldDefaults = _fieldDefaults
+
+           _profileId = newProfileId
+
+           _fieldDefaults = getFieldDefaults(
+               newProfileId?.let{ _profiles.value.first { it.id == newProfileId } }
+           )
+
+            val profileName = _fieldDefaults.profileName
+
+            val taskName = if (uiState.taskName == oldDefaults.taskName) {
+                _fieldDefaults.taskName
+            } else uiState.taskName
+
+            val colorSliderPos = if (uiState.colorSliderPos == oldDefaults.colorSliderPos) {
+                _fieldDefaults.colorSliderPos
+            } else uiState.colorSliderPos
+
+            val difficulty = if (uiState.difficulty == oldDefaults.difficulty) {
+                _fieldDefaults.difficulty
+            } else uiState.difficulty
+
+            uiState.copy(
+                profileName = profileName,
+                //taskName = taskName,
+                //colorSliderPos = colorSliderPos,
+                difficulty = difficulty,
+            )
+        }
+    }
+
 
     fun onColorSliderChange(newPos: Float) {
         _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
@@ -148,7 +221,7 @@ class EditTaskViewModel (
                             userEstimate,
                             segments = (_loadedTask as CompletedTask).segments,
                             markers = (_loadedTask as CompletedTask).markers,
-                            _loadedTask.profileId,
+                            profileId = _profileId,
                         )
                         is NewTask -> NewTask(
                             taskId,
@@ -157,7 +230,7 @@ class EditTaskViewModel (
                             difficulty,
                             color,
                             userEstimate,
-                            _loadedTask.profileId,
+                            profileId = _profileId,
                         )
                         is StartedTask -> StartedTask(
                             taskId,
@@ -168,7 +241,7 @@ class EditTaskViewModel (
                             userEstimate,
                             segments = (_loadedTask as StartedTask).segments,
                             markers = (_loadedTask as StartedTask).markers,
-                            _loadedTask.profileId,
+                            profileId = _profileId,
                         )
                     }
 
@@ -186,11 +259,13 @@ class EditTaskViewModel (
 
             initializer {
                 val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
+                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
                 val taskId = this[TASK_ID_KEY] as Long
 
                 EditTaskViewModel (
                     taskRepository = taskRepository,
-                    taskId
+                    profileRepository = profileRepository,
+                    taskId = taskId,
                     //savedStateHandle = savedStateHandle
                 )
             }

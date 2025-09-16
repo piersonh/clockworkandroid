@@ -17,15 +17,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
 
 @Composable
 fun ProfilePickerUiItem(
-    profile: ProfilePickerItem,
+    name: String,
+    color: Color,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -42,7 +43,7 @@ fun ProfilePickerUiItem(
         ) {
             Box(
                 modifier = Modifier
-                    .background(color = profile.color)
+                    .background(color = color)
                     .fillMaxHeight()
                     .width(10.dp)
             )
@@ -52,7 +53,7 @@ fun ProfilePickerUiItem(
             )
             {
                 Text(
-                    profile.name,
+                    name,
                     fontFamily = LATO,
                     fontSize = 23.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,

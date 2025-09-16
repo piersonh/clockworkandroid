@@ -296,6 +296,7 @@ fun TabbedScreen(
 
         HorizontalPager(
             state = pagerState,
+            verticalAlignment = Alignment.Top
         ) { page ->
             screens[page].screen()
         }

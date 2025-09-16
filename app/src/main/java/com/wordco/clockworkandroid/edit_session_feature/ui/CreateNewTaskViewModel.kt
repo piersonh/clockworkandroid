@@ -15,11 +15,11 @@ import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
-import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreateTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.getFieldDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,13 +30,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import kotlin.collections.first
-import kotlin.random.Random
 
 
 class CreateNewTaskViewModel (
@@ -44,8 +41,6 @@ class CreateNewTaskViewModel (
     private val profileRepository: ProfileRepository,
     private var profileId: Long?
 ) : ViewModel() {
-
-    private val _rng = Random(System.currentTimeMillis())
 
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
 
@@ -63,8 +58,8 @@ class CreateNewTaskViewModel (
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
                     first().also { profiles ->
-                        _fieldDefaults = getDefaultFields(
-                            profileId?.let{ id -> profiles.first { it.id == id } }
+                        _fieldDefaults = getFieldDefaults(
+                            profileId?.let { id -> profiles.first { it.id == id } }
                         )
 
                         _uiState.update {
@@ -93,26 +88,6 @@ class CreateNewTaskViewModel (
         }
     }
 
-    private fun getDefaultFields(
-        profile: Profile?
-    ) = object : EditTaskFormUiState {
-        override val taskName: String = profile?.let { profile ->
-            // TODO replace this with a truth from the database so that the quantity
-            //  is retained after sessions are deleted or switched profiles
-            "${ profile.name} ${profile.sessions.size + 1}"
-        } ?: ""
-        override val profileName: String? = profile?.name
-        override val colorSliderPos: Float = profile?.color?.hue()?.div(360) ?: _rng.nextFloat()
-        override val difficulty: Float = profile?.defaultDifficulty?.toFloat() ?: 0f
-        override val dueDate: LocalDate? = null
-        override val dueTime: LocalTime? = LocalTime.MIDNIGHT
-        override val currentModal: PickerModal? = null
-        override val estimate: UserEstimate? = UserEstimate(
-            minutes = 15,
-            hours = 0
-        )
-    }
-
 
     fun onTaskNameChange(newName: String) {
         _uiState.updateIfRetrieved { it.copy(taskName = newName) }
@@ -126,8 +101,10 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { uiState ->
             val oldDefaults = _fieldDefaults
 
-            _fieldDefaults = getDefaultFields(
-                profileId?.let{ id -> _profiles.value.first { it.id == newProfileId } }
+            profileId = newProfileId
+
+            _fieldDefaults = getFieldDefaults(
+                newProfileId?.let { _profiles.value.first { it.id == newProfileId } }
             )
 
             val profileName = _fieldDefaults.profileName
@@ -203,7 +180,7 @@ class CreateNewTaskViewModel (
                 taskRepository.insertNewTask(
                     NewTask(
                         taskId = 0,
-                        profileId = null,
+                        profileId = profileId,
                         name = taskName,
                         // 2007-12-03T10:15:30.00Z
                         dueDate = dueDate?.let {

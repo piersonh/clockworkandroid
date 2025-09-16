@@ -71,7 +71,7 @@ fun NavGraphBuilder.editTaskPage(
 
         EditTaskPage(
             onBackClick = onBackClick,
-            editTaskViewModel = editTaskViewModel
+            viewModel = editTaskViewModel
         )
     }
 }

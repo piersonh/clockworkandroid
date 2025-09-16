@@ -1,8 +1,13 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,9 +39,11 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditTaskResult
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.tweenToPage
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -44,24 +51,25 @@ import java.time.LocalTime
 @Composable
 fun EditTaskPage (
     onBackClick: () -> Unit,
-    editTaskViewModel: EditTaskViewModel
+    viewModel: EditTaskViewModel
 ) {
-    val uiState by editTaskViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     EditTaskPage(
         uiState = uiState,
         onBackClick = onBackClick,
-        onTaskNameChange = editTaskViewModel::onTaskNameChange,
-        onColorSliderChange = editTaskViewModel::onColorSliderChange,
-        onDifficultyChange = editTaskViewModel::onDifficultyChange,
-        onShowDatePicker = editTaskViewModel::onShowDatePicker,
-        onDismissDatePicker = editTaskViewModel::onDismissDatePicker,
-        onDueDateChange = editTaskViewModel::onDueDateChange,
-        onShowTimePicker = editTaskViewModel::onShowTimePicker,
-        onDismissTimePicker = editTaskViewModel::onDismissTimePicker,
-        onDueTimeChange = editTaskViewModel::onDueTimeChange,
-        onEstimateChange = editTaskViewModel::onEstimateChange,
-        onEditTaskClick = editTaskViewModel::onEditTaskClick,
+        onTaskNameChange = viewModel::onTaskNameChange,
+        onProfileChange = viewModel::onProfileChange,
+        onColorSliderChange = viewModel::onColorSliderChange,
+        onDifficultyChange = viewModel::onDifficultyChange,
+        onShowDatePicker = viewModel::onShowDatePicker,
+        onDismissDatePicker = viewModel::onDismissDatePicker,
+        onDueDateChange = viewModel::onDueDateChange,
+        onShowTimePicker = viewModel::onShowTimePicker,
+        onDismissTimePicker = viewModel::onDismissTimePicker,
+        onDueTimeChange = viewModel::onDueTimeChange,
+        onEstimateChange = viewModel::onEstimateChange,
+        onSaveClick = viewModel::onEditTaskClick,
     )
 }
 
@@ -71,6 +79,7 @@ private fun EditTaskPage(
     uiState: EditTaskUiState,
     onBackClick: () -> Unit,
     onTaskNameChange: (String) -> Unit,
+    onProfileChange: (Long?) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
     onShowDatePicker: () -> Unit,
@@ -80,11 +89,9 @@ private fun EditTaskPage(
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate) -> Unit,
-    onEditTaskClick: () -> EditTaskResult,
+    onSaveClick: () -> EditTaskResult,
 ) {
-    val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -107,58 +114,21 @@ private fun EditTaskPage(
                 ),
             )
         },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    TextButton(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary
-                        ),
-                        onClick = {
-                            when (onEditTaskClick()) {
-                                EditTaskResult.MissingName -> {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            "Failed to save session: Missing Name"
-                                        )
-                                    }
-                                }
-                                EditTaskResult.Success -> onBackClick()
-                            }
-                        },
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text(
-                            "Save",
-                            fontFamily = LATO,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 25.sp,
-                            modifier = Modifier.padding(
-                                horizontal = 10.dp,
-                                vertical = 5.dp,
-                            )
-                        )
-                    }
-                }
-            }
-        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
+
         when (uiState) {
-            EditTaskUiState.Retrieving -> Text("Loading...")
-            is EditTaskUiState.Retrieved -> EditTaskForm(
+            EditTaskUiState.Retrieving -> Box (
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                Text("Loading...")
+            }
+            is EditTaskUiState.Retrieved ->EditSessionPageRetrieved(
                 uiState = uiState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(innerPadding)
-                    .padding(horizontal = 30.dp, vertical = 20.dp)
-                    .verticalScroll(scrollState),
+                innerPadding = innerPadding,
+                snackbarHostState = snackbarHostState,
+                onBackClick = onBackClick,
+                onProfileChange = onProfileChange,
                 onTaskNameChange = onTaskNameChange,
                 onColorSliderChange = onColorSliderChange,
                 onDifficultyChange = onDifficultyChange,
@@ -169,12 +139,132 @@ private fun EditTaskPage(
                 onDismissTimePicker = onDismissTimePicker,
                 onDueTimeChange = onDueTimeChange,
                 onEstimateChange = onEstimateChange,
-                onShowProfilePicker = {},
+                onSaveClick = onSaveClick,
             )
         }
-
     }
 }
+
+
+
+@Composable
+private fun EditSessionPageRetrieved(
+    uiState: EditTaskUiState.Retrieved,
+    innerPadding: PaddingValues,
+    snackbarHostState: SnackbarHostState,
+    onBackClick: () -> Unit,
+    onProfileChange: (Long?) -> Unit,
+    onTaskNameChange: (String) -> Unit,
+    onColorSliderChange: (Float) -> Unit,
+    onDifficultyChange: (Float) -> Unit,
+    onShowDatePicker: () -> Unit,
+    onDismissDatePicker: () -> Unit,
+    onDueDateChange: (Long?) -> Unit,
+    onShowTimePicker: () -> Unit,
+    onDismissTimePicker: () -> Unit,
+    onDueTimeChange: (LocalTime) -> Unit,
+    onEstimateChange: (UserEstimate) -> Unit,
+    onSaveClick: () -> EditTaskResult,
+) {
+    val scrollState = rememberScrollState()
+    val pagerState = rememberPagerState(
+        initialPage = 1,
+        pageCount = { 2 }
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+    HorizontalPager(
+        state = pagerState,
+        userScrollEnabled = false,
+        verticalAlignment = Alignment.Top,
+    ) { page ->
+        when (page) {
+            1 -> Column {
+                Box(
+                    modifier = Modifier.padding(innerPadding),
+                ) {
+                    EditTaskForm(
+                        uiState = uiState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 30.dp, vertical = 20.dp)
+                            .verticalScroll(scrollState),
+                        onShowProfilePicker = {
+                            coroutineScope.launch {
+                                pagerState.tweenToPage(0)
+                            }
+                        },
+                        onTaskNameChange = onTaskNameChange,
+                        onColorSliderChange = onColorSliderChange,
+                        onDifficultyChange = onDifficultyChange,
+                        onShowDatePicker = onShowDatePicker,
+                        onDismissDatePicker = onDismissDatePicker,
+                        onDueDateChange = onDueDateChange,
+                        onShowTimePicker = onShowTimePicker,
+                        onDismissTimePicker = onDismissTimePicker,
+                        onDueTimeChange = onDueTimeChange,
+                        onEstimateChange = onEstimateChange,
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                BottomAppBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        TextButton(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary
+                            ),
+                            onClick = {
+                                when (onSaveClick()) {
+                                    EditTaskResult.MissingName -> {
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                "Failed to save session: Missing Name"
+                                            )
+                                        }
+                                    }
+                                    EditTaskResult.Success -> onBackClick()
+                                }
+                            },
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(
+                                "Save",
+                                fontFamily = LATO,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 25.sp,
+                                modifier = Modifier.padding(
+                                    horizontal = 10.dp,
+                                    vertical = 5.dp,
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+            0 -> ProfilePicker(
+                profiles = uiState.profiles,
+                modifier = Modifier.padding(innerPadding),
+                onProfileClick = { profileId ->
+                    onProfileChange(profileId)
+                    coroutineScope.launch {
+                        pagerState.tweenToPage(1)
+                    }
+                }
+            )
+        }
+    }
+}
+
+
+
 
 @Preview
 @Composable
@@ -194,6 +284,7 @@ private fun EditTaskPagePreview() {
             ),
             onBackClick = { },
             onTaskNameChange = { },
+            onProfileChange = { },
             onColorSliderChange = { },
             onDifficultyChange = { },
             onShowDatePicker = { },
@@ -203,7 +294,7 @@ private fun EditTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onEditTaskClick = { EditTaskResult.Success }
+            onSaveClick = { EditTaskResult.Success }
         )
     }
 }

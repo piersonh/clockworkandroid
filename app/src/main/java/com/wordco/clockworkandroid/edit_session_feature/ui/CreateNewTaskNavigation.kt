@@ -10,7 +10,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.wordco.clockworkandroid.timer_feature.ui.TimerViewModel
 import kotlinx.serialization.Serializable
 
 // See https://github.com/android/nowinandroid modularized navigation
