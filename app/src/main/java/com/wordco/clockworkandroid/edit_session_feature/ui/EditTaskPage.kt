@@ -287,6 +287,7 @@ private fun EditTaskPagePreview() {
                 estimate = UserEstimate(15, 2),
                 profiles = DummyData.PROFILES.map{ it.toProfilePickerItem() }
             ),
+            initialPage = 0,
             onBackClick = { },
             onTaskNameChange = { },
             onProfileChange = { },
