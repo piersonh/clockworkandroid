@@ -126,7 +126,7 @@ private fun ProfilePickerNoProfiles(
         )
 
 
-        Spacer(modifier = Modifier.weight(0.04f))
+        Spacer(modifier = Modifier.height(80.dp))
 
         Box (
             modifier = Modifier.fillMaxWidth(),
@@ -141,7 +141,7 @@ private fun ProfilePickerNoProfiles(
             )
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -156,9 +156,6 @@ private fun ProfilePickerNoProfiles(
                 lineHeight = 40.sp,
             )
         }
-
-
-        Spacer(modifier = Modifier.weight(0.15f))
     }
 }
 
