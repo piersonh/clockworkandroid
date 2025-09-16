@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.util
+package com.wordco.clockworkandroid.core.ui.util
 
 sealed interface Fallible <out T : Any> {
     data object Success : Fallible<Nothing>

@@ -12,9 +12,10 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
-import com.wordco.clockworkandroid.core.util.getIfType
+import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.EditProfileResult
+import com.wordco.clockworkandroid.core.ui.util.Fallible
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,10 +69,10 @@ class EditProfileViewModel (
     }
 
 
-    fun onSaveClick() : EditProfileResult {
+    fun onSaveClick() : Fallible<SaveProfileError> {
         return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
             if (name.isBlank()) {
-                return EditProfileResult.MissingName
+                return Fallible.Error(SaveProfileError.MISSING_NAME)
             }
 
             viewModelScope.launch {
@@ -85,7 +86,7 @@ class EditProfileViewModel (
                     )
                 )
             }
-            EditProfileResult.Success
+            Fallible.Success
         } ?: error("Can only save if retrieved")
     }
 

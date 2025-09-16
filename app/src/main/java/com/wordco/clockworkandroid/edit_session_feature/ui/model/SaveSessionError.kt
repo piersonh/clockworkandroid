@@ -1,5 +1,5 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui.model
 
-enum class EditSessionError{
+enum class SaveSessionError{
     MISSING_NAME;
 }

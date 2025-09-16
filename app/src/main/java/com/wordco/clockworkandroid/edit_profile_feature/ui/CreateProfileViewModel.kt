@@ -11,7 +11,8 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.CreateProfileResult
+import com.wordco.clockworkandroid.core.ui.util.Fallible
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -44,11 +45,11 @@ class CreateProfileViewModel (
     }
 
 
-    fun onCreateProfileClick() : CreateProfileResult {
+    fun onCreateProfileClick() : Fallible<SaveProfileError> {
         with(_uiState.value) {
 
             if (name.isBlank()) {
-                return CreateProfileResult.MissingName
+                return Fallible.Error(SaveProfileError.MISSING_NAME)
             }
 
             viewModelScope.launch {
@@ -64,7 +65,7 @@ class CreateProfileViewModel (
             }
         }
 
-        return CreateProfileResult.Success
+        return Fallible.Success
     }
 
 

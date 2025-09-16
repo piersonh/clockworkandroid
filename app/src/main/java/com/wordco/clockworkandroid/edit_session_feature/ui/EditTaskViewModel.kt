@@ -16,10 +16,10 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.util.getIfType
+import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.core.util.Fallible
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditSessionError
+import com.wordco.clockworkandroid.core.ui.util.Fallible
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -165,10 +165,10 @@ class EditTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
     }
 
-    fun onEditTaskClick() : Fallible<EditSessionError> {
+    fun onEditTaskClick() : Fallible<SaveSessionError> {
         return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
-                return Fallible.Error(EditSessionError.MISSING_NAME)
+                return Fallible.Error(SaveSessionError.MISSING_NAME)
             }
 
             val name = taskName

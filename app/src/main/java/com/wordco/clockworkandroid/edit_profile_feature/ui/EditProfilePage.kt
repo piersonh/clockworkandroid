@@ -32,8 +32,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.EditProfileResult
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.launch
 
 @Composable
@@ -61,7 +62,7 @@ private fun EditProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onSaveClick: () -> EditProfileResult,
+    onSaveClick: () -> Fallible<SaveProfileError>,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -104,15 +105,15 @@ private fun EditProfilePage(
                             contentColor = MaterialTheme.colorScheme.onSecondary
                         ),
                         onClick = {
-                            when (onSaveClick()) {
-                                EditProfileResult.MissingName -> {
+                            when (onSaveClick().takeIfError()) {
+                                SaveProfileError.MISSING_NAME -> {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save profile: Missing Name"
                                         )
                                     }
                                 }
-                                EditProfileResult.Success -> onBackClick()
+                                null -> onBackClick()
                             }
                         },
                         shape = RoundedCornerShape(10.dp)
@@ -175,7 +176,7 @@ private fun EditProfilePagePreview() {
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onSaveClick = { EditProfileResult.Success},
+            onSaveClick = { Fallible.Success },
         )
     }
 }

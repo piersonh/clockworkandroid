@@ -32,8 +32,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.CreateProfileResult
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.launch
 
 @Composable
@@ -61,7 +62,7 @@ private fun CreateProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onCreateProfileClick: () -> CreateProfileResult,
+    onCreateProfileClick: () -> Fallible<SaveProfileError>,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -104,15 +105,15 @@ private fun CreateProfilePage(
                             contentColor = MaterialTheme.colorScheme.onSecondary
                         ),
                         onClick = {
-                            when (onCreateProfileClick()) {
-                                CreateProfileResult.MissingName -> {
+                            when (onCreateProfileClick().takeIfError()) {
+                                SaveProfileError.MISSING_NAME -> {
                                     scope.launch {
                                         snackbarHostState.showSnackbar(
                                             "Failed to save profile: Missing Name"
                                         )
                                     }
                                 }
-                                CreateProfileResult.Success -> onBackClick()
+                                null -> onBackClick()
                             }
                         },
                         shape = RoundedCornerShape(10.dp)
@@ -168,7 +169,7 @@ private fun CreateProfilePagePreview() {
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onCreateProfileClick = { CreateProfileResult.Success},
+            onCreateProfileClick = { Fallible.Success },
         )
     }
 }

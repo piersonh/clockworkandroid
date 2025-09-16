@@ -38,10 +38,10 @@ import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.util.Fallible
+import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditSessionError
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.tweenToPage
@@ -92,7 +92,7 @@ internal fun EditTaskPage(
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate) -> Unit,
-    onSaveClick: () -> Fallible<EditSessionError>,
+    onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -169,7 +169,7 @@ private fun EditSessionPageRetrieved(
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate) -> Unit,
-    onSaveClick: () -> Fallible<EditSessionError>,
+    onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()
     val pagerState = rememberPagerState(
@@ -228,7 +228,7 @@ private fun EditSessionPageRetrieved(
                             ),
                             onClick = {
                                 when (onSaveClick().takeIfError()) {
-                                    EditSessionError.MISSING_NAME -> {
+                                    SaveSessionError.MISSING_NAME -> {
                                         coroutineScope.launch {
                                             snackbarHostState.showSnackbar(
                                                 "Failed to save session: Missing Name"
