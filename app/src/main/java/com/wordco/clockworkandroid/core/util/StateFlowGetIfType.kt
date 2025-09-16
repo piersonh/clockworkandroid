@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.core.ui.util
+package com.wordco.clockworkandroid.core.util
 
 import kotlinx.coroutines.flow.MutableStateFlow
 

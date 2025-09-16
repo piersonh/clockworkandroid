@@ -12,7 +12,7 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
-import com.wordco.clockworkandroid.core.ui.util.getIfType
+import com.wordco.clockworkandroid.core.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.EditProfileResult
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
