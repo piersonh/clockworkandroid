@@ -10,8 +10,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.Fallible
+import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
