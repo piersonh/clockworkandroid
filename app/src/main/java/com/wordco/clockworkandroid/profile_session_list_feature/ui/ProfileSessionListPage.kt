@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -311,6 +313,14 @@ private fun TodoList(
     onCreateNewSessionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (uiState.todoSessions.isEmpty()) {
+        return EmptyTodoList (
+            uiState = uiState,
+            onCreateNewSessionClick = onCreateNewSessionClick,
+            modifier = modifier,
+        )
+    }
+
     Box(
         modifier = modifier
     ) {
@@ -365,6 +375,82 @@ private fun TodoList(
                         .clickable(onClick = { onSessionClick(session.id) })
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun EmptyTodoList(
+    uiState: ProfileSessionListUiState.Retrieved,
+    onCreateNewSessionClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box (
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 25.dp),
+        ) {
+            Spacer(modifier = Modifier.weight(0.04f))
+
+            Box (
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.checked_box),
+                    contentDescription = "Checked Box",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.height(80.dp),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "You Haven't Made Any Tasks for this Profile",
+                    fontFamily = LATO,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 34.sp,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            TextButton(
+                onClick = onCreateNewSessionClick,
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = uiState.profileColor,
+                    contentColor = listOf(
+                        Color.White,
+                        Color.Black
+                    ).maxBy {
+                        uiState.profileColor.contrastRatioWith(it)
+                    }
+                ),
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier
+                    .height(50.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Create New Session",
+                    fontFamily = LATO,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 25.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(0.15f))
         }
     }
 }
@@ -435,6 +521,30 @@ private fun ProfileSessionListPageRetrievingPreview() {
     ClockworkTheme {
         ProfileSessionListPageRetrieving (
             onBackClick = {},
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit,
+                navigateTo = {}
+            ) },
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ProfileSessionListPageEmptyTodoPreview() {
+    ClockworkTheme {
+        ProfileSessionListPageRetrieved (
+            uiState = ProfileSessionListUiState.Retrieved(
+                profileName = "Preview",
+                profileColor = Color.Yellow,
+                todoSessions = emptyList(),
+                completeSessions = emptyList(),
+            ),
+            onBackClick = {},
+            onEditClick = {},
+            onSessionClick = {},
+            onCreateNewSessionClick = {},
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit,

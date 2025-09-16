@@ -130,7 +130,10 @@ private fun EmptyProfileList(
     onCreateProfileClick: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxHeight(),
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(horizontal = 15.dp)
+        ,
     ) {
         Spacer(modifier = Modifier.weight(0.04f))
 
