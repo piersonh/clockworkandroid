@@ -193,10 +193,6 @@ private fun TaskCompletionPage(
     }
 }
 
-//private fun calculateTotalTime(segments: List<Segment>): java.time.Duration {
-  //  return segments.fold(java.time.Duration.ZERO) { acc, segment -> acc.plus(segment.duration) }
-//}
-
 @Preview
 @Composable
 private fun TaskCompletionPagePreview() {
