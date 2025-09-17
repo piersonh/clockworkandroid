@@ -28,8 +28,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -196,6 +198,9 @@ private fun EditSessionPageRetrieved(
         pageCount = { 2 }
     )
     val coroutineScope = rememberCoroutineScope()
+    var isBottomBarVisible by remember {
+        mutableStateOf(pagerState.targetPage == 1)
+    }
 
     Scaffold(
         title = title,
@@ -204,12 +209,12 @@ private fun EditSessionPageRetrieved(
         bottomBar = {
             // Mimic Horizontal Pager transition
             AnimatedVisibility(
-                visible = pagerState.targetPage == 1,
+                visible = isBottomBarVisible,
                 enter = slideInHorizontally(
-                    initialOffsetX = { it }, animationSpec = tween(300)
+                    initialOffsetX = { it }, animationSpec = tween(280)
                 ),
                 exit = slideOutHorizontally(
-                    targetOffsetX = { it }, animationSpec = tween(300)
+                    targetOffsetX = { it }, animationSpec = tween(280)
                 )
             ) {
                 BottomBar(
@@ -238,6 +243,7 @@ private fun EditSessionPageRetrieved(
                                 .padding(horizontal = 30.dp, vertical = 20.dp)
                                 .verticalScroll(scrollState),
                             onShowProfilePicker = {
+                                isBottomBarVisible = false
                                 coroutineScope.launch {
                                     pagerState.tweenToPage(0)
                                 }
@@ -263,6 +269,7 @@ private fun EditSessionPageRetrieved(
                         coroutineScope.launch {
                             pagerState.tweenToPage(1)
                         }
+                        isBottomBarVisible = true
                     }
                 )
             }
