@@ -153,7 +153,7 @@ private fun TaskCompletionPage(
 
                     val userTime = uiState.estimate?.toDuration()
                     val taskTime = uiState.totalTime
-                    val userAccuracy =  calculateUserAccuracy(taskTime, userTime)
+                    val userAccuracy = calculateEstimateAccuracy(taskTime, userTime)
                     Text (
                         text = "Your accuracy: ${userAccuracy?.toInt()}%",
                         style = TextStyle(fontSize = 26.sp),
@@ -206,7 +206,7 @@ private fun TaskCompletionPage(
 }
 
 @SuppressLint("NewApi")
-private fun calculateUserAccuracy(
+private fun calculateEstimateAccuracy(
     taskTime: java.time.Duration,
     userTime: java.time.Duration?
 ): Float? {
