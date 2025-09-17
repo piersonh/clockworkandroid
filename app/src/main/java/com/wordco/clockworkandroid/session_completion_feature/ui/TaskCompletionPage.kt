@@ -151,14 +151,17 @@ private fun TaskCompletionPage(
 
                     Spacer(modifier = Modifier.weight(0.03f))
 
+                    val userTime = uiState.estimate?.toDuration()
+                    val taskTime = uiState.totalTime
+                    val userAccuracy =  calculateUserAccuracy(taskTime, userTime)
                     Text (
-                        text = "Your accuracy: ",
+                        text = "Your accuracy: ${userAccuracy?.toInt()}%",
                         style = TextStyle(fontSize = 26.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
-
                     )
+
                     Spacer(modifier = Modifier.weight(0.03f))
 
 
@@ -199,6 +202,27 @@ private fun TaskCompletionPage(
                 }
             }
         }
+    }
+}
+
+@SuppressLint("NewApi")
+private fun calculateUserAccuracy(
+    taskTime: java.time.Duration,
+    userTime: java.time.Duration?
+): Float? {
+    if (userTime == null || userTime.isZero || taskTime.isZero) {
+        return null
+    }
+
+    val actualSeconds = taskTime.toSeconds().toFloat()
+    val estimatedSeconds = userTime.toSeconds().toFloat()
+
+    return if (actualSeconds == 0f || estimatedSeconds == 0f) {
+        null
+    } else if (estimatedSeconds >= actualSeconds) {
+        (actualSeconds / estimatedSeconds) * 100f
+    } else {
+        (estimatedSeconds / actualSeconds) * 100f
     }
 }
 
