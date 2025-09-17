@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
 // import androidx.compose.ui.graphics.BlendMode.Companion.Color // This import seems unused and conflicts with androidx.compose.ui.graphics.Color
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +55,7 @@ fun TaskCompletionPage(
     )
 }
 
+@SuppressLint("NewApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TaskCompletionPage(
@@ -94,19 +96,17 @@ private fun TaskCompletionPage(
                 ) {
 
                     Text(
-                        // FIXME
                         text = uiState.name,
                         style = TextStyle(fontSize = 40.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
-
                     Spacer(modifier = Modifier.weight(0.004f))
 
                     Text(
-                        // FIXME
-                        text = " ", //"$calculateTotalTime(uiState.segments)",
+                        text = "${uiState.totalTime.toHours()}h " +
+                                "${uiState.totalTime.toMinutesPart()}m",
                         style = TextStyle(fontSize = 90.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
@@ -114,18 +114,14 @@ private fun TaskCompletionPage(
                     )
                     Spacer(modifier = Modifier.weight(0.03f))
 
+                    val estimateText = if (uiState.estimate != null) {
+                        "${uiState.estimate.hours}h ${uiState.estimate.minutes}m"
+                    } else {
+                        "No estimate provided"
+                    }
                     Text(
-                        text = "You estimated",
+                        text = "You estimated: $estimateText",
                         style = TextStyle(fontSize = 26.sp),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-
-                    // TODO: Print hours/mins
-                    Text(
-                        text = uiState.estimate.toString(),
-                        style = TextStyle(fontSize = 34.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -134,21 +130,34 @@ private fun TaskCompletionPage(
                     Spacer(modifier = Modifier.weight(0.03f))
 
                     Text(
-                        text = "--% overestimate",
+                        text = "Work time: ${uiState.workTime.toHours()}h " +
+                                "${uiState.workTime.toMinutesPart()}m",
                         style = TextStyle(fontSize = 26.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
 
-                    Spacer(modifier = Modifier.weight(0.01f))
+                    Spacer(modifier = Modifier.weight(0.03f))
 
-                    Text(
-                        text = "--% improvement from recent averages",
-                        style = TextStyle(fontSize = 26.sp), maxLines = 2,
+                    Text (
+                        text = "Break time: ${uiState.breakTime.toHours()}h " +
+                                "${uiState.breakTime.toMinutesPart()}m",
+                        style = TextStyle(fontSize = 26.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
+                    )
+
+                    Spacer(modifier = Modifier.weight(0.03f))
+
+                    Text (
+                        text = "Your accuracy: ",
+                        style = TextStyle(fontSize = 26.sp),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier,
+                        color = MaterialTheme.colorScheme.onPrimary
+
                     )
                     Spacer(modifier = Modifier.weight(0.03f))
 
@@ -205,7 +214,7 @@ private fun TaskCompletionPagePreview() {
                 dueDate = LocalDate.now(),
                 difficulty = 3f,
                 color = Color.Red,
-                estimate = UserEstimate(60, 1),
+                estimate = UserEstimate(6, 1),
                 markers = listOf(
                     Marker(
                         markerId = 1L,
