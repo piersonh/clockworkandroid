@@ -36,9 +36,4 @@ sealed interface TimerUiState {
         override val taskName: String,
         override val elapsedSeconds: Int
     ) : Active
-
-    data class Finished (
-        override val taskName: String,
-        override val elapsedSeconds: Int
-    ) : Retrieved
 }

@@ -39,7 +39,7 @@ class TimerService() : Service() {
 
 
     private enum class State {
-        INIT, DORMANT, PREPARING, RUNNING, PAUSED, CLOSING, FINISHED
+        INIT, DORMANT, PREPARING, RUNNING, PAUSED, CLOSING
     }
 
     private val _internalState = MutableStateFlow(State.INIT)
@@ -160,7 +160,6 @@ class TimerService() : Service() {
                     )
                     StartedTask.Status.RUNNING -> { setRunning() }
                     StartedTask.Status.PAUSED -> { setPaused() }
-                    StartedTask.Status.FINISHED -> { setFinished() }
                 }
             } ?: _internalState.update { State.DORMANT }
         }
@@ -189,11 +188,6 @@ class TimerService() : Service() {
                         elapsedBreakMinutes = breakTime
                     )
                     State.PAUSED -> TimerState.Paused(
-                        task = loadedTask!!,
-                        elapsedWorkSeconds = workTime,
-                        elapsedBreakMinutes = breakTime
-                    )
-                    State.FINISHED -> TimerState.Finished(
                         task = loadedTask!!,
                         elapsedWorkSeconds = workTime,
                         elapsedBreakMinutes = breakTime
@@ -306,23 +300,12 @@ class TimerService() : Service() {
         notificationManager.cancelNotification()
     }
 
-    private fun setFinished() {
-        if (_loadedTask.value == null) {
-            error("Attempted to enter invalid state: Finished without a loaded session")
-        }
-        _internalState.update { State.FINISHED }
-
-        cancelIncrementer()
-        notificationManager.cancelNotification()
-    }
-
     fun start(taskId: Long) {
         when (_internalState.value) {
             State.DORMANT -> prepareAndStart(taskId)
             State.INIT,
             State.PREPARING,
-            State.CLOSING,
-            State.FINISHED -> error(
+            State.CLOSING -> error(
                 "timer.start() must not be called in ${_state.value}"
             )
             State.PAUSED,
@@ -400,8 +383,7 @@ class TimerService() : Service() {
             State.DORMANT,
             State.PREPARING,
             State.RUNNING,
-            State.CLOSING,
-            State.FINISHED-> error("timer.resume() must not be called in ${_state.value}")
+            State.CLOSING -> error("timer.resume() must not be called in ${_state.value}")
             State.PAUSED -> {}
         }
 
@@ -419,8 +401,7 @@ class TimerService() : Service() {
             State.DORMANT,
             State.PREPARING,
             State.PAUSED,
-            State.CLOSING,
-            State.FINISHED -> error("timer.pause() must not be called in ${_state.value}")
+            State.CLOSING -> error("timer.pause() must not be called in ${_state.value}")
             State.RUNNING -> {}
         }
 
@@ -437,8 +418,7 @@ class TimerService() : Service() {
             State.INIT,
             State.DORMANT,
             State.PREPARING,
-            State.CLOSING,
-            State.FINISHED -> error(
+            State.CLOSING -> error(
                 "timer.suspend() must not be called in ${_state.value}"
             )
             State.RUNNING,
@@ -462,40 +442,59 @@ class TimerService() : Service() {
             State.INIT,
             State.DORMANT,
             State.PREPARING,
-            State.CLOSING,
-            State.FINISHED -> error(
+            State.CLOSING -> error(
                 "timer.finish() must not be called in ${_state.value}"
             )
             State.RUNNING,
             State.PAUSED -> { }
         }
 
-        setFinished()
+        setSuspended()
 
         coroutineScope.launch {
-            _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.FINISH)
+            _loadedTask.value!!.complete()
         }
 
-        finishAndSave()
+        clearTask()
     }
 
-    //FIXME
-    private fun finishAndSave () {
-        coroutineScope.launch {
-            val currentActiveTask: StartedTask? = _loadedTask.value
-            if (currentActiveTask != null) {
-                val newCompletedTask = CompletedTask(
-                    currentActiveTask.taskId,
-                    currentActiveTask.name,
-                    currentActiveTask.dueDate,
-                    currentActiveTask.difficulty,
-                    currentActiveTask.color,
-                    currentActiveTask.userEstimate,
-                    currentActiveTask.segments,
-                    currentActiveTask.markers
-                )
-                taskRepository.insertTask(newCompletedTask)
-            }
+
+
+    private suspend fun StartedTask.complete() {
+        val now = Instant.now()
+        val lastSegment = segments.last().run {
+            copy(duration = Duration.between(startTime, now))
         }
+        val newSegment = Segment(
+            segmentId = 0,
+            taskId = taskId,
+            startTime = now,
+            duration = null,
+            type = type
+        )
+        taskRepository.updateSegmentAndInsertNew(
+            existing = lastSegment,
+            new = newSegment
+        )
     }
+
+    /*    private fun finishAndSave () {
+//        coroutineScope.launch {
+//            val currentActiveTask: StartedTask? = _loadedTask.value
+//            if (currentActiveTask != null) {
+//                val newCompletedTask = CompletedTask(
+//                    currentActiveTask.taskId,
+//                    currentActiveTask.name,
+//                    currentActiveTask.dueDate,
+//                    currentActiveTask.difficulty,
+//                    currentActiveTask.color,
+//                    currentActiveTask.userEstimate,
+//                    currentActiveTask.segments,
+//                    currentActiveTask.markers
+//                )
+//                taskRepository.insertTask(newCompletedTask)
+//            }
+//        }
+//    }
+*/
 }
