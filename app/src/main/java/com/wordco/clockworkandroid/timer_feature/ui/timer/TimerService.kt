@@ -465,13 +465,7 @@ class TimerService() : Service() {
         val lastSegment = segments.last().run {
             copy(duration = Duration.between(startTime, now))
         }
-        val newSegment = Segment(
-            segmentId = 0,
-            taskId = taskId,
-            startTime = now,
-            duration = null,
-            type = type
-        )
+
         taskRepository.updateSegmentAndInsertNew(
             existing = lastSegment,
             new = newSegment
