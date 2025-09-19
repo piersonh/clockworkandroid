@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
-// import androidx.compose.ui.graphics.BlendMode.Companion.Color // This import seems unused and conflicts with androidx.compose.ui.graphics.Color
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
