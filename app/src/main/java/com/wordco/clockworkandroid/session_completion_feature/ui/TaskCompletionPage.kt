@@ -46,7 +46,6 @@ fun TaskCompletionPage(
 ) {
     val uiState = taskCompletionViewModel.uiState.collectAsStateWithLifecycle()
 
-    //FIXME
     TaskCompletionPage(
         uiState = uiState as TaskCompletionUiState,
         onBackClick = onBackClick,

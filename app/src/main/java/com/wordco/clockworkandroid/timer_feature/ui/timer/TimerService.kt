@@ -313,6 +313,7 @@ class TimerService() : Service() {
         _internalState.update { State.FINISHED }
 
         cancelIncrementer()
+        notificationManager.cancelNotification()
     }
 
     fun start(taskId: Long) {
@@ -473,6 +474,28 @@ class TimerService() : Service() {
 
         coroutineScope.launch {
             _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.FINISH)
+        }
+
+        finishAndSave()
+    }
+
+    //FIXME
+    private fun finishAndSave () {
+        coroutineScope.launch {
+            val currentActiveTask: StartedTask? = _loadedTask.value
+            if (currentActiveTask != null) {
+                val newCompletedTask = CompletedTask(
+                    currentActiveTask.taskId,
+                    currentActiveTask.name,
+                    currentActiveTask.dueDate,
+                    currentActiveTask.difficulty,
+                    currentActiveTask.color,
+                    currentActiveTask.userEstimate,
+                    currentActiveTask.segments,
+                    currentActiveTask.markers
+                )
+                taskRepository.insertTask(newCompletedTask)
+            }
         }
     }
 }
