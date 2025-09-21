@@ -94,6 +94,6 @@ class TaskRepositoryImpl (
     }
 
     override suspend fun insertMarker(marker: Marker) {
-        TODO("Not yet implemented")
+        taskDao.insertMarker(marker.toMarkerEntity())
     }
 }

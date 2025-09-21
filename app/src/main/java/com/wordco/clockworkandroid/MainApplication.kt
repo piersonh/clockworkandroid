@@ -16,7 +16,7 @@ class MainApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appContainer = FakeContainer(this)
+        appContainer = ProductionContainer(this)
         taskRepository = appContainer.sessionRepository
         profileRepository = appContainer.profileRepository
         timer = appContainer.timer
