@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.core.domain.util
 
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -227,6 +228,40 @@ class FakeSessionRepository(
                         )
                         is StartedTask -> session.copy(
                             segments = newSegments
+                        )
+                    }
+                } else {
+                    session
+                }
+            }
+        }
+    }
+
+    override suspend fun insertMarker(marker: Marker) {
+        if (marker.markerId != 0L) {
+            error("new database entries must have an id of 0")
+        }
+
+        _sessions.update { sessions ->
+            val newId = sessions.maxOfOrNull { session ->
+                (session as? Task.HasExecutionData)?.markers?.maxOfOrNull {
+                    it.markerId
+                } ?: 0
+            }?.plus(1) ?: 1
+
+            sessions.map { session ->
+                if (session.taskId == marker.taskId) {
+                    when (session) {
+                        is NewTask -> error("Sessions must be started or completed to have markers")
+
+                        is CompletedTask -> session.copy(
+                            markers = session.markers
+                                .plus(marker.copy(markerId = newId))
+                        )
+
+                        is StartedTask -> session.copy(
+                            markers = session.markers
+                                .plus(marker.copy(markerId = newId))
                         )
                     }
                 } else {
