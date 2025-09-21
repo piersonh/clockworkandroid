@@ -33,6 +33,5 @@ interface TaskRepository {
 
     suspend fun updateSegment(segment: Segment)
 
-
     suspend fun updateSegmentAndInsertNew(existing: Segment, new: Segment)
 }
