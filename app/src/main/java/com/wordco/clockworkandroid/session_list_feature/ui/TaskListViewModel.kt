@@ -65,7 +65,7 @@ class TaskListViewModel(
                 }.map { task -> (task as StartedTask).toSuspendedTaskListItem() }
 
                 val finishedTasks = tasks.filter {
-                    it is StartedTask && it.status() == StartedTask.Status.FINISHED
+                    it is CompletedTask
                 }.map { task -> (task as CompletedTask).toCompletedTaskListItem() }
 
                 when (timerState) {
@@ -88,13 +88,6 @@ class TaskListViewModel(
                                 elapsedWorkSeconds = timerState.elapsedWorkSeconds,
                                 elapsedBreakMinutes = timerState.elapsedBreakMinutes,
                             ),
-                            finishedTasks = finishedTasks,
-                        )
-                    }
-                    is TimerState.Finished -> {
-                        TaskListUiState.TimerDormant(
-                            newTasks = newTasks,
-                            suspendedTasks = suspendedTasks,
                             finishedTasks = finishedTasks,
                         )
                     }
