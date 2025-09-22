@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_list_feature.ui.composables
+package com.wordco.clockworkandroid.profile_session_list_feature.ui.elements
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,12 +22,12 @@ import com.wordco.clockworkandroid.core.ui.composables.ClockImage
 import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.session_list_feature.ui.model.CompletedTaskListItem
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.CompletedSessionListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.util.asHHMM
 
 @Composable
-fun CompletedTaskUIListItem(
-    task: CompletedTaskListItem,
+fun CompletedSessionUiListItem(
+    session: CompletedSessionListItem,
     modifier: Modifier = Modifier
 ) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -36,7 +36,7 @@ fun CompletedTaskUIListItem(
 ) {
     Box(
         modifier = Modifier
-            .background(color = task.color)
+            .background(color = session.color)
             .fillMaxHeight()
             .width(10.dp)
     )
@@ -46,7 +46,7 @@ fun CompletedTaskUIListItem(
     )
     {
         Text(
-            task.name,
+            session.name,
             fontFamily = LATO,
             fontSize = 23.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -78,7 +78,7 @@ fun CompletedTaskUIListItem(
         {
             ClockImage()
             Text(
-                task.workTime.asHHMM(),
+                session.workTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -86,7 +86,7 @@ fun CompletedTaskUIListItem(
             )
             MugImage()
             Text(
-                task.breakTime.asHHMM(),
+                session.breakTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
