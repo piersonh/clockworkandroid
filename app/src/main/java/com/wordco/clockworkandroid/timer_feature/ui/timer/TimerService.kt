@@ -124,6 +124,15 @@ class TimerService() : Service() {
                     breakTime.toMinutes().toInt()
                 }
             }
+            //FIXME
+            Segment.Type.FINISH -> {
+                _elapsedWorkSeconds.update {
+                    workTime.seconds.toInt()
+                }
+                _elapsedBreakMinutes.update {
+                    breakTime.toMinutes().toInt()
+                }
+            }
         }
     }
 
@@ -427,4 +436,68 @@ class TimerService() : Service() {
             prepareAndStart(replacement)
         } ?: clearTask()
     }
+
+    //FIXME
+    fun finish() {
+        when (_internalState.value) {
+            State.INIT,
+            State.DORMANT,
+            State.PREPARING,
+            State.CLOSING -> error(
+                "timer.finish() must not be called in ${_state.value}"
+            )
+            State.RUNNING,
+            State.PAUSED -> { }
+        }
+
+        setSuspended()
+
+        clearTask()
+
+        coroutineScope.launch {
+            _loadedTask.value!!.complete()
+        }
+    }
+
+    private suspend fun StartedTask.complete() {
+        val now = Instant.now()
+        val lastSegment = segments.last().run {
+            copy(duration = Duration.between(startTime, now))
+        }
+
+        val task = CompletedTask(
+            taskId = taskId,
+            //profileId = profileId,
+            name = name,
+            dueDate = dueDate,
+            difficulty = difficulty,
+            color = color,
+            userEstimate = userEstimate,
+            segments = emptyList(), // The database doesn't use this
+            markers = emptyList(),
+        )
+
+        taskRepository.updateSegment(lastSegment)
+        taskRepository.updateTask(task)
+    }
+
+    /*    private fun finishAndSave () {
+//        coroutineScope.launch {
+//            val currentActiveTask: StartedTask? = _loadedTask.value
+//            if (currentActiveTask != null) {
+//                val newCompletedTask = CompletedTask(
+//                    currentActiveTask.taskId,
+//                    currentActiveTask.name,
+//                    currentActiveTask.dueDate,
+//                    currentActiveTask.difficulty,
+//                    currentActiveTask.color,
+//                    currentActiveTask.userEstimate,
+//                    currentActiveTask.segments,
+//                    currentActiveTask.markers
+//                )
+//                taskRepository.insertTask(newCompletedTask)
+//            }
+//        }
+//    }
+*/
 }

@@ -77,6 +77,7 @@ fun TimerControls(
             onFinishClick,
             uiState.isPreparing
         )
+        is TimerUiState.Finished -> {}
     }
 }
 

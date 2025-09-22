@@ -12,4 +12,6 @@ interface Timer {
     fun pause()
 
     fun suspend(replaceWith: Long? = null)
+
+    fun finish()
 }

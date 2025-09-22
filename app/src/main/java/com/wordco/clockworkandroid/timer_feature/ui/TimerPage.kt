@@ -50,7 +50,8 @@ fun TimerPage(
     // See https://developer.android.com/topic/libraries/architecture/viewmodel/viewmodel-factories#jetpack-compose
     timerViewModel: TimerViewModel,// = viewModel(factory = TimerViewModel.Factory),
     onBackClick: () -> Unit,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    onFinishClick: () -> Unit
 ) {
     val uiState by timerViewModel.uiState.collectAsStateWithLifecycle()
 

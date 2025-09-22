@@ -62,6 +62,8 @@ class TimerViewModel (
                     )
                 }
 
+                // if (task is CompletedTask){ }
+
                 val task = task as StartedTask
 
                 when (timerState) {
@@ -133,7 +135,7 @@ class TimerViewModel (
     }
 
     fun finish() {
-
+        timer.finish()
     }
 
 

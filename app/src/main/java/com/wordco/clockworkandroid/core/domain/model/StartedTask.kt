@@ -29,7 +29,7 @@ data class StartedTask (
     }
 
     enum class Status {
-        RUNNING, PAUSED, SUSPENDED,
+        RUNNING, PAUSED, SUSPENDED
     }
 
     fun status() : Status {
@@ -37,6 +37,7 @@ data class StartedTask (
             Segment.Type.WORK -> Status.RUNNING
             Segment.Type.BREAK -> Status.PAUSED
             Segment.Type.SUSPEND -> Status.SUSPENDED
+            Segment.Type.FINISH -> Status.SUSPENDED
         }
     }
 }
