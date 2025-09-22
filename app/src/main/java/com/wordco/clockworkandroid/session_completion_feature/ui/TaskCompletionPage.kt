@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,10 +45,10 @@ fun TaskCompletionPage(
     onContinueClick: () -> Unit,
     taskCompletionViewModel: TaskCompletionViewModel
 ) {
-    val uiState = taskCompletionViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by taskCompletionViewModel.uiState.collectAsStateWithLifecycle()
 
     TaskCompletionPage(
-        uiState = uiState as TaskCompletionUiState,
+        uiState = uiState,
         onBackClick = onBackClick,
         onContinueClick = onContinueClick
     )

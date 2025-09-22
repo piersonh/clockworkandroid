@@ -64,7 +64,10 @@ fun TimerPage(
         onSuspendClick = timerViewModel::suspendTimer,
         onResumeClick = timerViewModel::resumeTimer,
         onMarkClick = timerViewModel::addMark,
-        onFinishClick = timerViewModel::finish,
+        onFinishClick = {
+            timerViewModel.finish()
+            onFinishClick()
+        },
     )
 }
 

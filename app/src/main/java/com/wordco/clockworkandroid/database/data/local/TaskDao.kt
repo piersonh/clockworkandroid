@@ -59,7 +59,8 @@ interface TaskDao {
             JOIN
                 LastSegment LS ON T.taskId = LS.taskID
             WHERE
-                LS.rn = 1
+                T.status = 1
+                AND LS.rn = 1
                 AND LS.type IN (0,1)
         )
     """)
@@ -82,7 +83,8 @@ interface TaskDao {
         JOIN
             LastSegment LS ON T.taskId = LS.taskID
         WHERE
-            LS.rn = 1
+            T.status = 1
+            AND LS.rn = 1
             AND LS.type IN (0,1)
         LIMIT 1
     """)

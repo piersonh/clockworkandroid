@@ -11,7 +11,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.toEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

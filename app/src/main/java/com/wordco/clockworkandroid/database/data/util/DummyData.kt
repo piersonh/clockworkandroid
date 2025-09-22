@@ -130,7 +130,8 @@ object DummyData {
                     startTime = Instant.parse("2025-04-18T09:30:00Z"),
                     label = "Research Phase"
                 )
-            )
+            ),
+            profileId = null,
         )
     )
 

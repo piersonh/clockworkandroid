@@ -452,10 +452,12 @@ class TimerService() : Service() {
 
         setSuspended()
 
+        val task = _loadedTask.value!!
+
         clearTask()
 
         coroutineScope.launch {
-            _loadedTask.value!!.complete()
+            task.complete()
         }
     }
 
@@ -467,7 +469,7 @@ class TimerService() : Service() {
 
         val task = CompletedTask(
             taskId = taskId,
-            //profileId = profileId,
+            profileId = profileId,
             name = name,
             dueDate = dueDate,
             difficulty = difficulty,
