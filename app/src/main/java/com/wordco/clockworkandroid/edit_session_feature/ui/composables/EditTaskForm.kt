@@ -103,6 +103,18 @@ fun EditTaskForm(
                         letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                     )
                 )
+            },
+            trailingIcon = {
+                if (uiState.taskName.isNotEmpty()) {
+                    Icon(
+                        Icons.Default.Clear,
+                        contentDescription = "Clear current name",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.combinedClickable(
+                            onClick = { onTaskNameChange("") }
+                        )
+                    )
+                }
             }
         )
 
