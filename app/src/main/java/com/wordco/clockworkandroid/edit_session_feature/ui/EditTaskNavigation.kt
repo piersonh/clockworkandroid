@@ -1,5 +1,8 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.navigation.NavController
@@ -15,7 +18,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EditTaskRoute(val id: Long)
 
-fun NavController.navigateToEdit(
+fun NavController.navigateToEditSession(
     taskId: Long,
     navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
 ) {
@@ -31,7 +34,28 @@ fun NavController.navigateToEdit(
 fun NavGraphBuilder.editTaskPage(
     onBackClick: () -> Unit
 ) {
-    composable<EditTaskRoute> {
+    composable<EditTaskRoute>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it }, animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it }, animationSpec = tween(300)
+            )
+        }
+    ) {
         entry ->
         val taskId = entry.toRoute<EditTaskRoute>().id
 
@@ -47,7 +71,7 @@ fun NavGraphBuilder.editTaskPage(
 
         EditTaskPage(
             onBackClick = onBackClick,
-            editTaskViewModel = editTaskViewModel
+            viewModel = editTaskViewModel
         )
     }
 }

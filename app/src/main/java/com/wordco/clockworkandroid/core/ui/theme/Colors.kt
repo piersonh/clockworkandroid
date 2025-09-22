@@ -11,6 +11,10 @@ internal val lightColorPalette = lightColorScheme(
     onPrimaryContainer = Color(0xFF383838),
     secondary = Color(0xFF7633D9),
     onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFF8d6ed4),
+    onSecondaryContainer = Color(0xFFf6f5ff),
+    surfaceVariant = Color(0xFFf3edf7),
+    background = Color(0xFFfef7ff)
 )
 
 internal val darkColorPalette = darkColorScheme(
@@ -20,5 +24,9 @@ internal val darkColorPalette = darkColorScheme(
     onPrimaryContainer = Color(0xFFFFFFFF),
     secondary = Color(0xFF7633D9),
     onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFF8d6ed4),
+    onSecondaryContainer = Color(0xFFf6f5ff),
+    surfaceVariant = Color(0xFF211f26),
+    background = Color(0xFF141218)
 )
 

@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.core.domain.repository
 
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
@@ -23,6 +24,8 @@ interface TaskRepository {
 
     fun getTasks() : Flow<List<Task>>
 
+    fun getSessionsForProfile(profileId: Long) : Flow<List<Task>>
+
     suspend fun hasActiveTask() : Boolean
 
     suspend fun getActiveTask() : Flow<StartedTask>?
@@ -31,6 +34,7 @@ interface TaskRepository {
 
     suspend fun updateSegment(segment: Segment)
 
-
     suspend fun updateSegmentAndInsertNew(existing: Segment, new: Segment)
+
+    suspend fun insertMarker(marker: Marker)
 }

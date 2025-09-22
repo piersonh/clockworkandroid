@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.database.data.repository
 
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -15,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class TaskRepositoryImpl (
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
 ) : TaskRepository {
     override suspend fun insertTask(task: Task) {
         taskDao.insertTask(task.toTaskEntity())
@@ -56,6 +57,12 @@ class TaskRepositoryImpl (
             }
     }
 
+    override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
+        return taskDao.getSessionsForProfile(profileId).map { taskList ->
+            taskList.map { it.toTask() }
+        }
+    }
+
     override suspend fun hasActiveTask(): Boolean {
         return taskDao.hasActiveTask()
     }
@@ -84,5 +91,9 @@ class TaskRepositoryImpl (
             existing = existing.toSegmentEntity(),
             new = new.toSegmentEntity()
         )
+    }
+
+    override suspend fun insertMarker(marker: Marker) {
+        taskDao.insertMarker(marker.toMarkerEntity())
     }
 }

@@ -1,25 +1,30 @@
 package com.wordco.clockworkandroid.timer_feature.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -33,6 +38,10 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimeDisplay
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimerControls
+import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
+import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +64,10 @@ fun TimerPage(
         onSuspendClick = timerViewModel::suspendTimer,
         onResumeClick = timerViewModel::resumeTimer,
         onMarkClick = timerViewModel::addMark,
-        onFinishClick = timerViewModel::finish,
+        onFinishClick = {
+            timerViewModel.finish()
+            onFinishClick()
+        },
     )
 }
 
@@ -69,28 +81,33 @@ private fun TimerPage(
     onBreakClick: () -> Unit,
     onSuspendClick: () -> Unit,
     onResumeClick: () -> Unit,
-    onMarkClick: () -> Unit,
+    onMarkClick: () -> String,
     onFinishClick: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         topBar = {
             TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                ),
                 title = {
-                    Row(modifier = Modifier.padding(end = 10.dp)) {
-                        IconButton(onClick = onBackClick) {
-                            BackImage()
-                        }
-
-                        Spacer(Modifier.weight(1f))
-                        if (uiState is TimerUiState.Shelved) {
+                    Text(
+                        "Session Timer",
+                        fontFamily = LATO,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        BackImage()
+                    }
+                },
+                actions = {
+                    if (uiState is TimerUiState.Shelved) {
+                        TextButton(
+                            onClick = onEditClick
+                        ) {
                             Text(
-                                modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                                    .clickable(onClick = onEditClick),
                                 text = "Edit",
                                 style = TextStyle(fontSize = 25.sp),
                                 textAlign = TextAlign.Right,
@@ -99,9 +116,30 @@ private fun TimerPage(
                             )
                         }
                     }
-                }
+                },
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
             )
-        }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .padding(30.dp)
+                ) {
+                    Text(
+                        text = data.visuals.message,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontFamily = LATO,
+                        fontSize = 24.sp,
+                    )
+                }
+            }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -144,7 +182,22 @@ private fun TimerPage(
                             onBreakClick,
                             onSuspendClick,
                             onResumeClick,
-                            onMarkClick,
+                            onMarkClick = {
+                                val name = onMarkClick()
+
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(
+                                        uiState.elapsedSeconds.let {
+                                            String.format(
+                                                Locale.getDefault(),
+                                                "Added %s at %02d:%02d",
+                                                name, it.toHours(), it.toMinutesInHour()
+                                            )
+                                        }
+                                    )
+                                }
+                            },
                             onFinishClick,
                         )
                     }
@@ -172,7 +225,7 @@ private fun SuspendedTimerPagePreview() {
             onBreakClick = {},
             onSuspendClick = {},
             onResumeClick = {},
-            onMarkClick = {},
+            onMarkClick = {""},
             onFinishClick = {}
         )
     }

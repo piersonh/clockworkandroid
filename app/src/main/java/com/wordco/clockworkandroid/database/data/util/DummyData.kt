@@ -1,6 +1,8 @@
 package com.wordco.clockworkandroid.database.data.util
 
 import androidx.compose.ui.graphics.Color
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -32,7 +34,8 @@ object DummyData {
                     type = Segment.Type.SUSPEND
                 )
             ),
-            emptyList()
+            emptyList(),
+            null,
         ),
         NewTask(
             2,
@@ -40,6 +43,7 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             2,
             Color.Companion.Blue,
+            null,
             null
         ),
         NewTask(
@@ -48,7 +52,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.White,
-            null
+            null,
+            null,
         ),
         NewTask(
             4,
@@ -56,7 +61,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Cyan,
-            null
+            null,
+            null,
         ),
         NewTask(
             5,
@@ -64,7 +70,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Black,
-            null
+            null,
+            null,
         ),
         NewTask(
             6,
@@ -72,7 +79,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Red,
-            null
+            null,
+            null,
         ),
         NewTask(
             7,
@@ -80,7 +88,8 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Magenta,
-            null
+            null,
+            null,
         ),
         NewTask(
             8,
@@ -88,8 +97,42 @@ object DummyData {
             Instant.parse("2025-04-17T18:29:04Z"),
             3,
             Color.Companion.Yellow,
-            null
+            null,
+            null,
         ),
+        CompletedTask(
+            taskId = 9,
+            name = "Finalized Report",
+            dueDate = Instant.parse("2025-04-18T10:00:00Z"),
+            difficulty = 4,
+            color = Color.Companion.DarkGray,
+            userEstimate = Duration.ofHours(5),
+            segments = listOf(
+                Segment(
+                    segmentId = 1,
+                    taskId = 9,
+                    startTime = Instant.parse("2025-04-18T09:00:00Z"),
+                    duration = Duration.ofHours(2),
+                    type = Segment.Type.WORK
+                ),
+                Segment(
+                    segmentId = 2,
+                    taskId = 9,
+                    startTime = Instant.parse("2025-04-18T11:00:00Z"),
+                    duration = null,
+                    type = Segment.Type.FINISH
+                )
+            ),
+            markers = listOf(
+                Marker(
+                    markerId = 1,
+                    taskId = 9,
+                    startTime = Instant.parse("2025-04-18T09:30:00Z"),
+                    label = "Research Phase"
+                )
+            ),
+            profileId = null,
+        )
     )
 
     val RELOADRUNNING = listOf(
@@ -109,7 +152,8 @@ object DummyData {
                     type = Segment.Type.BREAK
                 )
             ),
-            markers = emptyList()
+            markers = emptyList(),
+            null,
         )
     )
 }

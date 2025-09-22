@@ -360,13 +360,14 @@ class TimerService() : Service() {
 
         val task = StartedTask(
             taskId = taskId,
+            profileId = profileId,
             name = name,
             dueDate = dueDate,
             difficulty = difficulty,
             color = color,
             userEstimate = userEstimate,
             segments = listOf(segment),
-            markers = emptyList()
+            markers = emptyList(),
         )
 
         taskRepository.insertSegment(segment)
@@ -451,12 +452,13 @@ class TimerService() : Service() {
 
         setSuspended()
 
-        coroutineScope.launch {
-            _loadedTask.value!!.complete()
-        }
+        val task = _loadedTask.value!!
 
         clearTask()
 
+        coroutineScope.launch {
+            task.complete()
+        }
     }
 
     private suspend fun StartedTask.complete() {
@@ -467,7 +469,7 @@ class TimerService() : Service() {
 
         val task = CompletedTask(
             taskId = taskId,
-            //profileId = profileId,
+            profileId = profileId,
             name = name,
             dueDate = dueDate,
             difficulty = difficulty,

@@ -11,7 +11,7 @@ fun NewTask.toNewTaskListItem() : NewTaskListItem {
         dueDate = dueDate,
         difficulty = difficulty,
         color = color,
-        userEstimate = Duration.ZERO,
+        userEstimate = userEstimate,
         appEstimate = Duration.ZERO
     )
 }

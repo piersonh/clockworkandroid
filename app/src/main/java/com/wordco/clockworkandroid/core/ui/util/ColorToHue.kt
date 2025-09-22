@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_session_feature.ui.util
+package com.wordco.clockworkandroid.core.ui.util
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb

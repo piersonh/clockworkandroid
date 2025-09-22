@@ -1,27 +1,56 @@
 package com.wordco.clockworkandroid
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.wordco.clockworkandroid.core.ui.composables.NavBar
+import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
+import com.wordco.clockworkandroid.edit_profile_feature.ui.createProfilePage
+import com.wordco.clockworkandroid.edit_profile_feature.ui.editProfilePage
+import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
+import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
 import com.wordco.clockworkandroid.edit_session_feature.ui.createNewTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.editTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTask
-import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEdit
+import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEditSession
+import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
+import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
 import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToCompletion
 import com.wordco.clockworkandroid.session_completion_feature.ui.taskCompletionPage
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
+import com.wordco.clockworkandroid.timer_feature.ui.TimerRoute
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
 import com.wordco.clockworkandroid.timer_feature.ui.timerPage
 
+val topLevelDestinations = listOf(
+    TopLevelDestination(
+        route = Unit,
+        icon = R.drawable.user,
+        label = "Statistics",
+    ),
+    TopLevelDestination(
+        route = TaskListRoute,
+        icon = R.drawable.todo_list,
+        label = "To-Do List",
+    ),
+    TopLevelDestination(
+        route = ProfileListRoute,
+        icon = R.drawable.fanned_cards,
+        label = "Profiles",
+    ),
+
+)
+
 @Composable
 fun NavHost(
-    onShowSnackbar: suspend (String, String?) -> Boolean,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
@@ -30,27 +59,46 @@ fun NavHost(
         startDestination = TaskListRoute,
         modifier = modifier,
         enterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { it }, animationSpec = tween(300)
+            fadeIn(
+                initialAlpha = 1f
             )
         },
         exitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { -it }, animationSpec = tween(300)
-            )
-        },
-        popExitTransition = {
-            slideOutHorizontally(
-                targetOffsetX = { it }, animationSpec = tween(300)
-            )
-        },
-        popEnterTransition = {
-            slideInHorizontally(
-                initialOffsetX = { -it }, animationSpec = tween(300)
+            fadeOut(
+                targetAlpha = 1f
             )
         },
     ) {
+        val navBar = @Composable { currentDestination: Any ->
+            NavBar(
+                items = topLevelDestinations,
+                currentDestination = currentDestination,
+                navigateTo = { route ->
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+//                    val navOptions: NavOptionsBuilder.() -> Unit = {
+//                        popUpTo(navController.graph.findStartDestination().id) {
+//                            saveState = true
+//                        }
+//                        launchSingleTop = true
+//                        restoreState = true
+//                    }
+//
+//                    when (route) {
+//                        TaskListRoute -> navController.navigateToTaskList(navOptions)
+//                        ProfileListRoute -> navController.navigateToProfileList(navOptions)
+//                    }
+                }
+            )
+        }
+
         taskListPage(
+            navBar = { navBar(TaskListRoute) },
             onTaskClick = navController::navigateToTimer,
             onCreateNewTaskClick = navController::navigateToCreateNewTask,
         )
@@ -62,12 +110,44 @@ fun NavHost(
 
         timerPage(
             onBackClick = navController::popBackStack,
-            onEditClick = navController::navigateToEdit,
-            onFinishClick = navController::navigateToCompletion
+            onFinishClick = { sessionId ->
+                navController.navigateToCompletion(sessionId) {
+                    popUpTo(route = TimerRoute(sessionId)) {
+                        inclusive = true
+                    }
+                }
+            },
+            onEditClick = navController::navigateToEditSession,
         )
 
         editTaskPage(
             onBackClick = navController::popBackStack
+        )
+
+        //composable<PageRoutes.TaskComplete> {
+        //    TaskCompletionPage(navController, taskViewModel)
+        //}
+
+        profileListPage(
+            navBar = { navBar(ProfileListRoute) },
+            onProfileClick = navController::navigateToProfileSessionList,
+            onCreateNewProfileClick = navController::navigateToCreateProfile,
+        )
+
+        createProfilePage(
+            onBackClick = navController::popBackStack
+        )
+
+        editProfilePage(
+            onBackClick = navController::popBackStack
+        )
+
+        profileSessionListPage(
+            onBackClick = navController::popBackStack,
+            onEditClick = navController::navigateToEditProfile,
+            onSessionClick = navController::navigateToTimer,
+            onCreateNewSessionClick = navController::navigateToCreateNewTask,
+            navBar = { navBar(ProfileListRoute) },
         )
 
         taskCompletionPage(

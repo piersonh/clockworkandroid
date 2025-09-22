@@ -1,46 +1,65 @@
 package com.wordco.clockworkandroid.session_list_feature.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.R
+import com.wordco.clockworkandroid.core.domain.util.DummyData
+import com.wordco.clockworkandroid.core.ui.composables.NavBar
+import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTaskUiItem
-import com.wordco.clockworkandroid.session_list_feature.ui.composables.CompletedTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.composables.TaskBottomBar
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.model.CompletedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import java.time.Duration
 
 @Composable
 fun TaskListPage(
     taskListViewModel: TaskListViewModel,
+    navBar: @Composable () -> Unit,
     onTaskClick: (Long) -> Unit,
     onCreateNewTaskClick: () -> Unit,
 ) {
@@ -48,6 +67,7 @@ fun TaskListPage(
 
     TaskListPage(
         uiState = uiState,
+        navBar = navBar,
         onTaskClick = onTaskClick,
         onCreateNewTaskClick = onCreateNewTaskClick,
     )
@@ -58,6 +78,7 @@ fun TaskListPage(
 @Composable
 private fun TaskListPage(
     uiState: TaskListUiState,
+    navBar: @Composable () -> Unit,
     onTaskClick: (Long) -> Unit,
     onCreateNewTaskClick: () -> Unit,
 ) {
@@ -68,37 +89,117 @@ private fun TaskListPage(
                     Text(
                         "Task Sessions",
                         fontFamily = LATO,
-                        color = MaterialTheme.colorScheme.onSecondary
+                        fontWeight = FontWeight.Black,
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.secondary)
+                actions = {
+                    IconButton(
+                        onClick = onCreateNewTaskClick
+                    ) {
+                        PlusImage(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .fillMaxSize()
+                        )
+                    }
+                },
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
             )
         },
-        bottomBar = {
-            TaskBottomBar(onCreateNewTaskClick)
-        },
+        bottomBar = navBar,
         modifier = Modifier.fillMaxSize()
-    ) {
-        innerPadding ->
+    ) { paddingValues ->
 
         Box(
             modifier = Modifier
-                .padding(
-                    PaddingValues(top = innerPadding.calculateTopPadding(),
-                        bottom = innerPadding.calculateBottomPadding()
-                    )
-                )
+                .padding(paddingValues)
                 .background(color = MaterialTheme.colorScheme.primary)
         )
         {
             when (uiState) {
+                is TaskListUiState.Retrieved if (
+                        uiState.newTasks.isEmpty() && uiState.suspendedTasks.isEmpty()
+                    ) -> EmptyTaskList(
+                    onCreateNewTaskClick = onCreateNewTaskClick
+                )
+
                 is TaskListUiState.Retrieved -> TaskList(
                     uiState,
                     onTaskClick = onTaskClick,
                 )
+
                 TaskListUiState.Retrieving -> Text("Loading...")
             }
         }
+    }
+}
+
+@Composable
+private fun EmptyTaskList(
+    onCreateNewTaskClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(horizontal = 15.dp),
+    ) {
+        Spacer(modifier = Modifier.weight(0.04f))
+
+        Box (
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.todo_list),
+                contentDescription = "To-Do List",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.height(170.dp),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Your To-Do List is Empty!",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 40.sp,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        TextButton(
+            onClick = onCreateNewTaskClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                //.height(50.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        ) {
+            Text(
+                text = "Create New Task",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(0.15f))
     }
 }
 
@@ -111,10 +212,14 @@ private fun TaskList(
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier
-            .padding(5.dp)
+            .padding(horizontal = 5.dp)
             .background(color = MaterialTheme.colorScheme.primary)
             .fillMaxSize()
     ) {
+        item {
+            Spacer(Modifier)
+        }
+
         item {
             Text(
                 "STARTED",
@@ -125,11 +230,49 @@ private fun TaskList(
             )
         }
 
+        if (uiState.suspendedTasks.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxHeight(),
+                ) {
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row (
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.stopwatch),
+                            contentDescription = "Calendar",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.height(30.dp),
+                            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        )
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Text(
+                            "No Started Tasks",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 25.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+        }
+
+
         if (uiState is TaskListUiState.TimerActive) {
             item {
                 ActiveTaskUiItem(
                     task = uiState.activeTask,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(10.dp))
                         .background(color = MaterialTheme.colorScheme.primaryContainer)
                         .height(100.dp)
@@ -154,6 +297,9 @@ private fun TaskList(
             )
         }
 
+        item {
+            Spacer(Modifier)
+        }
 
         item {
             Text(
@@ -163,6 +309,44 @@ private fun TaskList(
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
+        }
+
+        if (uiState.newTasks.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxHeight(),
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Box (
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.cal),
+                            contentDescription = "Calendar",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.height(100.dp),
+                            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "No Upcoming Tasks",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
         }
 
         items(
@@ -176,33 +360,12 @@ private fun TaskList(
                     .clip(shape = RoundedCornerShape(10.dp))
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
                     .height(100.dp)
-                    .clickable(onClick = {onTaskClick(it.taskId)})
+                    .clickable(onClick = { onTaskClick(it.taskId) })
             )
         }
 
         item {
-            Text(
-                "COMPLETED",
-                fontFamily = LATO,
-                fontSize = 25.sp,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(horizontal = 20.dp)
-            )
-        }
-
-        items (
-            uiState.finishedTasks,
-            key = { task -> task.taskId }
-        ) {
-            CompletedTaskUIListItem(
-                it,
-                Modifier
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .height(100.dp)
-                    .clickable(onClick = {onTaskClick(it.taskId)})
-            )
+            Spacer(Modifier)
         }
     }
 }
@@ -214,7 +377,56 @@ private fun TaskListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                newTasks = listOf(),
+                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
+                suspendedTasks = listOf(
+                    SuspendedTaskListItem(
+                        taskId = 0,
+                        name = "Awooga",
+                        color = Color(40, 50, 160),
+                        workTime = Duration.ZERO,
+                        breakTime = Duration.ZERO
+                    )
+                ),
+            ),
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit::class,
+                navigateTo = {},
+            ) },
+            onTaskClick = {},
+            onCreateNewTaskClick = {}
+        )
+    }
+}
+
+
+@Preview
+@Composable
+private fun EmptyTaskListPagePreview() {
+    ClockworkTheme {
+        TaskListPage(
+            uiState = TaskListUiState.TimerDormant(
+                newTasks = emptyList(),
+                suspendedTasks = emptyList(),
+            ),
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit::class,
+                navigateTo = {},
+            ) },
+            onTaskClick = {},
+            onCreateNewTaskClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun NoNewTasksListPagePreview() {
+    ClockworkTheme {
+        TaskListPage(
+            uiState = TaskListUiState.TimerDormant(
+                newTasks = emptyList(),
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
                         taskId = 1,
@@ -224,16 +436,33 @@ private fun TaskListPagePreview() {
                         breakTime = Duration.ZERO
                     )
                 ),
-                finishedTasks = listOf(
-                    CompletedTaskListItem(
-                        taskId = 2,
-                        name = "Awooga2",
-                        color = Color(40, 50, 160),
-                        workTime = Duration.ZERO,
-                        breakTime = Duration.ZERO
-                    )
-                )
             ),
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit::class,
+                navigateTo = {},
+            ) },
+            onTaskClick = {},
+            onCreateNewTaskClick = {}
+        )
+    }
+}
+
+
+@Preview
+@Composable
+private fun NoStartedTasksListPagePreview() {
+    ClockworkTheme {
+        TaskListPage(
+            uiState = TaskListUiState.TimerDormant(
+                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
+                suspendedTasks = emptyList()
+            ),
+            navBar = { NavBar(
+                items = FAKE_TOP_LEVEL_DESTINATIONS,
+                currentDestination = Unit::class,
+                navigateTo = {},
+            ) },
             onTaskClick = {},
             onCreateNewTaskClick = {}
         )

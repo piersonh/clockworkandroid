@@ -7,14 +7,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Timer
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toActiveTaskItem
-import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toCompletedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.util.NewTaskListItemComparator
@@ -64,10 +62,6 @@ class TaskListViewModel(
                     it is StartedTask && it.status() == StartedTask.Status.SUSPENDED
                 }.map { task -> (task as StartedTask).toSuspendedTaskListItem() }
 
-                val finishedTasks = tasks.filter {
-                    it is CompletedTask
-                }.map { task -> (task as CompletedTask).toCompletedTaskListItem() }
-
                 when (timerState) {
                     TimerState.Closing,
                     TimerState.Dormant,
@@ -75,7 +69,6 @@ class TaskListViewModel(
                         TaskListUiState.TimerDormant(
                             newTasks = newTasks,
                             suspendedTasks = suspendedTasks,
-                            finishedTasks = finishedTasks,
                         )
                     }
 
@@ -88,7 +81,6 @@ class TaskListViewModel(
                                 elapsedWorkSeconds = timerState.elapsedWorkSeconds,
                                 elapsedBreakMinutes = timerState.elapsedBreakMinutes,
                             ),
-                            finishedTasks = finishedTasks,
                         )
                     }
                 }
