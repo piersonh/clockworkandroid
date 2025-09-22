@@ -12,6 +12,7 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.createNewTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.editTaskPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTask
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEdit
+import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToCompletion
 import com.wordco.clockworkandroid.session_completion_feature.ui.taskCompletionPage
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
@@ -61,7 +62,8 @@ fun NavHost(
 
         timerPage(
             onBackClick = navController::popBackStack,
-            onEditClick = navController::navigateToEdit
+            onEditClick = navController::navigateToEdit,
+            onFinishClick = navController::navigateToCompletion
         )
 
         editTaskPage(

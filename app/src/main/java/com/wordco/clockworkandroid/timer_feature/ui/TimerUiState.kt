@@ -24,6 +24,12 @@ sealed interface TimerUiState {
         override val isPreparing: Boolean,
     ) : Shelved
 
+    data class Finished (
+        override val taskName: String,
+        override val elapsedSeconds: Int,
+        override val isPreparing: Boolean
+    ) : Shelved
+
 
     sealed interface Active : Retrieved
 
