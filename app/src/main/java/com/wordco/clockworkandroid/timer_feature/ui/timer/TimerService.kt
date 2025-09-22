@@ -451,11 +451,12 @@ class TimerService() : Service() {
 
         setSuspended()
 
-        clearTask()
-
         coroutineScope.launch {
             _loadedTask.value!!.complete()
         }
+
+        clearTask()
+
     }
 
     private suspend fun StartedTask.complete() {

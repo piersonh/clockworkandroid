@@ -1,8 +1,6 @@
 package com.wordco.clockworkandroid.database.data.util
 
 import androidx.compose.ui.graphics.Color
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -92,38 +90,6 @@ object DummyData {
             Color.Companion.Yellow,
             null
         ),
-        CompletedTask(
-            taskId = 9,
-            name = "Finalized Report",
-            dueDate = Instant.parse("2025-04-18T10:00:00Z"),
-            difficulty = 4,
-            color = Color.Companion.DarkGray,
-            userEstimate = Duration.ofHours(5),
-            segments = listOf(
-                Segment(
-                    segmentId = 1,
-                    taskId = 9,
-                    startTime = Instant.parse("2025-04-18T09:00:00Z"),
-                    duration = Duration.ofHours(2),
-                    type = Segment.Type.WORK
-                ),
-                Segment(
-                    segmentId = 2,
-                    taskId = 9,
-                    startTime = Instant.parse("2025-04-18T11:00:00Z"),
-                    duration = null,
-                    type = Segment.Type.FINISH
-                )
-            ),
-            markers = listOf(
-                Marker(
-                    markerId = 1,
-                    taskId = 9,
-                    startTime = Instant.parse("2025-04-18T09:30:00Z"),
-                    label = "Research Phase"
-                )
-            )
-        )
     )
 
     val RELOADRUNNING = listOf(

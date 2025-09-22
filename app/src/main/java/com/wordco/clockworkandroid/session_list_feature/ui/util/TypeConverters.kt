@@ -8,6 +8,5 @@ fun StartedTask.Status.toActiveTaskStatus(): ActiveTaskListItem.Status {
         StartedTask.Status.RUNNING -> ActiveTaskListItem.Status.RUNNING
         StartedTask.Status.PAUSED -> ActiveTaskListItem.Status.PAUSED
         StartedTask.Status.SUSPENDED -> error("Active Tasks cannot be suspended")
-        StartedTask.Status.FINISHED -> error("Active Tasks cannot be completed")
     }
 }
