@@ -451,14 +451,12 @@ class TimerService() : Service() {
 
         setSuspended()
 
+        clearTask()
+
         coroutineScope.launch {
             _loadedTask.value!!.complete()
         }
-
-        clearTask()
     }
-
-
 
     private suspend fun StartedTask.complete() {
         val now = Instant.now()
@@ -466,10 +464,20 @@ class TimerService() : Service() {
             copy(duration = Duration.between(startTime, now))
         }
 
-        taskRepository.updateSegmentAndInsertNew(
-            existing = lastSegment,
-            new = newSegment
+        val task = CompletedTask(
+            taskId = taskId,
+            //profileId = profileId,
+            name = name,
+            dueDate = dueDate,
+            difficulty = difficulty,
+            color = color,
+            userEstimate = userEstimate,
+            segments = emptyList(), // The database doesn't use this
+            markers = emptyList(),
         )
+
+        taskRepository.updateSegment(lastSegment)
+        taskRepository.updateTask(task)
     }
 
     /*    private fun finishAndSave () {

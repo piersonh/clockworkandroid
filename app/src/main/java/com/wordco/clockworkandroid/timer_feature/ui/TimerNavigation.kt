@@ -30,7 +30,8 @@ fun NavController.navigateToTimer(
 
 fun NavGraphBuilder.timerPage(
     onBackClick: () -> Unit,
-    onEditClick: (Long) -> Unit
+    onEditClick: (Long) -> Unit,
+    onFinishClick: (Long) -> Unit
 ) {
     composable<TimerRoute> {
         entry ->
@@ -49,7 +50,8 @@ fun NavGraphBuilder.timerPage(
         TimerPage(
             onBackClick = onBackClick,
             timerViewModel = timerViewModel,
-            onEditClick = {onEditClick(taskId)}
+            onEditClick = {onEditClick(taskId)},
+            onFinishClick = {onFinishClick(taskId)}
         )
     }
 }
