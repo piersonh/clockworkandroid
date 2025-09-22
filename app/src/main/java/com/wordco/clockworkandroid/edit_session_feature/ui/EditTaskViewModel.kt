@@ -53,6 +53,8 @@ class EditTaskViewModel (
 
     private lateinit var _profiles: StateFlow<List<Profile>>
 
+    private lateinit var _fieldDefaults: EditTaskFormUiState
+
 
     init {
         viewModelScope.launch {
@@ -64,7 +66,7 @@ class EditTaskViewModel (
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
                     first().also { profiles ->
-                        val fieldDefaults = getFieldDefaults(
+                        _fieldDefaults = getFieldDefaults(
                             _loadedTask.profileId?.let {
                                 id -> profiles.first { it.id == id }
                             }
@@ -76,15 +78,15 @@ class EditTaskViewModel (
                             EditTaskUiState.Retrieved(
                                 profiles = profiles.map { it.toProfilePickerItem() },
                                 taskName = _loadedTask.name,
-                                profileName = fieldDefaults.profileName,
+                                profileName = _fieldDefaults.profileName,
                                 colorSliderPos = _loadedTask.color.hue() / 360,
                                 difficulty = _loadedTask.difficulty.toFloat(),
                                 dueDate = _loadedTask.dueDate?.atZone(ZoneId.systemDefault())
                                     ?.toLocalDate(),
                                 dueTime = _loadedTask.dueDate?.run {
                                     atZone(ZoneId.systemDefault())?.toLocalTime()
-                                } ?: fieldDefaults.dueTime,
-                                currentModal = fieldDefaults.currentModal,
+                                } ?: _fieldDefaults.dueTime,
+                                currentModal = _fieldDefaults.currentModal,
                                 estimate = _loadedTask.userEstimate?.toEstimate(),
                             )
                         }
@@ -161,8 +163,16 @@ class EditTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
     }
 
-    fun onEstimateChange(newEstimate: UserEstimate) {
+    fun onEstimateChange(newEstimate: UserEstimate?) {
         _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
+    }
+
+    fun onShowEstimatePicker() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.ESTIMATE) }
+    }
+
+    fun onDismissEstimatePicker() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
     fun onEditTaskClick() : Fallible<SaveSessionError> {

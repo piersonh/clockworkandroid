@@ -17,8 +17,8 @@ fun CreateNewTaskPage (
         onBackClick = onBackClick,
         title = "Create New Session",
         initialPage = if (skipProfilePicker) 1 else 0,
-        onProfileChange = viewModel::onProfileChange,
         onTaskNameChange = viewModel::onTaskNameChange,
+        onProfileChange = viewModel::onProfileChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
         onShowDatePicker = viewModel::onShowDatePicker,
@@ -28,6 +28,8 @@ fun CreateNewTaskPage (
         onDismissTimePicker = viewModel::onDismissTimePicker,
         onDueTimeChange = viewModel::onDueTimeChange,
         onEstimateChange = viewModel::onEstimateChange,
+        onShowEstimatePicker = viewModel::onShowEstimatePicker,
+        onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
         onSaveClick = viewModel::onSaveClick,
     )
 }

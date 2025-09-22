@@ -167,8 +167,16 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
     }
 
-    fun onEstimateChange(newEstimate: UserEstimate) {
+    fun onEstimateChange(newEstimate: UserEstimate?) {
         _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
+    }
+
+    fun onShowEstimatePicker() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.ESTIMATE) }
+    }
+
+    fun onDismissEstimatePicker() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
     fun onSaveClick() : Fallible<SaveSessionError> {

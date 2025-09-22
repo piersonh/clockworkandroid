@@ -22,7 +22,7 @@ fun getFieldDefaults(
         profile?.color?.hue()?.div(360) ?: Random.Default.nextFloat()
     override val difficulty: Float = profile?.defaultDifficulty?.toFloat() ?: 0f
     override val dueDate: LocalDate? = null
-    override val dueTime: LocalTime? = LocalTime.MIDNIGHT
+    override val dueTime: LocalTime? = LocalTime.of(23,59)
     override val currentModal: PickerModal? = null
     override val estimate: UserEstimate? = UserEstimate(
         minutes = 15,

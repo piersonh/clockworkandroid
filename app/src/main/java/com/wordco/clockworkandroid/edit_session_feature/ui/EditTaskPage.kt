@@ -76,6 +76,8 @@ fun EditTaskPage (
         onDismissTimePicker = viewModel::onDismissTimePicker,
         onDueTimeChange = viewModel::onDueTimeChange,
         onEstimateChange = viewModel::onEstimateChange,
+        onShowEstimatePicker = viewModel::onShowEstimatePicker,
+        onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
         onSaveClick = viewModel::onEditTaskClick,
     )
 }
@@ -97,7 +99,9 @@ internal fun EditTaskPage(
     onShowTimePicker: () -> Unit,
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
-    onEstimateChange: (UserEstimate) -> Unit,
+    onEstimateChange: (UserEstimate?) -> Unit,
+    onShowEstimatePicker: () -> Unit,
+    onDismissEstimatePicker: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -119,8 +123,8 @@ internal fun EditTaskPage(
             title = title,
             snackbarHostState = snackbarHostState,
             onBackClick = onBackClick,
-            initialPage = initialPage,
             onProfileChange = onProfileChange,
+            initialPage = initialPage,
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,
@@ -131,6 +135,8 @@ internal fun EditTaskPage(
             onDismissTimePicker = onDismissTimePicker,
             onDueTimeChange = onDueTimeChange,
             onEstimateChange = onEstimateChange,
+            onShowEstimatePicker = onShowEstimatePicker,
+            onDismissEstimatePicker = onDismissEstimatePicker,
             onSaveClick = onSaveClick,
         )
     }
@@ -189,7 +195,9 @@ private fun EditSessionPageRetrieved(
     onShowTimePicker: () -> Unit,
     onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
-    onEstimateChange: (UserEstimate) -> Unit,
+    onEstimateChange: (UserEstimate?) -> Unit,
+    onShowEstimatePicker: () -> Unit,
+    onDismissEstimatePicker: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()
@@ -257,6 +265,8 @@ private fun EditSessionPageRetrieved(
                             onShowTimePicker = onShowTimePicker,
                             onDismissTimePicker = onDismissTimePicker,
                             onDueTimeChange = onDueTimeChange,
+                            onShowEstimatePicker = onShowEstimatePicker,
+                            onDismissEstimatePicker = onDismissEstimatePicker,
                             onEstimateChange = onEstimateChange,
                         )
                     }
@@ -341,9 +351,8 @@ private fun EditTaskPagePreview() {
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
                 estimate = UserEstimate(15, 2),
-                profiles = DummyData.PROFILES.map{ it.toProfilePickerItem() }
+                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() }
             ),
-            initialPage = 1,
             onBackClick = { },
             onTaskNameChange = { },
             onProfileChange = { },
@@ -356,7 +365,9 @@ private fun EditTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onSaveClick = { Fallible.Success }
+            onSaveClick = { Fallible.Success },
+            onShowEstimatePicker = { },
+            onDismissEstimatePicker = { },
         )
     }
 }
