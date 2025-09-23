@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.util.Log
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -84,6 +85,7 @@ class TimerService() : Service() {
         when (intent?.action) {
             "ACTION_RESUME" -> resume()
             "ACTION_PAUSE" -> pause()
+            "ACTION_MARKER" -> addMarker()
         }
 
         return START_NOT_STICKY
@@ -426,6 +428,26 @@ class TimerService() : Service() {
         coroutineScope.launch {
             _loadedTask.value!!.endLastSegmentAndStartNew(Segment.Type.BREAK)
         }
+    }
+
+    fun addMarker() : String {
+        val now = Instant.now()
+
+        val name = _loadedTask.value?.let {
+            "Marker ${it.markers.size + 1}"
+        } ?: error ("can only add markers once session has loaded")
+
+        coroutineScope.launch {
+            taskRepository.insertMarker(
+                Marker(
+                    markerId = 0,
+                    taskId = _loadedTask.value!!.taskId,
+                    startTime = now,
+                    label = name
+                )
+            )
+        }
+        return name
     }
 
 

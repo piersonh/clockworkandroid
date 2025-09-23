@@ -68,4 +68,5 @@ class TimerManager(private val context: Context) : Timer {
     override fun pause() = timerService?.pause() ?: Unit
     override fun suspend(replaceWith: Long?) = timerService?.suspend(replaceWith) ?: Unit
     override fun finish() = timerService?.finish() ?: Unit
+    override fun addMarker() : String = timerService?.addMarker() ?: error("Timer service failed")
 }

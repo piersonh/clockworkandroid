@@ -61,17 +61,27 @@ class TimerNotificationManager(
     }
 
     fun buildNotification(timerState: TimerState.Active): Notification {
+        val markerIntent = createServiceIntent(
+            "ACTION_MARKER",
+        )
+        val markerAction = NotificationCompat.Action(
+            null,
+            "Add Marker",
+            markerIntent
+        )
         val resumePauseAction = when (timerState) {
             is TimerState.Running -> {
                 val pauseIntent = createServiceIntent(
                     "ACTION_PAUSE",
                 )
 
+
                 NotificationCompat.Action(
                     null,
                     "Pause",
                     pauseIntent
                 )
+
             }
             is TimerState.Paused -> {
                 val resumeIntent = createServiceIntent(
@@ -109,8 +119,7 @@ class TimerNotificationManager(
             is TimerState.Running -> R.drawable.running
         }
 
-
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        val notif = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(content)
             .setOngoing(true)
             .setSmallIcon(icon)
@@ -120,10 +129,12 @@ class TimerNotificationManager(
             //.setSilent(true)
             .addAction(resumePauseAction) // resume/pause
             .setContentIntent(deepLinkIntent)
-            // .addAction() // suspend
             // .addAction() // finish?
             .setContentText(timerState.task.name)
-            .build()
+        if (timerState is TimerState.Running) {
+            notif.addAction(markerAction)
+        }
+        return notif.build()
     }
 
     private fun createServiceIntent(action: String?): PendingIntent {

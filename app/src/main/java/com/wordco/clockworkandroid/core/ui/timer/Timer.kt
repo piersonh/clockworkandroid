@@ -14,4 +14,6 @@ interface Timer {
     fun suspend(replaceWith: Long? = null)
 
     fun finish()
+
+    fun addMarker(): String
 }

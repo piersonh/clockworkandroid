@@ -9,7 +9,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
@@ -22,7 +21,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 
 class TimerViewModel (
@@ -114,27 +112,7 @@ class TimerViewModel (
     }
 
     fun addMark() : String {
-        val now = Instant.now()
-
-        val name = _loadedTask.value?.let {
-            it as? StartedTask
-                ?: error ("can only add markers to started tasks")
-
-            "Marker ${it.markers.size + 1}"
-        } ?: error ("can only add markers once session has loaded")
-
-        viewModelScope.launch {
-            taskRepository.insertMarker(
-                Marker(
-                    markerId = 0,
-                    taskId = taskId,
-                    startTime = now,
-                    label = name
-                )
-            )
-        }
-
-        return name
+        return timer.addMarker()
     }
 
     fun finish() {
