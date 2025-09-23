@@ -23,7 +23,7 @@ import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.CompletedSessionListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.asHHMM
+import com.wordco.clockworkandroid.user_stats_feature.ui.util.asHHMM
 
 @Composable
 fun CompletedSessionUiListItem(

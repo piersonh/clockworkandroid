@@ -124,10 +124,6 @@ fun NavHost(
             onBackClick = navController::popBackStack
         )
 
-        //composable<PageRoutes.TaskComplete> {
-        //    TaskCompletionPage(navController, taskViewModel)
-        //}
-
         profileListPage(
             navBar = { navBar(ProfileListRoute) },
             onProfileClick = navController::navigateToProfileSessionList,
