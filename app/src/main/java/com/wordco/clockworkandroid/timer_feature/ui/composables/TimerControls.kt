@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.timer_feature.ui.composables
 
-import android.Manifest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,15 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.composables.MarkImage
 import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
-import com.wordco.clockworkandroid.core.ui.composables.getPermsLauncher
-import com.wordco.clockworkandroid.core.ui.composables.runIfPermitted
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.timer_feature.ui.TimerUiState
 
@@ -37,26 +33,10 @@ fun TimerControls(
     onMarkClick: () -> Unit,
     onFinishClick: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val launcher = getPermsLauncher { isGranted ->
-        if (isGranted) {
-            onInitClick()
-        }
-    }
-
-    val askForPermsThenInit = {
-        runIfPermitted(
-            context = context,
-            launcher = launcher,
-            permission = Manifest.permission.POST_NOTIFICATIONS,
-            block = onInitClick
-        )
-    }
-
     when (uiState) {
         is TimerUiState.New -> InitControls (
             modifier,
-            askForPermsThenInit,
+            onInitClick,
             uiState.isPreparing
         )
         is TimerUiState.Running -> RunningControls(
@@ -73,7 +53,7 @@ fun TimerControls(
         )
         is TimerUiState.Suspended -> SuspendedControls(
             modifier,
-            askForPermsThenInit,
+            onInitClick,
             onFinishClick,
             uiState.isPreparing
         )

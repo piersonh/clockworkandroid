@@ -10,11 +10,23 @@ import com.wordco.clockworkandroid.database.data.local.AppDatabase
 import com.wordco.clockworkandroid.database.data.repository.ProfileRepositoryImpl
 import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.timer_feature.ui.timer.TimerManager
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 interface AppContainer {
     val sessionRepository: TaskRepository
     val profileRepository: ProfileRepository
     val timer: TimerManager
+
+    val permissionRequestSignal: PermissionRequestSignaller
+        get() = object : PermissionRequestSignaller {
+            private val _signal = MutableSharedFlow<String>()
+            override val stream = _signal.asSharedFlow()
+
+            override suspend fun post(permission: String) {
+                _signal.emit(permission)
+            }
+        }
 }
 
 class ProductionContainer(context: Context) : AppContainer {

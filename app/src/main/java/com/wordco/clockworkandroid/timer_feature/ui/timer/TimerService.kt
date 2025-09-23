@@ -1,8 +1,10 @@
 package com.wordco.clockworkandroid.timer_feature.ui.timer
 
+import android.Manifest
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import com.wordco.clockworkandroid.MainApplication
@@ -59,8 +61,20 @@ class TimerService() : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        notificationManager = TimerNotificationManager(this)
         taskRepository = (application as MainApplication).taskRepository
+        val permissionRequestSignaller = (application as MainApplication).permissionRequestSignaller
+        notificationManager = TimerNotificationManager(
+            this,
+            onRequestNotificationPermission = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    coroutineScope.launch {
+                        permissionRequestSignaller.post(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    }
+                }
+            }
+        )
         Log.i("TimerService", "Timer Service Created")
         restoreAfterExit()
     }

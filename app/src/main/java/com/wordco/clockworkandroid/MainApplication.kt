@@ -13,6 +13,8 @@ class MainApplication : Application() {
 
     lateinit var timer: Timer
 
+    lateinit var permissionRequestSignaller: PermissionRequestSignaller
+
 
     override fun onCreate() {
         super.onCreate()
@@ -20,5 +22,6 @@ class MainApplication : Application() {
         taskRepository = appContainer.sessionRepository
         profileRepository = appContainer.profileRepository
         timer = appContainer.timer
+        permissionRequestSignaller = appContainer.permissionRequestSignal
     }
 }
