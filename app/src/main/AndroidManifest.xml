@@ -25,6 +25,7 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <data android:scheme="com.wordco.clockworkandroid" android:host="timer_route" />
             </intent-filter>
         </activity>
         <service

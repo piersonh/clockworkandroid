@@ -13,6 +13,7 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.Second
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ class TimerService() : Service() {
 
     private val _loadedTaskId: MutableStateFlow<Long?> = MutableStateFlow(null)
 
-    private val _elapsedWorkSeconds = MutableStateFlow(0)
+    private val _elapsedWorkSeconds = MutableStateFlow<Second>(0)
     private val _elapsedBreakMinutes = MutableStateFlow(0)
 
     private var incJob: Job? = null
