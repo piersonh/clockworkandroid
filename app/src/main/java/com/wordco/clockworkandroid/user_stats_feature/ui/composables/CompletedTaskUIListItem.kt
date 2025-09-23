@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_list_feature.ui.composables
+package com.wordco.clockworkandroid.user_stats_feature.ui.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +22,8 @@ import com.wordco.clockworkandroid.core.ui.composables.ClockImage
 import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.session_list_feature.ui.model.CompletedTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.asHHMM
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedTaskListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.util.asHHMM
 
 @Composable
 fun CompletedTaskUIListItem(

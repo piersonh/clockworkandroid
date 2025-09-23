@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_list_feature.ui.model
+package com.wordco.clockworkandroid.user_stats_feature.ui.model
 
 import androidx.compose.ui.graphics.Color
 import java.time.Duration
