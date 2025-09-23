@@ -437,7 +437,6 @@ class TimerService() : Service() {
         } ?: clearTask()
     }
 
-    //FIXME
     fun finish() {
         when (_internalState.value) {
             State.INIT,

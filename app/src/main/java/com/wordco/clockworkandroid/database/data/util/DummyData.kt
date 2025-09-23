@@ -35,7 +35,7 @@ object DummyData {
                 )
             ),
             emptyList(),
-            null,
+            null
         ),
         NewTask(
             2,
@@ -53,7 +53,7 @@ object DummyData {
             3,
             Color.Companion.White,
             null,
-            null,
+            null
         ),
         NewTask(
             4,
@@ -153,7 +153,7 @@ object DummyData {
                 )
             ),
             markers = emptyList(),
-            null,
+            null
         )
     )
 }
