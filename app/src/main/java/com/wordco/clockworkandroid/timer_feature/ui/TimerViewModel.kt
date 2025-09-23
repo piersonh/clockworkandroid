@@ -15,6 +15,7 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Timer
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.timer_feature.ui.util.complete
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -142,7 +143,14 @@ class TimerViewModel (
     }
 
     fun finish() {
-        timer.finish()
+        if (timer.state.value is TimerState.Empty) {
+            viewModelScope.launch {
+                (_loadedTask.value as? StartedTask)?.complete(taskRepository)
+                    ?: error("can only finish started tasks")
+            }
+        } else {
+            timer.finish()
+        }
     }
 
 

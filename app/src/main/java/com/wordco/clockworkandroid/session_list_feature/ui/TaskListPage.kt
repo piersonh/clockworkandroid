@@ -387,7 +387,6 @@ private fun TaskListPagePreview() {
                         breakTime = Duration.ZERO
                     )
                 ),
-                finishedTasks = emptyList()
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
@@ -409,7 +408,6 @@ private fun EmptyTaskListPagePreview() {
             uiState = TaskListUiState.TimerDormant(
                 newTasks = emptyList(),
                 suspendedTasks = emptyList(),
-                finishedTasks = emptyList()
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
@@ -438,7 +436,6 @@ private fun NoNewTasksListPagePreview() {
                         breakTime = Duration.ZERO
                     )
                 ),
-                finishedTasks = emptyList()
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
@@ -460,7 +457,6 @@ private fun NoStartedTasksListPagePreview() {
             uiState = TaskListUiState.TimerDormant(
                 newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
                 suspendedTasks = emptyList(),
-                finishedTasks = emptyList()
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
