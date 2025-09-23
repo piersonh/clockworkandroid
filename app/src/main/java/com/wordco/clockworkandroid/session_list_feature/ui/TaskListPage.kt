@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -117,6 +118,7 @@ private fun TaskListPage(
             modifier = Modifier
                 .padding(paddingValues)
                 .background(color = MaterialTheme.colorScheme.primary)
+                .fillMaxSize()
         )
         {
             when (uiState) {
@@ -145,8 +147,9 @@ private fun EmptyTaskList(
         modifier = Modifier
             .fillMaxHeight()
             .padding(horizontal = 15.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
     ) {
-        Spacer(modifier = Modifier.weight(0.04f))
+        //Spacer(modifier = Modifier.weight(0.04f))
 
         Box (
             modifier = Modifier.fillMaxWidth(),
@@ -161,7 +164,7 @@ private fun EmptyTaskList(
             )
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        //Spacer(modifier = Modifier.height(40.dp))
 
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -177,7 +180,7 @@ private fun EmptyTaskList(
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        //Spacer(modifier = Modifier.height(20.dp))
 
         TextButton(
             onClick = onCreateNewTaskClick,
@@ -190,16 +193,19 @@ private fun EmptyTaskList(
                 //.height(50.dp)
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .heightIn(25.dp, 70.dp)
+                .aspectRatio(4f,true)
+
         ) {
             Text(
                 text = "Create New Task",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
-                fontSize = 32.sp
+                fontSize = 28.sp
             )
         }
 
-        Spacer(modifier = Modifier.weight(0.15f))
+        //Spacer(modifier = Modifier.weight(0.15f))
     }
 }
 
