@@ -124,15 +124,6 @@ class TimerService() : Service() {
                     breakTime.toMinutes().toInt()
                 }
             }
-            //FIXME
-            Segment.Type.FINISH -> {
-                _elapsedWorkSeconds.update {
-                    workTime.seconds.toInt()
-                }
-                _elapsedBreakMinutes.update {
-                    breakTime.toMinutes().toInt()
-                }
-            }
         }
     }
 
