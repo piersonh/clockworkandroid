@@ -123,7 +123,7 @@ private fun EmptyTaskList (
         ) {
             Image(
                 painter = painterResource(id = R.drawable.trophy),
-                contentDescription = "To-Do List",
+                contentDescription = "Trophy",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.height(170.dp),
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)

@@ -41,6 +41,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -403,19 +405,23 @@ private fun EmptyTodoList(
         ) {
             //Spacer(modifier = Modifier.weight(0.03f))
 
-            Box (
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                // TODO: change to a pencil writing or something
-                Image(
-                    painter = painterResource(id = R.drawable.pencil_writing),
-                    contentDescription = "Pencil Writing",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(170.dp),
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                )
+            // This check to see if the image is less than a 1/4 of the screen's height
+            val density = LocalDensity.current
+            if (LocalWindowInfo.current.containerSize.height > density.run { 170.dp.toPx() } * 4) {
+                Box (
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.pencil_writing),
+                        contentDescription = "Pencil Writing",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.height(170.dp),
+                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    )
+                }
             }
+
 
             //Spacer(modifier = Modifier.height(20.dp))
 
@@ -476,7 +482,9 @@ private fun CompletedList(
     modifier: Modifier = Modifier,
 ) {
     if (uiState.completeSessions.isEmpty()) {
-        return Text("No items")
+        return EmptyCompletedList(
+            modifier = modifier
+        )
     }
 
     Box(
@@ -504,6 +512,54 @@ private fun CompletedList(
                 )
             }
         }
+    }
+}
+
+
+
+@Composable
+private fun EmptyCompletedList (
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(horizontal = 25.dp).then(modifier),
+        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+    ) {
+
+        val density = LocalDensity.current
+        if (LocalWindowInfo.current.containerSize.height > density.run { 170.dp.toPx() } * 4) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.trophy),
+                    contentDescription = "Trophy",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.height(170.dp),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "No Completed Sessions yet...",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                fontSize = 32.sp,
+                lineHeight = 40.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
