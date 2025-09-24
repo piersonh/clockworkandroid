@@ -22,8 +22,8 @@ import com.wordco.clockworkandroid.core.ui.composables.CalImage
 import com.wordco.clockworkandroid.core.ui.composables.ComputerImage
 import com.wordco.clockworkandroid.core.ui.composables.UserImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.session_list_feature.ui.model.NewTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.asHHMM
 import com.wordco.clockworkandroid.session_list_feature.ui.util.asTaskDueFormat
 
 @Composable

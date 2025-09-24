@@ -18,15 +18,12 @@ data class StartedTask (
     override val workTime: Duration = segments
         .filter { it.type == Segment.Type.WORK && it.duration != null }
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
+
     override val breakTime: Duration = segments
         .filter { it.type == Segment.Type.BREAK && it.duration != null }
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
 
-    init {
-        if (segments.isEmpty()) {
-            error("Attempted to create a Started Task with no segments")
-        }
-    }
+    override val startedAt = segments.minOf { it.startTime }
 
     enum class Status {
         RUNNING, PAUSED, SUSPENDED

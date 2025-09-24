@@ -26,14 +26,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.user_stats_feature.ui.composables.CompletedTaskUIListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 
 @Composable
 fun UserStatsPage(
@@ -63,7 +68,7 @@ private fun UserStatsPage(
             TopAppBar(
                 title = {
                     Text(
-                        "Task Sessions",
+                        "Session History",
                         fontFamily = LATO,
                         fontWeight = FontWeight.Black,
                     )
@@ -127,15 +132,14 @@ private fun EmptyTaskList (
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            // TODO
-//            Text(
-//                "Your To-Do List is Empty!",
-//                fontFamily = LATO,
-//                fontWeight = FontWeight.Bold,
-//                fontSize = 32.sp,
-//                textAlign = TextAlign.Center,
-//                lineHeight = 40.sp,
-//            )
+            Text(
+                "No Completed Sessions yet...",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                fontSize = 32.sp,
+                lineHeight = 40.sp,
+            )
         }
 
         Spacer(modifier = Modifier.weight(0.15f))
@@ -150,6 +154,9 @@ private fun CompletedSessionList(
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(5.dp),
+        modifier = Modifier
+            .padding(horizontal = 5.dp)
+            .background(color = MaterialTheme.colorScheme.primary)
     ) {
         item {
             Spacer(Modifier.height(5.dp))
@@ -179,7 +186,9 @@ private fun UserStatsPagePreview() {
     ClockworkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
-                completedTasks = emptyList()
+                completedTasks = DummyData.SESSIONS
+                    .filter { it is CompletedTask }
+                    .map { (it as CompletedTask).toCompletedSessionListItem() }
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,

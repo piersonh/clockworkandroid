@@ -20,8 +20,14 @@ suspend fun StartedTask.complete(taskRepository: TaskRepository) {
         difficulty = difficulty,
         color = color,
         userEstimate = userEstimate,
-        segments = emptyList(), // The database doesn't use this
-        markers = emptyList(),
+        segments = segments.map {
+            if (it.segmentId == lastSegment.segmentId) {
+                lastSegment
+            } else {
+                it
+            }
+        },
+        markers = markers,
     )
 
     taskRepository.updateSegment(lastSegment)

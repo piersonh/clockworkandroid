@@ -1,6 +1,6 @@
 package com.wordco.clockworkandroid.user_stats_feature.ui
 
-import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedTaskListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedSessionListItem
 
 
 sealed interface UserStatsUiState {
@@ -8,6 +8,6 @@ sealed interface UserStatsUiState {
     data object Retrieving : UserStatsUiState
 
     data class Retrieved(
-        val completedTasks: List<CompletedTaskListItem>
+        val completedTasks: List<CompletedSessionListItem>
     ) : UserStatsUiState
 }

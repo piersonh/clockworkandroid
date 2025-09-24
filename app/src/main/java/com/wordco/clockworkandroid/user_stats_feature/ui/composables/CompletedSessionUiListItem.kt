@@ -22,12 +22,13 @@ import com.wordco.clockworkandroid.core.ui.composables.ClockImage
 import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedTaskListItem
-import com.wordco.clockworkandroid.user_stats_feature.ui.util.asHHMM
+import com.wordco.clockworkandroid.core.ui.util.asHHMM
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedSessionListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.util.asDateTime
 
 @Composable
 fun CompletedTaskUIListItem(
-    task: CompletedTaskListItem,
+    task: CompletedSessionListItem,
     modifier: Modifier = Modifier
 ) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -60,9 +61,13 @@ fun CompletedTaskUIListItem(
             modifier = Modifier.height(30.dp),
 
             ) {
-            MoonImage()
+            MoonImage() // TODO change to trophy
             Text(
-                "Completed",
+                String.format(
+                    java.util.Locale.getDefault(),
+                    "Completed %s",
+                    task.completedAt.asDateTime()
+                ),
                 fontFamily = LATO,
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
