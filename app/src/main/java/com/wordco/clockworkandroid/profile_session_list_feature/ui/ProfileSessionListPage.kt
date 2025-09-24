@@ -70,8 +70,9 @@ fun ProfileSessionListPage(
     viewModel: ProfileSessionListViewModel,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
-    onSessionClick: (Long) -> Unit,
+    onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
+    onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -80,19 +81,21 @@ fun ProfileSessionListPage(
         uiState = uiState,
         onBackClick = onBackClick,
         onEditClick = onEditClick,
-        onSessionClick = onSessionClick,
+        onTodoSessionClick = onTodoSessionClick,
         onCreateNewSessionClick = onCreateNewSessionClick,
+        onCompletedSessionClick = onCompletedSessionClick,
         navBar = navBar,
     )
 }
 
 @Composable
 private fun ProfileSessionListPage(
-    uiState:  ProfileSessionListUiState,
+    uiState: ProfileSessionListUiState,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
-    onSessionClick: (Long) -> Unit,
+    onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
+    onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     when (uiState) {
@@ -100,8 +103,9 @@ private fun ProfileSessionListPage(
             uiState = uiState,
             onBackClick = onBackClick,
             onEditClick = onEditClick,
-            onSessionClick = onSessionClick,
+            onTodoSessionClick = onTodoSessionClick,
             onCreateNewSessionClick = onCreateNewSessionClick,
+            onCompletedSessionClick = onCompletedSessionClick,
             navBar = navBar,
         )
         ProfileSessionListUiState.Retrieving -> ProfileSessionListPageRetrieving(
@@ -118,8 +122,9 @@ private fun ProfileSessionListPageRetrieved(
     uiState: ProfileSessionListUiState.Retrieved,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
-    onSessionClick: (Long) -> Unit,
+    onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
+    onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     Scaffold (
@@ -185,7 +190,7 @@ private fun ProfileSessionListPageRetrieved(
                 ) {
                     TodoList(
                         uiState = uiState,
-                        onSessionClick = onSessionClick,
+                        onSessionClick = onTodoSessionClick,
                         onCreateNewSessionClick = onCreateNewSessionClick,
                         modifier = Modifier
                             .padding(horizontal = 5.dp)
@@ -196,7 +201,7 @@ private fun ProfileSessionListPageRetrieved(
                 ) {
                     CompletedList(
                         uiState = uiState,
-                        onSessionClick = onSessionClick,
+                        onSessionClick = onCompletedSessionClick,
                         modifier = Modifier
                             .padding(horizontal = 5.dp)
                     )
@@ -601,7 +606,7 @@ private fun ProfileSessionListPageRetrieving(
 @Composable
 private fun ProfileSessionListPageRetrievedPreview() {
     ClockworkTheme {
-        ProfileSessionListPageRetrieved (
+        ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
                 profileColor = Color.Yellow,
@@ -612,14 +617,16 @@ private fun ProfileSessionListPageRetrievedPreview() {
             ),
             onBackClick = {},
             onEditClick = {},
-            onSessionClick = {},
+            onTodoSessionClick = {},
             onCreateNewSessionClick = {},
-            navBar = { NavBar(
+            onCompletedSessionClick = {},
+        ) {
+            NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit,
                 navigateTo = {}
-            ) },
-        )
+            )
+        }
     }
 }
 
@@ -642,7 +649,7 @@ private fun ProfileSessionListPageRetrievingPreview() {
 @Composable
 private fun ProfileSessionListPageEmptyTodoPreview() {
     ClockworkTheme {
-        ProfileSessionListPageRetrieved (
+        ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
                 profileColor = Color.Yellow,
@@ -651,13 +658,15 @@ private fun ProfileSessionListPageEmptyTodoPreview() {
             ),
             onBackClick = {},
             onEditClick = {},
-            onSessionClick = {},
+            onTodoSessionClick = {},
             onCreateNewSessionClick = {},
-            navBar = { NavBar(
+            onCompletedSessionClick = { },
+        ) {
+            NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit,
                 navigateTo = {}
-            ) },
-        )
+            )
+        }
     }
 }
