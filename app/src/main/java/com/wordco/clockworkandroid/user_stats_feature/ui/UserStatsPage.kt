@@ -143,6 +143,7 @@ private fun EmptyTaskList (
                 textAlign = TextAlign.Center,
                 fontSize = 32.sp,
                 lineHeight = 40.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
 
