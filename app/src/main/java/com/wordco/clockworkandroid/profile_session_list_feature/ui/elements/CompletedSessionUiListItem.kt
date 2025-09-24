@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wordco.clockworkandroid.core.ui.composables.CheckedBoxImage
 import com.wordco.clockworkandroid.core.ui.composables.ClockImage
-import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
@@ -60,7 +60,7 @@ fun CompletedSessionUiListItem(
             modifier = Modifier.height(30.dp),
 
             ) {
-            MoonImage()
+            CheckedBoxImage()
             Text(
                 "Completed",
                 fontFamily = LATO,

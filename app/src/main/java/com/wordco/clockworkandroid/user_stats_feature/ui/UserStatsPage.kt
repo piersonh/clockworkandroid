@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.user_stats_feature.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,12 +26,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
@@ -68,7 +73,7 @@ private fun UserStatsPage(
             TopAppBar(
                 title = {
                     Text(
-                        "Session History",
+                        "Completed Session History",
                         fontFamily = LATO,
                         fontWeight = FontWeight.Black,
                     )
@@ -116,14 +121,13 @@ private fun EmptyTaskList (
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            // TODO: picture of trophy
-//            Image(
-//                painter = painterResource(id = R.drawable.todo_list),
-//                contentDescription = "To-Do List",
-//                contentScale = ContentScale.Fit,
-//                modifier = Modifier.height(170.dp),
-//                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-//            )
+            Image(
+                painter = painterResource(id = R.drawable.trophy),
+                contentDescription = "To-Do List",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.height(170.dp),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+            )
         }
 
         Spacer(modifier = Modifier.height(40.dp))

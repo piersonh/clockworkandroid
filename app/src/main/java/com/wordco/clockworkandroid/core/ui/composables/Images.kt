@@ -110,11 +110,23 @@ fun BackImage() = Image(
     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onSecondary)
 )
 
+@Preview
 @Composable
-fun PlusImage(modifier: Modifier) = Image(
+fun PlusImage(modifier: Modifier = Modifier) = Image(
     painter = painterResource(id = R.drawable.plus),
     contentDescription = "Add",
     contentScale = ContentScale.Fit,
     modifier = Modifier.aspectRatio(0.7f).then(modifier),
     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onSecondary)
+)
+
+
+@Preview
+@Composable
+fun CheckedBoxImage() = Image(
+    painter = painterResource(id = R.drawable.checked_box),
+    contentDescription = "Trophy",
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.aspectRatio(0.7f),
+    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
 )

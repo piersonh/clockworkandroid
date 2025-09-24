@@ -19,8 +19,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.composables.ClockImage
-import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
+import com.wordco.clockworkandroid.core.ui.composables.CheckedBoxImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedSessionListItem
@@ -61,7 +61,7 @@ fun CompletedTaskUIListItem(
             modifier = Modifier.height(30.dp),
 
             ) {
-            MoonImage() // TODO change to trophy
+            CheckedBoxImage()
             Text(
                 String.format(
                     java.util.Locale.getDefault(),
