@@ -56,7 +56,7 @@ class GetAppEstimateUseCase {
             ),
             GowerField(
                 similarityExpr = { s1, s2 ->
-                    if (s1.profileId == s2.profileId) {
+                    if (s1.profileId == s2.profileId && s1.profileId == null) {
                         1.0
                     } else {
                         0.0
