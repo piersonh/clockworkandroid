@@ -163,6 +163,7 @@ private fun EmptyProfileList(
                 fontSize = 32.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 40.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
 

@@ -399,6 +399,7 @@ private fun EmptyTodoList(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
+                // TODO: change to a pencil writing or something
                 Image(
                     painter = painterResource(id = R.drawable.checked_box),
                     contentDescription = "Checked Box",
@@ -421,6 +422,7 @@ private fun EmptyTodoList(
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 34.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
 

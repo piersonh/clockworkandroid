@@ -177,6 +177,7 @@ private fun EmptyTaskList(
                 fontSize = 32.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 40.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
 
@@ -250,9 +251,9 @@ private fun TaskList(
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.stopwatch),
-                            contentDescription = "Calendar",
+                            contentDescription = "Stopwatch",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.height(30.dp),
+                            modifier = Modifier.height(33.dp),
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
 
@@ -264,6 +265,7 @@ private fun TaskList(
                             fontWeight = FontWeight.Bold,
                             fontSize = 25.sp,
                             textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
 
@@ -349,6 +351,7 @@ private fun TaskList(
                             fontWeight = FontWeight.Bold,
                             fontSize = 22.sp,
                             textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 }
