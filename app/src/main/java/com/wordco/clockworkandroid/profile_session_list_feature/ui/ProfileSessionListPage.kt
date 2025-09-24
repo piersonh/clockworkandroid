@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -392,8 +393,9 @@ private fun EmptyTodoList(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(horizontal = 25.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
         ) {
-            Spacer(modifier = Modifier.weight(0.04f))
+            //Spacer(modifier = Modifier.weight(0.03f))
 
             Box (
                 modifier = Modifier.fillMaxWidth(),
@@ -401,15 +403,15 @@ private fun EmptyTodoList(
             ) {
                 // TODO: change to a pencil writing or something
                 Image(
-                    painter = painterResource(id = R.drawable.checked_box),
-                    contentDescription = "Checked Box",
+                    painter = painterResource(id = R.drawable.pencil_writing),
+                    contentDescription = "Pencil Writing",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(80.dp),
+                    modifier = Modifier.height(170.dp),
                     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                 )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            //Spacer(modifier = Modifier.height(20.dp))
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -426,7 +428,7 @@ private fun EmptyTodoList(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            //Spacer(modifier = Modifier.height(20.dp))
 
             TextButton(
                 onClick = onCreateNewSessionClick,
@@ -441,8 +443,11 @@ private fun EmptyTodoList(
                 ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
-                    .height(50.dp)
                     .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .heightIn(25.dp, 70.dp)
+                    .aspectRatio(4f,true)
+
             ) {
                 Text(
                     text = "Create New Session",
@@ -452,7 +457,7 @@ private fun EmptyTodoList(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(0.15f))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }

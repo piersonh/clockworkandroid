@@ -199,7 +199,7 @@ private fun EmptyTaskList(
 
         ) {
             Text(
-                text = "Create New Task",
+                text = "Create New Session",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp
