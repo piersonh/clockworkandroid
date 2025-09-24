@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
@@ -60,6 +61,10 @@ class TimerViewModel (
                     )
                 }
 
+                if (task is CompletedTask){
+                    return@combine TimerUiState.Retrieving
+                }
+
                 val task = task as StartedTask
 
                 when (timerState) {
@@ -106,12 +111,12 @@ class TimerViewModel (
         timer.resume()
     }
 
-    fun addMark() {
-
+    fun addMark() : String {
+        return timer.addMarker()
     }
 
     fun finish() {
-
+        timer.finish()
     }
 
 

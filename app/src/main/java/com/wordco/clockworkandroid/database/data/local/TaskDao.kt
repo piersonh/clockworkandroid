@@ -15,10 +15,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertTask(taskEntity: TaskEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertTasks(tasks: List<TaskEntity>)
 
 
@@ -26,18 +26,14 @@ interface TaskDao {
     suspend fun updateTask(task: TaskEntity)
 
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSegment(segment: SegmentEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSegments(segments: List<SegmentEntity>)
 
     @Update
     suspend fun updateSegment(segment: SegmentEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMarkers(markers: List<MarkerEntity>)
-
 
     @Transaction
     suspend fun updateSegmentAndInsertNew(existing: SegmentEntity, new: SegmentEntity) {
@@ -63,7 +59,8 @@ interface TaskDao {
             JOIN
                 LastSegment LS ON T.taskId = LS.taskID
             WHERE
-                LS.rn = 1
+                T.status = 1
+                AND LS.rn = 1
                 AND LS.type IN (0,1)
         )
     """)
@@ -86,7 +83,8 @@ interface TaskDao {
         JOIN
             LastSegment LS ON T.taskId = LS.taskID
         WHERE
-            LS.rn = 1
+            T.status = 1
+            AND LS.rn = 1
             AND LS.type IN (0,1)
         LIMIT 1
     """)
@@ -105,4 +103,11 @@ interface TaskDao {
     @Transaction
     @Query("SELECT * FROM TaskEntity WHERE profileId = :profileId")
     fun getSessionsForProfile(profileId: Long) : Flow<List<TaskWithExecutionDataObject>>
+
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertMarker(toMarkerEntity: MarkerEntity)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertMarkers(markers: List<MarkerEntity>)
 }

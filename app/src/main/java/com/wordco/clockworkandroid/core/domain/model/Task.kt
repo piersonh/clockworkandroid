@@ -13,4 +13,12 @@ sealed interface Task {
     val color: Color
     val userEstimate: Duration?
     //val appEstimate: Duration
+
+    sealed interface HasExecutionData : Task {
+        val segments: List<Segment>
+        val markers: List<Marker>
+
+        val workTime: Duration
+        val breakTime: Duration
+    }
 }

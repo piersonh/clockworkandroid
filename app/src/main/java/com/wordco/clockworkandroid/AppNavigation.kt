@@ -22,8 +22,11 @@ import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
+import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToCompletion
+import com.wordco.clockworkandroid.session_completion_feature.ui.taskCompletionPage
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
+import com.wordco.clockworkandroid.timer_feature.ui.TimerRoute
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
 import com.wordco.clockworkandroid.timer_feature.ui.timerPage
 
@@ -107,7 +110,14 @@ fun NavHost(
 
         timerPage(
             onBackClick = navController::popBackStack,
-            onEditClick = navController::navigateToEditSession
+            onFinishClick = { sessionId ->
+                navController.navigateToCompletion(sessionId) {
+                    popUpTo(route = TimerRoute(sessionId)) {
+                        inclusive = true
+                    }
+                }
+            },
+            onEditClick = navController::navigateToEditSession,
         )
 
         editTaskPage(
@@ -138,6 +148,11 @@ fun NavHost(
             onSessionClick = navController::navigateToTimer,
             onCreateNewSessionClick = navController::navigateToCreateNewTask,
             navBar = { navBar(ProfileListRoute) },
+        )
+
+        taskCompletionPage(
+            onBackClick = navController::popBackStack,
+            onContinueClick = navController::popBackStack
         )
     }
 }

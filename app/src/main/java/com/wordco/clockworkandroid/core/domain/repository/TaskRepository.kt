@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.core.domain.repository
 
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
@@ -33,6 +34,7 @@ interface TaskRepository {
 
     suspend fun updateSegment(segment: Segment)
 
-
     suspend fun updateSegmentAndInsertNew(existing: Segment, new: Segment)
+
+    suspend fun insertMarker(marker: Marker)
 }

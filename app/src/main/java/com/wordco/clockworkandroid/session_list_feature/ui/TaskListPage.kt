@@ -438,7 +438,7 @@ private fun NoNewTasksListPagePreview() {
                 newTasks = emptyList(),
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
-                        taskId = 0,
+                        taskId = 1,
                         name = "Awooga",
                         color = Color(40, 50, 160),
                         workTime = Duration.ZERO,

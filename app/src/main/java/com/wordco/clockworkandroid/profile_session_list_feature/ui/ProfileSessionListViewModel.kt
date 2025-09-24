@@ -11,6 +11,7 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,7 +58,9 @@ class ProfileSessionListViewModel(
                         todoSessions = todoSessions.map {
                             it.toTodoSessionListItem()
                         },
-                        completeSessions = emptyList(),
+                        completeSessions = completeSessions.map {
+                            (it as CompletedTask).toCompletedSessionListItem()
+                        },
                     )
                 }
             }.collect { state ->

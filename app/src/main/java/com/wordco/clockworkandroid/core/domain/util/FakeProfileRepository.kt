@@ -17,9 +17,11 @@ class FakeProfileRepository(
     companion object {
         private lateinit var instance: FakeProfileRepository
 
-        fun factory() : FakeProfileRepository {
+        fun factory(
+            initialValues: List<Profile> = emptyList()
+        ) : FakeProfileRepository {
             if (!::instance.isInitialized) {
-                instance = FakeProfileRepository(DummyData.PROFILES)
+                instance = FakeProfileRepository(initialValues)
             }
             return instance
         }
@@ -36,7 +38,17 @@ class FakeProfileRepository(
     }
 
     override suspend fun insertProfile(profile: Profile) {
-        _profiles.update { it.plus(profile) }
+        if (profile.id != 0L) {
+            error("new database entries must have an id of 0")
+        }
+
+        _profiles.update { profiles ->
+            val newId = profiles.maxOfOrNull {
+                it.id
+            }?.plus(1) ?: 1
+
+            profiles.plus(profile.copy(id = newId))
+        }
     }
 
     override suspend fun updateProfile(profile: Profile) {

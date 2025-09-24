@@ -1,16 +1,20 @@
 package com.wordco.clockworkandroid.timer_feature.ui.timer
 
+import android.Manifest
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.ui.timer.Second
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +52,7 @@ class TimerService() : Service() {
 
     private val _loadedTaskId: MutableStateFlow<Long?> = MutableStateFlow(null)
 
-    private val _elapsedWorkSeconds = MutableStateFlow(0)
+    private val _elapsedWorkSeconds = MutableStateFlow<Second>(0)
     private val _elapsedBreakMinutes = MutableStateFlow(0)
 
     private var incJob: Job? = null
@@ -59,8 +63,20 @@ class TimerService() : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        notificationManager = TimerNotificationManager(this)
         taskRepository = (application as MainApplication).taskRepository
+        val permissionRequestSignaller = (application as MainApplication).permissionRequestSignaller
+        notificationManager = TimerNotificationManager(
+            this,
+            onRequestNotificationPermission = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    coroutineScope.launch {
+                        permissionRequestSignaller.post(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    }
+                }
+            }
+        )
         Log.i("TimerService", "Timer Service Created")
         restoreAfterExit()
     }
@@ -69,6 +85,7 @@ class TimerService() : Service() {
         when (intent?.action) {
             "ACTION_RESUME" -> resume()
             "ACTION_PAUSE" -> pause()
+            "ACTION_MARKER" -> addMarker()
         }
 
         return START_NOT_STICKY
@@ -117,6 +134,15 @@ class TimerService() : Service() {
                 }
             }
             Segment.Type.SUSPEND -> {
+                _elapsedWorkSeconds.update {
+                    workTime.seconds.toInt()
+                }
+                _elapsedBreakMinutes.update {
+                    breakTime.toMinutes().toInt()
+                }
+            }
+            //FIXME
+            Segment.Type.FINISH -> {
                 _elapsedWorkSeconds.update {
                     workTime.seconds.toInt()
                 }
@@ -404,6 +430,26 @@ class TimerService() : Service() {
         }
     }
 
+    fun addMarker() : String {
+        val now = Instant.now()
+
+        val name = _loadedTask.value?.let {
+            "Marker ${it.markers.size + 1}"
+        } ?: error ("can only add markers once session has loaded")
+
+        coroutineScope.launch {
+            taskRepository.insertMarker(
+                Marker(
+                    markerId = 0,
+                    taskId = _loadedTask.value!!.taskId,
+                    startTime = now,
+                    label = name
+                )
+            )
+        }
+        return name
+    }
+
 
     fun suspend(replaceWith: Long? = null) {
         when (_internalState.value) {
@@ -427,4 +473,70 @@ class TimerService() : Service() {
             prepareAndStart(replacement)
         } ?: clearTask()
     }
+
+    //FIXME
+    fun finish() {
+        when (_internalState.value) {
+            State.INIT,
+            State.DORMANT,
+            State.PREPARING,
+            State.CLOSING -> error(
+                "timer.finish() must not be called in ${_state.value}"
+            )
+            State.RUNNING,
+            State.PAUSED -> { }
+        }
+
+        setSuspended()
+
+        val task = _loadedTask.value!!
+
+        clearTask()
+
+        coroutineScope.launch {
+            task.complete()
+        }
+    }
+
+    private suspend fun StartedTask.complete() {
+        val now = Instant.now()
+        val lastSegment = segments.last().run {
+            copy(duration = Duration.between(startTime, now))
+        }
+
+        val task = CompletedTask(
+            taskId = taskId,
+            profileId = profileId,
+            name = name,
+            dueDate = dueDate,
+            difficulty = difficulty,
+            color = color,
+            userEstimate = userEstimate,
+            segments = emptyList(), // The database doesn't use this
+            markers = emptyList(),
+        )
+
+        taskRepository.updateSegment(lastSegment)
+        taskRepository.updateTask(task)
+    }
+
+    /*    private fun finishAndSave () {
+//        coroutineScope.launch {
+//            val currentActiveTask: StartedTask? = _loadedTask.value
+//            if (currentActiveTask != null) {
+//                val newCompletedTask = CompletedTask(
+//                    currentActiveTask.taskId,
+//                    currentActiveTask.name,
+//                    currentActiveTask.dueDate,
+//                    currentActiveTask.difficulty,
+//                    currentActiveTask.color,
+//                    currentActiveTask.userEstimate,
+//                    currentActiveTask.segments,
+//                    currentActiveTask.markers
+//                )
+//                taskRepository.insertTask(newCompletedTask)
+//            }
+//        }
+//    }
+*/
 }

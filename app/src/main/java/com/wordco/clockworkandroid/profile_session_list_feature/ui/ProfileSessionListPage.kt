@@ -57,6 +57,7 @@ import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.CompletedSessionUiListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.TodoSessionListUiItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.util.contrastRatioWith
@@ -191,7 +192,12 @@ private fun ProfileSessionListPageRetrieved(
                 TabbedScreenItem(
                     "Complete"
                 ) {
-                    Text("Completed Sessions")
+                    CompletedList(
+                        uiState = uiState,
+                        onSessionClick = onSessionClick,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp)
+                    )
                 }
             )
             Column(
@@ -458,6 +464,45 @@ private fun EmptyTodoList(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+
+@Composable
+private fun CompletedList(
+    uiState: ProfileSessionListUiState.Retrieved,
+    onSessionClick: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (uiState.completeSessions.isEmpty()) {
+        return Text("No items")
+    }
+
+    Box(
+        modifier = modifier
+    ) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            item {
+                Spacer(Modifier.height(5.dp))
+            }
+
+            items(
+                items = uiState.completeSessions,
+                key = { it.id }
+            ) { session ->
+                CompletedSessionUiListItem(
+                    session = session,
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(10.dp))
+                        .background(color = MaterialTheme.colorScheme.primaryContainer)
+                        .height(100.dp)
+                        .clickable(onClick = { onSessionClick(session.id) })
+                )
+            }
         }
     }
 }

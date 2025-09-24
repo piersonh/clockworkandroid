@@ -11,6 +11,6 @@ data class Segment(
     val type: Type
 ) {
     enum class Type {
-        WORK, BREAK, SUSPEND
+        WORK, BREAK, SUSPEND, FINISH
     }
 }
