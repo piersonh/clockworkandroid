@@ -145,6 +145,7 @@ fun NavHost(
             onEditClick = navController::navigateToEditProfile,
             onSessionClick = navController::navigateToTimer,
             onCreateNewSessionClick = navController::navigateToCreateNewTask,
+            onCompletedSessionClick = navController::navigateToCompletion,
             navBar = { navBar(ProfileListRoute) },
         )
 
