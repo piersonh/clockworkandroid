@@ -20,5 +20,7 @@ sealed interface Task {
 
         val workTime: Duration
         val breakTime: Duration
+
+        val startedAt: Instant
     }
 }

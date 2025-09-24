@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_list_feature.ui.composables
+package com.wordco.clockworkandroid.user_stats_feature.ui.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,17 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.core.ui.composables.CalImage
-import com.wordco.clockworkandroid.core.ui.composables.ComputerImage
-import com.wordco.clockworkandroid.core.ui.composables.UserImage
+import com.wordco.clockworkandroid.core.ui.composables.ClockImage
+import com.wordco.clockworkandroid.core.ui.composables.MugImage
+import com.wordco.clockworkandroid.core.ui.composables.CheckedBoxImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
-import com.wordco.clockworkandroid.session_list_feature.ui.model.NewTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.asTaskDueFormat
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.CompletedSessionListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.util.asDateTime
 
 @Composable
-fun UpcomingTaskUIListItem(
-    task: NewTaskListItem,
+fun CompletedTaskUIListItem(
+    task: CompletedSessionListItem,
     modifier: Modifier = Modifier
 ) = Row(
     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -54,15 +54,20 @@ fun UpcomingTaskUIListItem(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             modifier = Modifier.height(30.dp),
 
             ) {
-            CalImage()
+            CheckedBoxImage()
             Text(
-                task.dueDate.asTaskDueFormat(),
+                String.format(
+                    java.util.Locale.getDefault(),
+                    "Completed %s",
+                    task.completedAt.asDateTime()
+                ),
                 fontFamily = LATO,
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -76,17 +81,17 @@ fun UpcomingTaskUIListItem(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         )
         {
-            UserImage()
+            ClockImage()
             Text(
-                task.userEstimate?.asHHMM()?: "––:––",  // These are en dashes
+                task.workTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
-            ComputerImage()
+            MugImage()
             Text(
-                task.appEstimate.asHHMM(),
+                task.breakTime.asHHMM(),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

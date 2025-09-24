@@ -35,7 +35,7 @@ object DummyData {
                 )
             ),
             emptyList(),
-            null,
+            null
         ),
         NewTask(
             2,
@@ -53,7 +53,7 @@ object DummyData {
             3,
             Color.Companion.White,
             null,
-            null,
+            null
         ),
         NewTask(
             4,
@@ -114,13 +114,6 @@ object DummyData {
                     startTime = Instant.parse("2025-04-18T09:00:00Z"),
                     duration = Duration.ofHours(2),
                     type = Segment.Type.WORK
-                ),
-                Segment(
-                    segmentId = 2,
-                    taskId = 9,
-                    startTime = Instant.parse("2025-04-18T11:00:00Z"),
-                    duration = null,
-                    type = Segment.Type.FINISH
                 )
             ),
             markers = listOf(
@@ -153,7 +146,7 @@ object DummyData {
                 )
             ),
             markers = emptyList(),
-            null,
+            null
         )
     )
 }

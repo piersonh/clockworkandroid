@@ -29,10 +29,12 @@ import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
 import com.wordco.clockworkandroid.timer_feature.ui.TimerRoute
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
 import com.wordco.clockworkandroid.timer_feature.ui.timerPage
+import com.wordco.clockworkandroid.user_stats_feature.ui.UserStatsRoute
+import com.wordco.clockworkandroid.user_stats_feature.ui.userStatsPage
 
 val topLevelDestinations = listOf(
     TopLevelDestination(
-        route = Unit,
+        route = UserStatsRoute,
         icon = R.drawable.user,
         label = "Statistics",
     ),
@@ -124,10 +126,6 @@ fun NavHost(
             onBackClick = navController::popBackStack
         )
 
-        //composable<PageRoutes.TaskComplete> {
-        //    TaskCompletionPage(navController, taskViewModel)
-        //}
-
         profileListPage(
             navBar = { navBar(ProfileListRoute) },
             onProfileClick = navController::navigateToProfileSessionList,
@@ -153,6 +151,11 @@ fun NavHost(
         taskCompletionPage(
             onBackClick = navController::popBackStack,
             onContinueClick = navController::popBackStack
+        )
+
+        userStatsPage(
+            navBar = { navBar(UserStatsRoute) },
+            onCompletedSessionClick = navController::navigateToCompletion
         )
     }
 }

@@ -278,7 +278,7 @@ private fun TaskCompletionPagePreview() {
                         duration = java.time.Duration.between(
                             now.minusSeconds(600),
                             now),
-                        type = Segment.Type.FINISH
+                        type = Segment.Type.WORK
                     )
                 ),
                 workTime = java.time.Duration.ofSeconds(1800),

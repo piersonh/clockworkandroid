@@ -1,8 +1,12 @@
 package com.wordco.clockworkandroid.core.domain.util
 
 import androidx.compose.ui.graphics.Color
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
+import com.wordco.clockworkandroid.core.domain.model.Segment
+import java.time.Duration
+import java.time.Instant
 
 object DummyData {
     val SESSIONS = listOf(
@@ -60,6 +64,25 @@ object DummyData {
             color = Color.hsv(240f, 1f, 1f),
             userEstimate = null,
         ),
+        CompletedTask(
+            taskId = 7,
+            name = "Session 7",
+            dueDate = null,
+            difficulty = 1,
+            color = Color.hsv(123f, 1f, 1f),
+            userEstimate = null,
+            segments = listOf(
+                Segment(
+                    segmentId = 1,
+                    taskId = 7,
+                    startTime = Instant.parse("2007-12-03T10:15:30.00Z"),
+                    duration = Duration.ofSeconds(1452),
+                    type = Segment.Type.WORK
+                )
+            ),
+            markers = emptyList(),
+            profileId = null
+        )
     )
 
 

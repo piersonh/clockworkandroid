@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
+import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
@@ -386,7 +387,9 @@ private fun TaskListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
+                newTasks = DummyData.SESSIONS
+                    .filter { it is NewTask }
+                    .map { (it as NewTask).toNewTaskListItem() },
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
                         taskId = 0,
@@ -464,8 +467,10 @@ private fun NoStartedTasksListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
-                suspendedTasks = emptyList()
+                newTasks = DummyData.SESSIONS
+                    .filter { it is NewTask }
+                    .map { (it as NewTask).toNewTaskListItem() },
+                suspendedTasks = emptyList(),
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,

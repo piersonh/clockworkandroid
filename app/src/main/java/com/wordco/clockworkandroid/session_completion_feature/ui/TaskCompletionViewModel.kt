@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 
-//FIXME
+
 class TaskCompletionViewModel (
     private val taskRepository: TaskRepository,
     private val taskId: Long
@@ -67,9 +67,6 @@ class TaskCompletionViewModel (
             }
         }
     }
-
-    //TODO: Add methods
-
 
     companion object {
         val TASK_ID_KEY = object : CreationExtras.Key<Long> {}

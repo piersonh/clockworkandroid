@@ -16,6 +16,7 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Second
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.timer_feature.ui.util.complete
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -134,15 +135,6 @@ class TimerService() : Service() {
                 }
             }
             Segment.Type.SUSPEND -> {
-                _elapsedWorkSeconds.update {
-                    workTime.seconds.toInt()
-                }
-                _elapsedBreakMinutes.update {
-                    breakTime.toMinutes().toInt()
-                }
-            }
-            //FIXME
-            Segment.Type.FINISH -> {
                 _elapsedWorkSeconds.update {
                     workTime.seconds.toInt()
                 }
@@ -474,7 +466,6 @@ class TimerService() : Service() {
         } ?: clearTask()
     }
 
-    //FIXME
     fun finish() {
         when (_internalState.value) {
             State.INIT,
@@ -494,30 +485,8 @@ class TimerService() : Service() {
         clearTask()
 
         coroutineScope.launch {
-            task.complete()
+            task.complete(taskRepository)
         }
-    }
-
-    private suspend fun StartedTask.complete() {
-        val now = Instant.now()
-        val lastSegment = segments.last().run {
-            copy(duration = Duration.between(startTime, now))
-        }
-
-        val task = CompletedTask(
-            taskId = taskId,
-            profileId = profileId,
-            name = name,
-            dueDate = dueDate,
-            difficulty = difficulty,
-            color = color,
-            userEstimate = userEstimate,
-            segments = emptyList(), // The database doesn't use this
-            markers = emptyList(),
-        )
-
-        taskRepository.updateSegment(lastSegment)
-        taskRepository.updateTask(task)
     }
 
     /*    private fun finishAndSave () {

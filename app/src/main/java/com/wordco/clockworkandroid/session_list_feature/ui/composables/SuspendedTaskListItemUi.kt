@@ -22,8 +22,8 @@ import com.wordco.clockworkandroid.core.ui.composables.ClockImage
 import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.asHHMM
 
 @Composable
 fun StartedListItem(
