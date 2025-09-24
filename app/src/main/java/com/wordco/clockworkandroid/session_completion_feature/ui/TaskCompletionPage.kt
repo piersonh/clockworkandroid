@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,21 +22,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.core.domain.model.Marker
-import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import java.time.Instant
-import java.time.LocalDate
+import java.time.Duration
 
 @Composable
 fun TaskCompletionPage(
@@ -54,7 +49,6 @@ fun TaskCompletionPage(
     )
 }
 
-@SuppressLint("NewApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TaskCompletionPage(
@@ -105,7 +99,7 @@ private fun TaskCompletionPage(
 
                     Text(
                         text = "${uiState.totalTime.toHours()}h " +
-                                "${uiState.totalTime.toMinutesPart()}m",
+                                "${uiState.totalTime.toMinutes().mod(60)}m",
                         style = TextStyle(fontSize = 90.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
@@ -130,7 +124,7 @@ private fun TaskCompletionPage(
 
                     Text(
                         text = "Work time: ${uiState.workTime.toHours()}h " +
-                                "${uiState.workTime.toMinutesPart()}m",
+                                "${uiState.workTime.toMinutes().mod(60)}m",
                         style = TextStyle(fontSize = 26.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
@@ -141,25 +135,29 @@ private fun TaskCompletionPage(
 
                     Text (
                         text = "Break time: ${uiState.breakTime.toHours()}h " +
-                                "${uiState.breakTime.toMinutesPart()}m",
+                                "${uiState.breakTime.toMinutes().mod(60)}m",
                         style = TextStyle(fontSize = 26.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
 
-                    Spacer(modifier = Modifier.weight(0.03f))
 
-                    val userTime = uiState.estimate?.toDuration()
-                    val taskTime = uiState.totalTime
-                    val userAccuracy = calculateEstimateAccuracy(taskTime, userTime)
-                    Text (
-                        text = "Your accuracy: ${userAccuracy?.toInt()}%",
-                        style = TextStyle(fontSize = 26.sp),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+
+                    uiState.estimate?.let {
+                        Spacer(modifier = Modifier.weight(0.03f))
+
+                        val userTime = it.toDuration()
+                        val taskTime = uiState.totalTime
+                        val userAccuracy = calculateEstimateAccuracy(taskTime, userTime)
+                        Text (
+                            text = "Your accuracy: ${userAccuracy?.toInt()}%",
+                            style = TextStyle(fontSize = 26.sp),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
 
                     Spacer(modifier = Modifier.weight(0.03f))
 
@@ -204,17 +202,17 @@ private fun TaskCompletionPage(
     }
 }
 
-@SuppressLint("NewApi")
+
 private fun calculateEstimateAccuracy(
-    taskTime: java.time.Duration,
-    userTime: java.time.Duration?
+    taskTime: Duration,
+    userTime: Duration?
 ): Float? {
     if (userTime == null || userTime.isZero || taskTime.isZero) {
         return null
     }
 
-    val actualSeconds = taskTime.toSeconds().toFloat()
-    val estimatedSeconds = userTime.toSeconds().toFloat()
+    val actualSeconds = taskTime.seconds.toFloat()
+    val estimatedSeconds = userTime.seconds.toFloat()
 
     return if (actualSeconds == 0f || estimatedSeconds == 0f) {
         null
@@ -228,62 +226,14 @@ private fun calculateEstimateAccuracy(
 @Preview
 @Composable
 private fun TaskCompletionPagePreview() {
-    val previewTaskId = 1L
-    val now = Instant.now()
     ClockworkTheme {
         TaskCompletionPage(
             uiState = TaskCompletionUiState.Retrieved(
                 name = "Preview Task",
-                dueDate = LocalDate.now(),
-                difficulty = 3f,
-                color = Color.Red,
                 estimate = UserEstimate(6, 1),
-                markers = listOf(
-                    Marker(
-                        markerId = 1L,
-                        taskId = previewTaskId,
-                        startTime = now.minusSeconds(1800),
-                        label = "Halfway point"
-                    ),
-                    Marker(
-                        markerId = 2L,
-                        taskId = previewTaskId,
-                        startTime = now.minusSeconds(600),
-                        label = "Quick check-in"
-                    )
-                ),
-                segments = listOf(
-                    Segment(
-                        segmentId = 1L,
-                        taskId = previewTaskId,
-                        startTime = now.minusSeconds(3600),
-                        duration = java.time.Duration.between(
-                            now.minusSeconds(3600),
-                            now.minusSeconds(1800)),
-                        type = Segment.Type.WORK
-                    ),
-                    Segment(
-                        segmentId = 2L,
-                        taskId = previewTaskId,
-                        startTime = now.minusSeconds(1800),
-                        duration = java.time.Duration.between(
-                            now.minusSeconds(1800),
-                            now.minusSeconds(600)),
-                        type = Segment.Type.BREAK
-                    ),
-                    Segment(
-                        segmentId = 3L,
-                        taskId = previewTaskId,
-                        startTime = now.minusSeconds(600),
-                        duration = java.time.Duration.between(
-                            now.minusSeconds(600),
-                            now),
-                        type = Segment.Type.WORK
-                    )
-                ),
-                workTime = java.time.Duration.ofSeconds(1800),
-                breakTime = java.time.Duration.ofSeconds(1200),
-                totalTime = java.time.Duration.ofSeconds(3600)
+                workTime = Duration.ofSeconds(1800),
+                breakTime = Duration.ofSeconds(1200),
+                totalTime = Duration.ofSeconds(3600)
             ),
             onBackClick = {},
             onContinueClick = {}

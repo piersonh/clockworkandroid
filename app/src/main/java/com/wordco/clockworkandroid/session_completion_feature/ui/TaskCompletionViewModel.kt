@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -18,8 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Duration
-import java.time.LocalDate
 
 
 class TaskCompletionViewModel (
@@ -28,43 +25,24 @@ class TaskCompletionViewModel (
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<TaskCompletionUiState>(TaskCompletionUiState.Retrieving)
     val uiState: StateFlow<TaskCompletionUiState> = _uiState.asStateFlow()
-    private lateinit var _loadedTask: CompletedTask
-    private val _internalState = MutableStateFlow(TaskCompletionUiState.Retrieved(
-        name = "",
-        dueDate = null,
-        difficulty = 0f,
-        color = Color.Red,
-        estimate = null,
-        segments = listOf(),
-        markers = listOf(),
-        workTime = Duration.ZERO,
-        breakTime = Duration.ZERO,
-        totalTime = Duration.ZERO
-    ))
 
     init {
         viewModelScope.launch {
-            _loadedTask = taskRepository.getTask(taskId).first() as CompletedTask
-            with(_loadedTask) {
-                _internalState.update {
+            taskRepository
+                .getTask(taskId)
+                .first { it is CompletedTask }
+                .let {it as CompletedTask }
+                .run {
                     TaskCompletionUiState.Retrieved(
                         name = name,
-                        dueDate = LocalDate.now(),
-                        difficulty = difficulty.toFloat(),
-                        color = color,
                         estimate = userEstimate?.toEstimate(),
-                        segments = segments,
-                        markers = markers,
-                        workTime = this.workTime,
-                        breakTime = this.breakTime,
-                        totalTime = this.workTime.plus(this.breakTime)
+                        workTime = workTime,
+                        breakTime = breakTime,
+                        totalTime = workTime.plus(breakTime)
                     )
+                }.let { state ->
+                    _uiState.update { state }
                 }
-            }
-
-            _internalState.collect { state ->
-                _uiState.update { state }
-            }
         }
     }
 
