@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
@@ -16,6 +17,7 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
@@ -40,7 +42,8 @@ import java.time.ZoneOffset
 class CreateNewTaskViewModel (
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
-    private var profileId: Long?
+    private var profileId: Long?,
+    private var getAppEstimateUseCase: GetAppEstimateUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
@@ -186,22 +189,33 @@ class CreateNewTaskViewModel (
             }
 
             viewModelScope.launch {
-                taskRepository.insertNewTask(
-                    NewTask(
-                        taskId = 0,
-                        profileId = profileId,
-                        name = taskName,
-                        // 2007-12-03T10:15:30.00Z
-                        dueDate = dueDate?.let {
-                            LocalDateTime.of(it, dueTime)
-                                .atZone(ZoneId.systemDefault())
-                                .toInstant()
-                        },
-                        difficulty = difficulty.toInt(),
-                        color = Color.fromSlider(colorSliderPos),
-                        userEstimate = estimate?.toDuration(),
-                    )
+                val newSession = NewTask(
+                    taskId = 0,
+                    profileId = profileId,
+                    name = taskName,
+                    // 2007-12-03T10:15:30.00Z
+                    dueDate = dueDate?.let {
+                        LocalDateTime.of(it, dueTime)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                    },
+                    difficulty = difficulty.toInt(),
+                    color = Color.fromSlider(colorSliderPos),
+                    userEstimate = estimate?.toDuration(),
                 )
+
+                val sessionHistory = taskRepository
+                    .getTasks()
+                    .first()
+                    .filter { it is CompletedTask && it.userEstimate != null }
+                    .map { it as CompletedTask }
+
+                val appEstimate = getAppEstimateUseCase(
+                    newSession = newSession,
+                    sessionHistory = sessionHistory
+                )
+
+                taskRepository.insertNewTask(newSession)
             }
             Fallible.Success
         } ?: error("Can only save if retrieved")
@@ -224,6 +238,7 @@ class CreateNewTaskViewModel (
                     taskRepository = taskRepository,
                     profileRepository = profileRepository,
                     profileId = withProfile,
+                    getAppEstimateUseCase = GetAppEstimateUseCase(),
                     //savedStateHandle = savedStateHandle
                 )
             }
