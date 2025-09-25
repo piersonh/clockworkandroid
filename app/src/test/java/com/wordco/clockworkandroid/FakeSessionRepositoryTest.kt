@@ -5,8 +5,8 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.util.FakeSessionRepository
 import junit.framework.TestCase
 import kotlinx.coroutines.flow.first
-import org.junit.Test
 import kotlinx.coroutines.test.runTest
+import org.junit.Test
 
 class FakeSessionRepositoryTest {
 

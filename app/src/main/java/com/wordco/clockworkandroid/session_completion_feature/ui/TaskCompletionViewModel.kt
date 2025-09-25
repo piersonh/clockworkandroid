@@ -11,6 +11,7 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
+import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +22,8 @@ import kotlinx.coroutines.launch
 
 class TaskCompletionViewModel (
     private val taskRepository: TaskRepository,
-    private val taskId: Long
+    private val taskId: Long,
+    private val calculateEstimateAccuracyUseCase: CalculateEstimateAccuracyUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<TaskCompletionUiState>(TaskCompletionUiState.Retrieving)
     val uiState: StateFlow<TaskCompletionUiState> = _uiState.asStateFlow()
@@ -33,12 +35,19 @@ class TaskCompletionViewModel (
                 .first { it is CompletedTask }
                 .let {it as CompletedTask }
                 .run {
+                    val totalTime = workTime.plus(breakTime)
                     TaskCompletionUiState.Retrieved(
                         name = name,
-                        estimate = userEstimate?.toEstimate(),
+                        estimate = userEstimate,
                         workTime = workTime,
                         breakTime = breakTime,
-                        totalTime = workTime.plus(breakTime)
+                        totalTime = totalTime,
+                        totalTimeAccuracy = userEstimate?.let{
+                            calculateEstimateAccuracyUseCase(
+                                totalTime,
+                                userEstimate
+                            )
+                        },
                     )
                 }.let { state ->
                     _uiState.update { state }
@@ -56,7 +65,8 @@ class TaskCompletionViewModel (
 
                 TaskCompletionViewModel(
                     taskRepository = taskRepository,
-                    taskId
+                    taskId,
+                    calculateEstimateAccuracyUseCase = CalculateEstimateAccuracyUseCase()
                     //savedStateHandle = savedStateHandle
                 )
             }
