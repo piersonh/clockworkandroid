@@ -7,20 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.util.DummyData
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
@@ -170,19 +167,8 @@ private fun ProfilePickerNoProfiles(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        TextButton(
+        AccentRectangleTextButton(
             onClick = onCreateProfileClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary
-            ),
-            shape = RoundedCornerShape(10.dp),
-            modifier = Modifier
-                //.height(50.dp)
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .heightIn(25.dp, 70.dp)
-                .aspectRatio(4f,true)
         ) {
             Text(
                 text = "Create Profile",

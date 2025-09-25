@@ -15,10 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -45,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
@@ -330,11 +328,7 @@ private fun BottomBar(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            TextButton(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
+            AccentRectangleTextButton(
                 onClick = {
                     when (onSaveClick().takeIfError()) {
                         SaveSessionError.MISSING_NAME -> {
@@ -347,17 +341,14 @@ private fun BottomBar(
                         null -> onBackClick()
                     }
                 },
-                shape = RoundedCornerShape(10.dp)
+                maxHeight = 56.dp,
+                aspectRatio = 1.8f
             ) {
                 Text(
                     "Save",
                     fontFamily = LATO,
                     fontWeight = FontWeight.Bold,
                     fontSize = 25.sp,
-                    modifier = Modifier.padding(
-                        horizontal = 10.dp,
-                        vertical = 5.dp,
-                    )
                 )
             }
         }
