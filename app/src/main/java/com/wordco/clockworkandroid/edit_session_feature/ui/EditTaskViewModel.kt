@@ -9,7 +9,6 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -233,11 +232,7 @@ class EditTaskViewModel (
                 .or(userEstimate?.equals(_loadedTask.userEstimate)?.not() ?: false)
 
             viewModelScope.launch {
-                val sessionHistory = taskRepository
-                    .getTasks()
-                    .first()
-                    .filter { it is CompletedTask && it.userEstimate != null }
-                    .map { it as CompletedTask }
+                val sessionHistory = taskRepository.getCompletedTasks().first()
 
                 if (shouldRecalculateEstimate) {
                     val appEstimate = getAppEstimateUseCase(

@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +30,7 @@ class UserStatsViewModel(
 
 
     // TODO: make a getCompletedTasks (?)
-    private val _tasks = taskRepository.getTasks()
+    private val _tasks = taskRepository.getCompletedTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -42,8 +41,7 @@ class UserStatsViewModel(
                 } else {
                     UserStatsUiState.Retrieved(
                         completedTasks = tasks
-                            .filter { it is CompletedTask }
-                            .map { (it as CompletedTask).toCompletedSessionListItem() }
+                            .map { it.toCompletedSessionListItem() }
                             .sortedBy { it.completedAt }
                             .reversed()
                     )
