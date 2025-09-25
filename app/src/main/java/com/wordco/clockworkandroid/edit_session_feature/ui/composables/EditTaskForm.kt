@@ -77,7 +77,7 @@ fun EditTaskForm(
     )
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
     val hoursList = remember { (0..99).reversed().toList() }
-    val minutesList = remember { (0..99).reversed().toList() }
+    val minutesList = remember { (0..59).reversed().toList() }
 
     Column(
         modifier = modifier,
