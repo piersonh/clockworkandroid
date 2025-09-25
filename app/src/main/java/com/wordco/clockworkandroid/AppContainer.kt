@@ -20,11 +20,11 @@ interface AppContainer {
 
     val permissionRequestSignal: PermissionRequestSignaller
         get() = object : PermissionRequestSignaller {
-            private val _signal = MutableSharedFlow<String>()
-            override val stream = _signal.asSharedFlow()
+            private val _steam = MutableSharedFlow<String>()
+            override val stream = _steam.asSharedFlow()
 
-            override suspend fun post(permission: String) {
-                _signal.emit(permission)
+            override suspend fun request(permission: String) {
+                _steam.emit(permission)
             }
         }
 }
