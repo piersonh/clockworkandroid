@@ -3,6 +3,8 @@ package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
 import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
+import java.time.Duration
+import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -75,6 +77,25 @@ class GetAppEstimateUseCase {
             gowerSimilarity(it, todoSession, gowerFields)
         }
 
+        val recencyWeight = 1.0
+        val similarityWeight = 1.0
+        val now = Instant.now()
+        val weights = sessionHistory
+            .zip(similarityScores)
+            .map {
+                val (session, similarity) = it
+                getRecencyScore(
+                    session = session,
+                    fromInstant = now,
+                ).times(recencyWeight)
+                    .plus(
+                        similarity.times(similarityWeight)
+                    ).div(
+                        recencyWeight.plus(similarityWeight)
+                    )
+
+            }
+
         // History of error (difference between user estimate and actual time)
         val historicalError = sessionHistory.map {
             it.userEstimate!!.minus(it.workTime).toMillis()
@@ -82,13 +103,13 @@ class GetAppEstimateUseCase {
 
         val weightedMean = weightedMean(
             points = historicalError,
-            weights = similarityScores
+            weights = weights
         )
 
         val weightedStandardDeviation = weightedStandardDeviation(
             weightedMean = weightedMean,
             points = historicalError,
-            weights = similarityScores,
+            weights = weights,
         )
 
 
@@ -133,6 +154,25 @@ class GetAppEstimateUseCase {
         }
 
         return sigmaWeightedSimilarities / sigmaWeights
+    }
+
+    private val timeUnit = Duration.ofDays(30).toMillis()
+    private val decayProtraction = 4 // greater values make the slope more extreme
+                                        // around half life but gradual elsewhere
+    private val halfLife = 4 // number of time units for weight to be 0.5
+    private val offset = halfLife.toDouble().pow(decayProtraction)
+    private fun getRecencyScore(
+        session: CompletedTask,
+        fromInstant: Instant,
+    ) : Double {
+        // offset / ((units between session and instant)^decayProtraction + offset)
+        return Duration
+            .between(session.startedAt, fromInstant)
+            .toMillis()
+            .div(timeUnit.toDouble())
+            .pow(decayProtraction)
+            .plus(offset)
+            .let { offset.div(it) }
     }
 
     private fun weightedMean(
