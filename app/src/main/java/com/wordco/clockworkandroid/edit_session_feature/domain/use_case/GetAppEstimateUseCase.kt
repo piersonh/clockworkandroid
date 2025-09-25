@@ -3,6 +3,7 @@ package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Task
+import java.time.Duration
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -11,12 +12,14 @@ class GetAppEstimateUseCase {
     operator fun invoke(
         newSession: NewTask,
         sessionHistory: List<CompletedTask>
-    ) {
+    ) : Pair<Duration, Duration> {
         if (newSession.userEstimate == null || sessionHistory.any { it.userEstimate == null }) {
             error("User Estimate must be defined")
         }
 
+        // Add any other important parameters HERE
         val gowerFields = listOf(
+            // User Estimate
             GowerField(
                 similarityExpr = { s1, s2 ->
                     val range = fieldRange(
@@ -36,6 +39,7 @@ class GetAppEstimateUseCase {
                 },
                 weight = 1.0
             ),
+            // Difficulty Input
             GowerField(
                 similarityExpr = { s1, s2 ->
                     val range = fieldRange(
@@ -54,6 +58,7 @@ class GetAppEstimateUseCase {
                 },
                 weight = 1.0
             ),
+            // Task Profile
             GowerField(
                 similarityExpr = { s1, s2 ->
                     if (s1.profileId == s2.profileId && s1.profileId == null) {
@@ -66,10 +71,12 @@ class GetAppEstimateUseCase {
             )
         )
 
+        // return List of Doubles between 0 and 1
         val similarityScores = sessionHistory.map {
             gowerSimilarity(it, newSession, gowerFields)
         }
 
+        // History of error (difference between user estimate and actual time)
         val historicalError = sessionHistory.map {
             it.userEstimate!!.minus(it.workTime).toMillis()
         }
@@ -85,7 +92,20 @@ class GetAppEstimateUseCase {
             weights = similarityScores,
         )
 
-        // userEstimate +/- (mean + standardDeviation)
+
+        val userEstimate = newSession.userEstimate
+
+        val lowEstimate = userEstimate.minusMillis(
+            (weightedMean + weightedStandardDeviation).toLong()
+        )
+
+        val highEstimate = userEstimate.plusMillis(
+            (weightedMean + weightedStandardDeviation).toLong()
+        )
+        // +/- (mean + standardDeviation)
+
+        return Pair(lowEstimate, highEstimate)
+
     }
 
     private fun <T : Comparable<T>>fieldRange(
@@ -155,4 +175,5 @@ class GetAppEstimateUseCase {
             .div(normalizedSigmaWeights)
             .let { sqrt(it) }
     }
+
 }
