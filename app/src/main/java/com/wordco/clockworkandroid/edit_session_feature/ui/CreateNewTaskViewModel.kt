@@ -43,7 +43,7 @@ class CreateNewTaskViewModel (
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
     private var profileId: Long?,
-    private var getAppEstimateUseCase: GetAppEstimateUseCase,
+    private var getAppEstimateUseCase: GetAppEstimateUseCase = GetAppEstimateUseCase(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
@@ -212,7 +212,7 @@ class CreateNewTaskViewModel (
                     .map { it as CompletedTask }
 
                 val appEstimate = getAppEstimateUseCase(
-                    newSession = newSession,
+                    todoSession = newSession,
                     sessionHistory = sessionHistory
                 )
 
@@ -239,7 +239,6 @@ class CreateNewTaskViewModel (
                     taskRepository = taskRepository,
                     profileRepository = profileRepository,
                     profileId = withProfile,
-                    getAppEstimateUseCase = GetAppEstimateUseCase(),
                     //savedStateHandle = savedStateHandle
                 )
             }

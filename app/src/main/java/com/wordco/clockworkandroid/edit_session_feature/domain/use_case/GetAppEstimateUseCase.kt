@@ -2,7 +2,6 @@ package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
 
 import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -10,10 +9,10 @@ import kotlin.math.sqrt
 
 class GetAppEstimateUseCase {
     operator fun invoke(
-        newSession: NewTask,
+        todoSession: Task.Todo,
         sessionHistory: List<CompletedTask>
     ) : AppEstimate {
-        if (newSession.userEstimate == null || sessionHistory.any { it.userEstimate == null }) {
+        if (todoSession.userEstimate == null || sessionHistory.any { it.userEstimate == null }) {
             error("User Estimate must be defined")
         }
 
@@ -23,7 +22,7 @@ class GetAppEstimateUseCase {
             GowerField(
                 similarityExpr = { s1, s2 ->
                     val range = fieldRange(
-                        dataSet = sessionHistory.plus(newSession)
+                        dataSet = sessionHistory.plus(todoSession)
                     ) {
                         it.userEstimate!!
                     }.let {
@@ -43,7 +42,7 @@ class GetAppEstimateUseCase {
             GowerField(
                 similarityExpr = { s1, s2 ->
                     val range = fieldRange(
-                        dataSet = sessionHistory.plus(newSession)
+                        dataSet = sessionHistory.plus(todoSession)
                     ) {
                         it.difficulty
                     }.let {
@@ -73,7 +72,7 @@ class GetAppEstimateUseCase {
 
         // return List of Doubles between 0 and 1
         val similarityScores = sessionHistory.map {
-            gowerSimilarity(it, newSession, gowerFields)
+            gowerSimilarity(it, todoSession, gowerFields)
         }
 
         // History of error (difference between user estimate and actual time)
@@ -93,7 +92,7 @@ class GetAppEstimateUseCase {
         )
 
 
-        val userEstimate = newSession.userEstimate
+        val userEstimate = todoSession.userEstimate!!
 
         val lowEstimate = userEstimate.minusMillis(
             (weightedMean + weightedStandardDeviation).toLong()

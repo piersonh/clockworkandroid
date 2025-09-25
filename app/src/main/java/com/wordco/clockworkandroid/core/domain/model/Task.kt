@@ -15,6 +15,8 @@ sealed interface Task {
 
     val appEstimate: AppEstimate?
 
+    sealed interface Todo : Task
+
     sealed interface HasExecutionData : Task {
         val segments: List<Segment>
         val markers: List<Marker>

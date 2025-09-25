@@ -13,4 +13,4 @@ data class NewTask(
     override val userEstimate: Duration?,
     override val profileId: Long?,
     override val appEstimate: AppEstimate?,
-) : Task
+) : Task.Todo
