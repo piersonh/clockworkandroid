@@ -11,6 +11,6 @@ fun NewTask.toNewTaskListItem() : NewTaskListItem {
         difficulty = difficulty,
         color = color,
         userEstimate = userEstimate,
-        appEstimate = appEstimate,
+        appEstimate = appEstimate?.toAppEstimateUiItem(),
     )
 }

@@ -1,7 +1,6 @@
 package com.wordco.clockworkandroid.session_list_feature.ui.model
 
 import androidx.compose.ui.graphics.Color
-import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import java.time.Duration
 import java.time.Instant
 
@@ -12,5 +11,5 @@ data class NewTaskListItem(
     val difficulty: Int,
     val color: Color,
     val userEstimate: Duration?,
-    val appEstimate: AppEstimate?
+    val appEstimate: AppEstimateUiItem?
 )

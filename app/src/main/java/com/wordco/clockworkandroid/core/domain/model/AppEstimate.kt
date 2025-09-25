@@ -4,5 +4,5 @@ import java.time.Duration
 
 data class AppEstimate(
     val low: Duration,
-    val high: Duration
+    val high: Duration,
 )
