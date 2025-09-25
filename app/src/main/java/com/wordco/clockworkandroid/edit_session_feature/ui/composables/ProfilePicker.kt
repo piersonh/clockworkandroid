@@ -7,16 +7,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,13 +45,15 @@ fun ProfilePicker(
     profiles: List<ProfilePickerItem>,
     modifier: Modifier = Modifier,
     onProfileClick: (Long?) -> Unit,
+    onCreateProfileClick: () -> Unit,
 ) {
     Box(
         modifier = modifier
     ) {
         if (profiles.isEmpty()) {
             return ProfilePickerNoProfiles (
-                onProfileClick = onProfileClick
+                onProfileClick = onProfileClick,
+                onCreateProfileClick = onCreateProfileClick
             )
         }
 
@@ -75,9 +81,11 @@ fun ProfilePicker(
             item {
                 HorizontalDivider(
                     thickness = 5.dp,
-                    modifier = Modifier.clip(
-                        RoundedCornerShape(100.dp)
-                    ).padding(vertical = 5.dp)
+                    modifier = Modifier
+                        .clip(
+                            RoundedCornerShape(100.dp)
+                        )
+                        .padding(vertical = 5.dp)
                 )
             }
 
@@ -100,6 +108,7 @@ fun ProfilePicker(
 @Composable
 private fun ProfilePickerNoProfiles(
     onProfileClick: (Long?) -> Unit,
+    onCreateProfileClick: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -120,9 +129,11 @@ private fun ProfilePickerNoProfiles(
 
         HorizontalDivider(
             thickness = 5.dp,
-            modifier = Modifier.clip(
-                RoundedCornerShape(100.dp)
-            ).padding(vertical = 5.dp)
+            modifier = Modifier
+                .clip(
+                    RoundedCornerShape(100.dp)
+                )
+                .padding(vertical = 5.dp)
         )
 
 
@@ -141,7 +152,7 @@ private fun ProfilePickerNoProfiles(
             )
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -156,6 +167,30 @@ private fun ProfilePickerNoProfiles(
                 lineHeight = 40.sp,
             )
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        TextButton(
+            onClick = onCreateProfileClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                //.height(50.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .heightIn(25.dp, 70.dp)
+                .aspectRatio(4f,true)
+        ) {
+            Text(
+                text = "Create Profile",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp
+            )
+        }
     }
 }
 
@@ -166,7 +201,8 @@ private fun ProfilePickerPreview() {
     ClockworkTheme {
         ProfilePicker(
             profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
-            onProfileClick = { }
+            onProfileClick = {},
+            onCreateProfileClick = {},
         )
     }
 }
@@ -177,7 +213,8 @@ private fun ProfilePickerNoProfilesPreview() {
     ClockworkTheme {
         ProfilePicker(
             profiles = emptyList(),
-            onProfileClick = { }
+            onProfileClick = {},
+            onCreateProfileClick = {},
         )
     }
 }

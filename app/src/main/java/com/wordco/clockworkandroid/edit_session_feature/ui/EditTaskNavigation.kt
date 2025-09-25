@@ -32,7 +32,8 @@ fun NavController.navigateToEditSession(
 
 
 fun NavGraphBuilder.editTaskPage(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCreateNewProfileClick: () -> Unit,
 ) {
     composable<EditTaskRoute>(
         enterTransition = {
@@ -71,7 +72,8 @@ fun NavGraphBuilder.editTaskPage(
 
         EditTaskPage(
             onBackClick = onBackClick,
-            viewModel = editTaskViewModel
+            onCreateProfileClick = onCreateNewProfileClick,
+            viewModel = editTaskViewModel,
         )
     }
 }

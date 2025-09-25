@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -180,6 +181,8 @@ private fun EmptyProfileList(
                 //.height(50.dp)
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
+                .heightIn(25.dp, 70.dp)
+                .aspectRatio(4f,true)
         ) {
             Text(
                 text = "Create Profile",

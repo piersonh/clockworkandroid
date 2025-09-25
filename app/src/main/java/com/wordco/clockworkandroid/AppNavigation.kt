@@ -107,6 +107,7 @@ fun NavHost(
 
         createNewTaskPage(
             onBackClick = navController::popBackStack,
+            onCreateNewProfileClick = navController::navigateToCreateProfile,
         )
 
 
@@ -123,7 +124,8 @@ fun NavHost(
         )
 
         editTaskPage(
-            onBackClick = navController::popBackStack
+            onBackClick = navController::popBackStack,
+            onCreateNewProfileClick = navController::navigateToCreateProfile
         )
 
         profileListPage(

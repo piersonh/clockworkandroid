@@ -7,6 +7,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
@@ -58,6 +62,7 @@ import java.time.LocalTime
 @Composable
 fun EditTaskPage (
     onBackClick: () -> Unit,
+    onCreateProfileClick: () -> Unit,
     viewModel: EditTaskViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -78,6 +83,7 @@ fun EditTaskPage (
         onEstimateChange = viewModel::onEstimateChange,
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
         onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
+        onCreateNewProfileClick = onCreateProfileClick,
         onSaveClick = viewModel::onEditTaskClick,
     )
 }
@@ -102,21 +108,23 @@ internal fun EditTaskPage(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onDismissEstimatePicker: () -> Unit,
+    onCreateNewProfileClick: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     when (uiState) {
-        EditTaskUiState.Retrieving -> Scaffold(
+        EditTaskUiState.Retrieving -> EditPageScaffold(
             title = title,
             onBackClick = onBackClick,
             snackbarHostState = snackbarHostState,
-        ) { paddingValues ->
-            Box (
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                Text("Loading...")
-            }
-        }
+            content = { paddingValues ->
+                Box (
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    Text("Loading...")
+                }
+            },
+        )
 
         is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
             uiState = uiState,
@@ -137,6 +145,7 @@ internal fun EditTaskPage(
             onEstimateChange = onEstimateChange,
             onShowEstimatePicker = onShowEstimatePicker,
             onDismissEstimatePicker = onDismissEstimatePicker,
+            onCreateNewProfileClick = onCreateNewProfileClick,
             onSaveClick = onSaveClick,
         )
     }
@@ -144,11 +153,12 @@ internal fun EditTaskPage(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Scaffold(
+private fun EditPageScaffold(
     title: String,
     onBackClick: () -> Unit,
-    snackbarHostState: SnackbarHostState,
+    topBarActions: @Composable (RowScope.() -> Unit) = {},
     bottomBar: @Composable (() -> Unit) = {},
+    snackbarHostState: SnackbarHostState,
     content: @Composable ((PaddingValues) -> Unit),
 ) {
     Scaffold(
@@ -170,6 +180,7 @@ private fun Scaffold(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
+                actions = topBarActions
             )
         },
         bottomBar = bottomBar,
@@ -198,6 +209,7 @@ private fun EditSessionPageRetrieved(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onDismissEstimatePicker: () -> Unit,
+    onCreateNewProfileClick: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()
@@ -210,10 +222,22 @@ private fun EditSessionPageRetrieved(
         mutableStateOf(pagerState.targetPage == 1)
     }
 
-    Scaffold(
+    EditPageScaffold (
         title = title,
         onBackClick = onBackClick,
-        snackbarHostState = snackbarHostState,
+        topBarActions = {
+            if (pagerState.currentPage == 0) {
+                IconButton(
+                    onClick = onCreateNewProfileClick
+                ) {
+                    PlusImage(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .fillMaxSize()
+                    )
+                }
+            }
+        },
         bottomBar = {
             // Mimic Horizontal Pager transition
             AnimatedVisibility(
@@ -232,59 +256,63 @@ private fun EditSessionPageRetrieved(
                     snackbarHostState = snackbarHostState
                 )
             }
-        }
-    ) { paddingValues ->
-        HorizontalPager(
-            state = pagerState,
-            userScrollEnabled = false,
-            verticalAlignment = Alignment.Top,
-        ) { page ->
-            when (page) {
-                1 -> Column {
-                    Box(
-                        modifier = Modifier.padding(paddingValues),
-                    ) {
-                        EditTaskForm(
-                            uiState = uiState,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 30.dp, vertical = 20.dp)
-                                .verticalScroll(scrollState),
-                            onShowProfilePicker = {
-                                isBottomBarVisible = false
-                                coroutineScope.launch {
-                                    pagerState.tweenToPage(0)
-                                }
-                            },
-                            onTaskNameChange = onTaskNameChange,
-                            onColorSliderChange = onColorSliderChange,
-                            onDifficultyChange = onDifficultyChange,
-                            onShowDatePicker = onShowDatePicker,
-                            onDismissDatePicker = onDismissDatePicker,
-                            onDueDateChange = onDueDateChange,
-                            onShowTimePicker = onShowTimePicker,
-                            onDismissTimePicker = onDismissTimePicker,
-                            onDueTimeChange = onDueTimeChange,
-                            onShowEstimatePicker = onShowEstimatePicker,
-                            onDismissEstimatePicker = onDismissEstimatePicker,
-                            onEstimateChange = onEstimateChange,
-                        )
-                    }
-                }
-                0 -> ProfilePicker(
-                    profiles = uiState.profiles,
-                    modifier = Modifier.padding(paddingValues),
-                    onProfileClick = { profileId ->
-                        onProfileChange(profileId)
-                        coroutineScope.launch {
-                            pagerState.tweenToPage(1)
+        },
+        snackbarHostState = snackbarHostState,
+        { paddingValues ->
+            HorizontalPager(
+                state = pagerState,
+                userScrollEnabled = false,
+                verticalAlignment = Alignment.Top,
+            ) { page ->
+                when (page) {
+                    1 -> Column {
+                        Box(
+                            modifier = Modifier.padding(paddingValues),
+                        ) {
+                            EditTaskForm(
+                                uiState = uiState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 30.dp, vertical = 20.dp)
+                                    .verticalScroll(scrollState),
+                                onShowProfilePicker = {
+                                    isBottomBarVisible = false
+                                    coroutineScope.launch {
+                                        pagerState.tweenToPage(0)
+                                    }
+                                },
+                                onTaskNameChange = onTaskNameChange,
+                                onColorSliderChange = onColorSliderChange,
+                                onDifficultyChange = onDifficultyChange,
+                                onShowDatePicker = onShowDatePicker,
+                                onDismissDatePicker = onDismissDatePicker,
+                                onDueDateChange = onDueDateChange,
+                                onShowTimePicker = onShowTimePicker,
+                                onDismissTimePicker = onDismissTimePicker,
+                                onDueTimeChange = onDueTimeChange,
+                                onShowEstimatePicker = onShowEstimatePicker,
+                                onDismissEstimatePicker = onDismissEstimatePicker,
+                                onEstimateChange = onEstimateChange,
+                            )
                         }
-                        isBottomBarVisible = true
                     }
-                )
+
+                    0 -> ProfilePicker(
+                        profiles = uiState.profiles,
+                        modifier = Modifier.padding(paddingValues),
+                        onProfileClick = { profileId ->
+                            onProfileChange(profileId)
+                            coroutineScope.launch {
+                                pagerState.tweenToPage(1)
+                            }
+                            isBottomBarVisible = true
+                        },
+                        onCreateProfileClick = onCreateNewProfileClick,
+                    ) 
+                }
             }
-        }
-    }
+        },
+    )
 }
 
 
@@ -365,9 +393,10 @@ private fun EditTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onSaveClick = { Fallible.Success },
             onShowEstimatePicker = { },
             onDismissEstimatePicker = { },
+            onCreateNewProfileClick = {},
+            onSaveClick = { Fallible.Success },
         )
     }
 }
