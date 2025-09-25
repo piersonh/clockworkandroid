@@ -12,6 +12,7 @@ sealed interface Task {
     val difficulty: Int
     val color: Color
     val userEstimate: Duration?
+
     //val appEstimate: Duration
 
     sealed interface HasExecutionData : Task {

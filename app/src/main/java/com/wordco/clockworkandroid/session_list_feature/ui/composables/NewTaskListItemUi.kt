@@ -86,11 +86,19 @@ fun UpcomingTaskUIListItem(
             )
             ComputerImage()
             Text(
-                task.appEstimate.asHHMM(),
+                text = task.appEstimate?.let {
+                    String.format(
+                        locale = null,
+                        format = "%s — %s", // em dash
+                        it.low.asHHMM(),
+                        it.high.asHHMM()
+                    )
+                } ?: "--:--",
+
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.width(65.dp)
+                //modifier = Modifier.width(65.dp)
             )
         }
     }

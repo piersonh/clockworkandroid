@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.session_list_feature.ui.model.mapper
 
+import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.session_list_feature.ui.model.NewTaskListItem
 import java.time.Duration
@@ -12,6 +13,9 @@ fun NewTask.toNewTaskListItem() : NewTaskListItem {
         difficulty = difficulty,
         color = color,
         userEstimate = userEstimate,
-        appEstimate = Duration.ZERO
+        appEstimate = AppEstimate(
+            low = Duration.ZERO,
+            high = Duration.ofHours(2)
+        )
     )
 }
