@@ -14,6 +14,7 @@ data class StartedTask (
     override val segments: List<Segment>,
     override val markers: List<Marker>,
     override val profileId: Long?,
+    override val appEstimate: AppEstimate?,
 ) : Task.HasExecutionData {
     override val workTime: Duration = segments
         .filter { it.type == Segment.Type.WORK && it.duration != null }

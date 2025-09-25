@@ -26,6 +26,7 @@ class FakeSessionRepositoryTest {
                 color = Color.Companion.Red,
                 userEstimate = null,
                 profileId = null,
+                appEstimate = null,
             )
         )
 
@@ -41,6 +42,7 @@ class FakeSessionRepositoryTest {
                 color = Color.Companion.Red,
                 userEstimate = null,
                 profileId = null,
+                appEstimate = null,
             )
         )
 
@@ -72,7 +74,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Overestimate
@@ -93,7 +96,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Overestimate
@@ -114,7 +118,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Overestimate
@@ -135,7 +140,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Overestimate
@@ -156,7 +162,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Overestimate
@@ -177,7 +184,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Overestimate
@@ -198,7 +206,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -219,7 +228,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -240,7 +250,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -261,7 +272,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -282,7 +294,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -303,7 +316,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate    
@@ -324,7 +338,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -345,7 +360,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -366,7 +382,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -387,7 +404,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Underestimate
@@ -408,7 +426,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             ),
 
             // Equal Estimate
@@ -429,7 +448,8 @@ class FakeSessionRepositoryTest {
                     )
                 ),
                 markers = emptyList(),
-                profileId = 0
+                profileId = 0,
+                appEstimate = null,
             )
         )
 
@@ -440,7 +460,8 @@ class FakeSessionRepositoryTest {
             difficulty = 3,
             color = Color.Blue,
             userEstimate = Duration.ofHours(2).plusMinutes(45),
-            profileId = 0
+            profileId = 0,
+            appEstimate = null,
         )
 
         val estimate = GetAppEstimateUseCase()

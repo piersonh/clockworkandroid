@@ -28,6 +28,7 @@ suspend fun StartedTask.complete(taskRepository: TaskRepository) {
             }
         },
         markers = markers,
+        appEstimate = appEstimate,
     )
 
     taskRepository.updateSegment(lastSegment)

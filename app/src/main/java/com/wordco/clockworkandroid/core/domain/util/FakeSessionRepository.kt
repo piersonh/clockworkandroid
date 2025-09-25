@@ -141,6 +141,7 @@ class FakeSessionRepository(
                             segments = listOf(segment.copy(segmentId = newId)),
                             markers = emptyList(),
                             profileId = session.profileId,
+                            appEstimate = session.appEstimate,
                         )
 
                         is CompletedTask -> session.copy(

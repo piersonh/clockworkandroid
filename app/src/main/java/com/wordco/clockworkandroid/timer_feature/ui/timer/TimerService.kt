@@ -377,6 +377,7 @@ class TimerService() : Service() {
             userEstimate = userEstimate,
             segments = listOf(segment),
             markers = emptyList(),
+            appEstimate = appEstimate,
         )
 
         taskRepository.insertSegment(segment)

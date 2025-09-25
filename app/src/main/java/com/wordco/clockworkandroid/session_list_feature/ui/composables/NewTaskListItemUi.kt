@@ -93,7 +93,7 @@ fun UpcomingTaskUIListItem(
                         it.low.asHHMM(),
                         it.high.asHHMM()
                     )
-                } ?: "--:--",
+                } ?: "––:––",
 
                 fontFamily = LATO,
                 fontSize = 23.sp,

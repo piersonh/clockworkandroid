@@ -212,6 +212,7 @@ class EditTaskViewModel (
                             segments = (_loadedTask as CompletedTask).segments,
                             markers = (_loadedTask as CompletedTask).markers,
                             profileId = _profileId,
+                            appEstimate = _loadedTask.appEstimate,
                         )
                         is NewTask -> NewTask(
                             taskId,
@@ -221,6 +222,7 @@ class EditTaskViewModel (
                             color,
                             userEstimate,
                             profileId = _profileId,
+                            appEstimate = _loadedTask.appEstimate,
                         )
                         is StartedTask -> StartedTask(
                             taskId,
@@ -232,6 +234,7 @@ class EditTaskViewModel (
                             segments = (_loadedTask as StartedTask).segments,
                             markers = (_loadedTask as StartedTask).markers,
                             profileId = _profileId,
+                            appEstimate = _loadedTask.appEstimate,
                         )
                     }
 

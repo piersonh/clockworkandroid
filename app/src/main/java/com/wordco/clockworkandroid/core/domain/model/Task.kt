@@ -13,7 +13,7 @@ sealed interface Task {
     val color: Color
     val userEstimate: Duration?
 
-    //val appEstimate: Duration
+    val appEstimate: AppEstimate?
 
     sealed interface HasExecutionData : Task {
         val segments: List<Segment>

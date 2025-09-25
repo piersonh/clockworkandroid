@@ -202,6 +202,7 @@ class CreateNewTaskViewModel (
                     difficulty = difficulty.toInt(),
                     color = Color.fromSlider(colorSliderPos),
                     userEstimate = estimate?.toDuration(),
+                    appEstimate = null,
                 )
 
                 val sessionHistory = taskRepository
@@ -215,7 +216,7 @@ class CreateNewTaskViewModel (
                     sessionHistory = sessionHistory
                 )
 
-                taskRepository.insertNewTask(newSession)
+                taskRepository.insertNewTask(newSession.copy(appEstimate = appEstimate))
             }
             Fallible.Success
         } ?: error("Can only save if retrieved")

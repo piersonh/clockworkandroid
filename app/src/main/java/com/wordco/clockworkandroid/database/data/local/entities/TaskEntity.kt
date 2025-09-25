@@ -22,5 +22,7 @@ data class TaskEntity(
     val difficulty: Int,
     val color: Int,
     val status: Int,
-    val userEstimate: Long?
+    val userEstimate: Long?,
+    val lowAppEstimate: Long?,
+    val highAppEstimate: Long?
 )

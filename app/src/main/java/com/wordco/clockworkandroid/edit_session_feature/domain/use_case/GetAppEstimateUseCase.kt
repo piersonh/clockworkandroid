@@ -1,9 +1,9 @@
 package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
 
+import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Task
-import java.time.Duration
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -12,7 +12,7 @@ class GetAppEstimateUseCase {
     operator fun invoke(
         newSession: NewTask,
         sessionHistory: List<CompletedTask>
-    ) : Pair<Duration, Duration> {
+    ) : AppEstimate {
         if (newSession.userEstimate == null || sessionHistory.any { it.userEstimate == null }) {
             error("User Estimate must be defined")
         }
@@ -104,7 +104,7 @@ class GetAppEstimateUseCase {
         )
         // +/- (mean + standardDeviation)
 
-        return Pair(lowEstimate, highEstimate)
+        return AppEstimate(lowEstimate, highEstimate)
 
     }
 

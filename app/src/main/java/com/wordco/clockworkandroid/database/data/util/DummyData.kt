@@ -35,7 +35,8 @@ object DummyData {
                 )
             ),
             emptyList(),
-            null
+            null,
+            appEstimate = null,
         ),
         NewTask(
             2,
@@ -44,7 +45,8 @@ object DummyData {
             2,
             Color.Companion.Blue,
             null,
-            null
+            null,
+            appEstimate = null,
         ),
         NewTask(
             3,
@@ -53,7 +55,8 @@ object DummyData {
             3,
             Color.Companion.White,
             null,
-            null
+            null,
+            appEstimate = null,
         ),
         NewTask(
             4,
@@ -63,6 +66,7 @@ object DummyData {
             Color.Companion.Cyan,
             null,
             null,
+            appEstimate = null,
         ),
         NewTask(
             5,
@@ -72,6 +76,7 @@ object DummyData {
             Color.Companion.Black,
             null,
             null,
+            appEstimate = null,
         ),
         NewTask(
             6,
@@ -81,6 +86,7 @@ object DummyData {
             Color.Companion.Red,
             null,
             null,
+            appEstimate = null,
         ),
         NewTask(
             7,
@@ -90,6 +96,7 @@ object DummyData {
             Color.Companion.Magenta,
             null,
             null,
+            appEstimate = null,
         ),
         NewTask(
             8,
@@ -99,6 +106,7 @@ object DummyData {
             Color.Companion.Yellow,
             null,
             null,
+            appEstimate = null,
         ),
         CompletedTask(
             taskId = 9,
@@ -125,6 +133,7 @@ object DummyData {
                 )
             ),
             profileId = null,
+            appEstimate = null,
         )
     )
 
@@ -146,7 +155,8 @@ object DummyData {
                 )
             ),
             markers = emptyList(),
-            null
+            null,
+            appEstimate = null,
         )
     )
 }
