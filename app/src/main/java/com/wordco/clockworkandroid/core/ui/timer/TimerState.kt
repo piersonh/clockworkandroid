@@ -15,7 +15,7 @@ sealed interface TimerState {
 
     sealed interface HasTask : TimerState {
         val task: StartedTask
-        val elapsedWorkSeconds: Int
+        val elapsedWorkSeconds: Second
         val elapsedBreakMinutes: Int
     }
 
@@ -23,13 +23,13 @@ sealed interface TimerState {
 
     data class Running(
         override val task: StartedTask,
-        override val elapsedWorkSeconds: Int,
+        override val elapsedWorkSeconds: Second,
         override val elapsedBreakMinutes: Int
     ) : Active
 
     data class Paused(
         override val task: StartedTask,
-        override val elapsedWorkSeconds: Int,
+        override val elapsedWorkSeconds: Second,
         override val elapsedBreakMinutes: Int
     ) : Active
 }

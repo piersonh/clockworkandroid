@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.theme.ROBOTO
 import com.wordco.clockworkandroid.timer_feature.ui.TimerUiState
+import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
+import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
 import java.util.Locale
 
 
@@ -96,16 +98,3 @@ fun TimeDisplay(
     }
 }
 
-fun Int.toHours(): Int {
-    return this / 3600
-}
-
-fun Int.toMinutesInHour() : Int {
-    return (this % 3600) / 60
-}
-
-//
-//
-//@Preview
-//@Composable
-//private fun TimeDisplayPreview() = TimeDisplay(Timer())

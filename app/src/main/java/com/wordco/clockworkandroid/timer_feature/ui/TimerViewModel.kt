@@ -8,11 +8,13 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Timer
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.timer_feature.ui.util.complete
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -57,6 +59,14 @@ class TimerViewModel (
                         task.name,
                         0,
                         timerState is TimerState.Preparing && timerState.taskId == taskId
+                    )
+                }
+
+                if (task is CompletedTask) {
+                    return@combine TimerUiState.Finished(
+                        task.name,
+                        0,
+                        timerState is TimerState.Dormant
                     )
                 }
 
@@ -106,12 +116,19 @@ class TimerViewModel (
         timer.resume()
     }
 
-    fun addMark() {
-
+    fun addMark() : String {
+        return timer.addMarker()
     }
 
     fun finish() {
-
+        if (timer.state.value is TimerState.Empty) {
+            viewModelScope.launch {
+                (_loadedTask.value as? StartedTask)?.complete(taskRepository)
+                    ?: error("can only finish started tasks")
+            }
+        } else {
+            timer.finish()
+        }
     }
 
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,6 +41,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +59,7 @@ import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.CompletedSessionUiListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.TodoSessionListUiItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.util.contrastRatioWith
@@ -66,8 +70,9 @@ fun ProfileSessionListPage(
     viewModel: ProfileSessionListViewModel,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
-    onSessionClick: (Long) -> Unit,
+    onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
+    onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,19 +81,21 @@ fun ProfileSessionListPage(
         uiState = uiState,
         onBackClick = onBackClick,
         onEditClick = onEditClick,
-        onSessionClick = onSessionClick,
+        onTodoSessionClick = onTodoSessionClick,
         onCreateNewSessionClick = onCreateNewSessionClick,
+        onCompletedSessionClick = onCompletedSessionClick,
         navBar = navBar,
     )
 }
 
 @Composable
 private fun ProfileSessionListPage(
-    uiState:  ProfileSessionListUiState,
+    uiState: ProfileSessionListUiState,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
-    onSessionClick: (Long) -> Unit,
+    onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
+    onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     when (uiState) {
@@ -96,8 +103,9 @@ private fun ProfileSessionListPage(
             uiState = uiState,
             onBackClick = onBackClick,
             onEditClick = onEditClick,
-            onSessionClick = onSessionClick,
+            onTodoSessionClick = onTodoSessionClick,
             onCreateNewSessionClick = onCreateNewSessionClick,
+            onCompletedSessionClick = onCompletedSessionClick,
             navBar = navBar,
         )
         ProfileSessionListUiState.Retrieving -> ProfileSessionListPageRetrieving(
@@ -114,8 +122,9 @@ private fun ProfileSessionListPageRetrieved(
     uiState: ProfileSessionListUiState.Retrieved,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
-    onSessionClick: (Long) -> Unit,
+    onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
+    onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
     Scaffold (
@@ -181,7 +190,7 @@ private fun ProfileSessionListPageRetrieved(
                 ) {
                     TodoList(
                         uiState = uiState,
-                        onSessionClick = onSessionClick,
+                        onSessionClick = onTodoSessionClick,
                         onCreateNewSessionClick = onCreateNewSessionClick,
                         modifier = Modifier
                             .padding(horizontal = 5.dp)
@@ -190,7 +199,12 @@ private fun ProfileSessionListPageRetrieved(
                 TabbedScreenItem(
                     "Complete"
                 ) {
-                    Text("Completed Sessions")
+                    CompletedList(
+                        uiState = uiState,
+                        onSessionClick = onCompletedSessionClick,
+                        modifier = Modifier
+                            .padding(horizontal = 5.dp)
+                    )
                 }
             )
             Column(
@@ -392,23 +406,29 @@ private fun EmptyTodoList(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(horizontal = 25.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
         ) {
-            Spacer(modifier = Modifier.weight(0.04f))
+            //Spacer(modifier = Modifier.weight(0.03f))
 
-            Box (
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.checked_box),
-                    contentDescription = "Checked Box",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(80.dp),
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                )
+            // This check to see if the image is less than a 1/4 of the screen's height
+            val density = LocalDensity.current
+            if (LocalWindowInfo.current.containerSize.height > density.run { 170.dp.toPx() } * 4) {
+                Box (
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.pencil_writing),
+                        contentDescription = "Pencil Writing",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.height(170.dp),
+                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+
+            //Spacer(modifier = Modifier.height(20.dp))
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -421,10 +441,11 @@ private fun EmptyTodoList(
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center,
                     lineHeight = 34.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            //Spacer(modifier = Modifier.height(20.dp))
 
             TextButton(
                 onClick = onCreateNewSessionClick,
@@ -439,8 +460,11 @@ private fun EmptyTodoList(
                 ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
-                    .height(50.dp)
                     .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .heightIn(25.dp, 70.dp)
+                    .aspectRatio(4f,true)
+
             ) {
                 Text(
                     text = "Create New Session",
@@ -450,8 +474,97 @@ private fun EmptyTodoList(
                 )
             }
 
-            Spacer(modifier = Modifier.weight(0.15f))
+            Spacer(modifier = Modifier.height(20.dp))
         }
+    }
+}
+
+
+@Composable
+private fun CompletedList(
+    uiState: ProfileSessionListUiState.Retrieved,
+    onSessionClick: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (uiState.completeSessions.isEmpty()) {
+        return EmptyCompletedList(
+            modifier = modifier
+        )
+    }
+
+    Box(
+        modifier = modifier
+    ) {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            item {
+                Spacer(Modifier.height(5.dp))
+            }
+
+            items(
+                items = uiState.completeSessions,
+                key = { it.id }
+            ) { session ->
+                CompletedSessionUiListItem(
+                    session = session,
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(10.dp))
+                        .background(color = MaterialTheme.colorScheme.primaryContainer)
+                        .height(100.dp)
+                        .clickable(onClick = { onSessionClick(session.id) })
+                )
+            }
+        }
+    }
+}
+
+
+
+@Composable
+private fun EmptyCompletedList (
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(horizontal = 25.dp).then(modifier),
+        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+    ) {
+
+        val density = LocalDensity.current
+        if (LocalWindowInfo.current.containerSize.height > density.run { 170.dp.toPx() } * 4) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.trophy),
+                    contentDescription = "Trophy",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.height(170.dp),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "No Completed Sessions yet...",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                fontSize = 32.sp,
+                lineHeight = 40.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
@@ -493,7 +606,7 @@ private fun ProfileSessionListPageRetrieving(
 @Composable
 private fun ProfileSessionListPageRetrievedPreview() {
     ClockworkTheme {
-        ProfileSessionListPageRetrieved (
+        ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
                 profileColor = Color.Yellow,
@@ -504,14 +617,16 @@ private fun ProfileSessionListPageRetrievedPreview() {
             ),
             onBackClick = {},
             onEditClick = {},
-            onSessionClick = {},
+            onTodoSessionClick = {},
             onCreateNewSessionClick = {},
-            navBar = { NavBar(
+            onCompletedSessionClick = {},
+        ) {
+            NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit,
                 navigateTo = {}
-            ) },
-        )
+            )
+        }
     }
 }
 
@@ -534,7 +649,7 @@ private fun ProfileSessionListPageRetrievingPreview() {
 @Composable
 private fun ProfileSessionListPageEmptyTodoPreview() {
     ClockworkTheme {
-        ProfileSessionListPageRetrieved (
+        ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
                 profileColor = Color.Yellow,
@@ -543,13 +658,15 @@ private fun ProfileSessionListPageEmptyTodoPreview() {
             ),
             onBackClick = {},
             onEditClick = {},
-            onSessionClick = {},
+            onTodoSessionClick = {},
             onCreateNewSessionClick = {},
-            navBar = { NavBar(
+            onCompletedSessionClick = { },
+        ) {
+            NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit,
                 navigateTo = {}
-            ) },
-        )
+            )
+        }
     }
 }

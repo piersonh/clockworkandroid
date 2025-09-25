@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
+import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
@@ -177,6 +178,7 @@ private fun EmptyTaskList(
                 fontSize = 32.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 40.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
 
@@ -198,7 +200,7 @@ private fun EmptyTaskList(
 
         ) {
             Text(
-                text = "Create New Task",
+                text = "Create New Session",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp
@@ -250,9 +252,9 @@ private fun TaskList(
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.stopwatch),
-                            contentDescription = "Calendar",
+                            contentDescription = "Stopwatch",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.height(30.dp),
+                            modifier = Modifier.height(33.dp),
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
 
@@ -264,6 +266,7 @@ private fun TaskList(
                             fontWeight = FontWeight.Bold,
                             fontSize = 25.sp,
                             textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
 
@@ -349,6 +352,7 @@ private fun TaskList(
                             fontWeight = FontWeight.Bold,
                             fontSize = 22.sp,
                             textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 }
@@ -383,7 +387,9 @@ private fun TaskListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
+                newTasks = DummyData.SESSIONS
+                    .filter { it is NewTask }
+                    .map { (it as NewTask).toNewTaskListItem() },
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
                         taskId = 0,
@@ -435,7 +441,7 @@ private fun NoNewTasksListPagePreview() {
                 newTasks = emptyList(),
                 suspendedTasks = listOf(
                     SuspendedTaskListItem(
-                        taskId = 0,
+                        taskId = 1,
                         name = "Awooga",
                         color = Color(40, 50, 160),
                         workTime = Duration.ZERO,
@@ -461,8 +467,10 @@ private fun NoStartedTasksListPagePreview() {
     ClockworkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
-                newTasks = DummyData.SESSIONS.map { it.toNewTaskListItem() },
-                suspendedTasks = emptyList()
+                newTasks = DummyData.SESSIONS
+                    .filter { it is NewTask }
+                    .map { (it as NewTask).toNewTaskListItem() },
+                suspendedTasks = emptyList(),
             ),
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,

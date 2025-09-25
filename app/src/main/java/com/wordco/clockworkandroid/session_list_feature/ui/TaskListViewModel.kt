@@ -62,7 +62,6 @@ class TaskListViewModel(
                     it is StartedTask && it.status() == StartedTask.Status.SUSPENDED
                 }.map { task -> (task as StartedTask).toSuspendedTaskListItem() }
 
-
                 when (timerState) {
                     TimerState.Closing,
                     TimerState.Dormant,
@@ -81,7 +80,7 @@ class TaskListViewModel(
                             activeTask = timerState.task.toActiveTaskItem(
                                 elapsedWorkSeconds = timerState.elapsedWorkSeconds,
                                 elapsedBreakMinutes = timerState.elapsedBreakMinutes,
-                            )
+                            ),
                         )
                     }
                 }

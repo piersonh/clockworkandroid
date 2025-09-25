@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.session_list_feature.ui.util
 
-import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -8,18 +7,10 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 private val TIME_FORMATER: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm a")
 private val DATE_TIME_FORMATTER: DateTimeFormatter =
     DateTimeFormatter.ofPattern("LL/dd/yyyy hh:mm a")
-
-fun Duration.asHHMM(): String {
-    val totalMinutes = this.toMinutes()
-    val hours = totalMinutes / 60
-    val minutes = totalMinutes % 60
-    return String.format(Locale.getDefault(),"%02d:%02d", hours, minutes)
-}
 
 fun Instant?.asTaskDueFormat(): String {
     if (this == null) {

@@ -9,6 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
@@ -33,7 +34,8 @@ fun NavController.navigateToTimer(
 
 fun NavGraphBuilder.timerPage(
     onBackClick: () -> Unit,
-    onEditClick: (Long) -> Unit
+    onEditClick: (Long) -> Unit,
+    onFinishClick: (Long) -> Unit
 ) {
     composable<TimerRoute>(
         enterTransition = {
@@ -55,7 +57,12 @@ fun NavGraphBuilder.timerPage(
             slideInHorizontally(
                 initialOffsetX = { -it }, animationSpec = tween(300)
             )
-        }
+        },
+        deepLinks = listOf(
+            navDeepLink {
+                uriPattern = "com.wordco.clockworkandroid://timer_route?id={id}"
+            }
+        )
     ) { entry ->
 
         val taskId = entry.toRoute<TimerRoute>().id
@@ -73,7 +80,8 @@ fun NavGraphBuilder.timerPage(
         TimerPage(
             onBackClick = onBackClick,
             timerViewModel = timerViewModel,
-            onEditClick = {onEditClick(taskId)}
+            onEditClick = {onEditClick(taskId)},
+            onFinishClick = {onFinishClick(taskId)}
         )
     }
 }

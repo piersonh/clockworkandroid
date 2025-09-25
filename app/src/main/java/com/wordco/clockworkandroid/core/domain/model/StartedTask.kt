@@ -11,23 +11,22 @@ data class StartedTask (
     override val difficulty: Int,
     override val color: Color,
     override val userEstimate: Duration?,
-    val segments: List<Segment>,
-    val markers: List<Marker>,
+    override val segments: List<Segment>,
+    override val markers: List<Marker>,
     override val profileId: Long?,
-) : Task {
-    val workTime: Duration = segments.filter { it.type == Segment.Type.WORK && it.duration != null}
-        .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
-    val breakTime: Duration = segments.filter { it.type == Segment.Type.BREAK && it.duration != null}
+) : Task.HasExecutionData {
+    override val workTime: Duration = segments
+        .filter { it.type == Segment.Type.WORK && it.duration != null }
         .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
 
-    init {
-        if (segments.isEmpty()) {
-            error("Attempted to create a Started Task with no segments")
-        }
-    }
+    override val breakTime: Duration = segments
+        .filter { it.type == Segment.Type.BREAK && it.duration != null }
+        .fold(Duration.ZERO) { acc, seg -> acc.plus(seg.duration!!) }
+
+    override val startedAt = segments.minOf { it.startTime }
 
     enum class Status {
-        RUNNING, PAUSED, SUSPENDED,
+        RUNNING, PAUSED, SUSPENDED
     }
 
     fun status() : Status {

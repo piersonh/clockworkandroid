@@ -8,14 +8,21 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
+import com.wordco.clockworkandroid.MainActivity
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
+import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
+import java.util.Locale
 
 class TimerNotificationManager(
-    private val context: Context
+    private val context: Context,
+    private val onRequestNotificationPermission: () -> Unit,
 ) {
 
     companion object {
@@ -42,14 +49,8 @@ class TimerNotificationManager(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
+
+            onRequestNotificationPermission()
         }
 
         notificationManager.notify(NOTIFICATION_ID, notification)
@@ -60,17 +61,32 @@ class TimerNotificationManager(
     }
 
     fun buildNotification(timerState: TimerState.Active): Notification {
+        val markerIntent = createServiceIntent(
+            "ACTION_MARKER",
+        )
+        val markerAction = NotificationCompat.Action(
+            null,
+            "Add Marker",
+            markerIntent
+        )
         val resumePauseAction = when (timerState) {
             is TimerState.Running -> {
-                val pauseIntent = createServiceIntent("ACTION_PAUSE")
+                val pauseIntent = createServiceIntent(
+                    "ACTION_PAUSE",
+                )
+
+
                 NotificationCompat.Action(
                     null,
                     "Pause",
                     pauseIntent
                 )
+
             }
             is TimerState.Paused -> {
-                val resumeIntent = createServiceIntent("ACTION_RESUME")
+                val resumeIntent = createServiceIntent(
+                    "ACTION_RESUME",
+                )
                 NotificationCompat.Action(
                     null,
                     "Resume",
@@ -79,9 +95,23 @@ class TimerNotificationManager(
             }
         }
 
+        val deepLinkIntent = createDeepLinkIntent(timerState.task.taskId)
+
         val content = when (timerState) {
-            is TimerState.Paused -> "On Break: ${timerState.elapsedBreakMinutes}"
-            is TimerState.Running -> "Working: ${timerState.elapsedWorkSeconds}"
+            is TimerState.Paused -> timerState.elapsedBreakMinutes.let {
+                String.format(
+                    Locale.getDefault(),
+                    "On Break: %02d:%02d",
+                    it / 60, it % 60
+                )
+            }
+            is TimerState.Running -> timerState.elapsedWorkSeconds.let {
+                String.format(
+                    Locale.getDefault(),
+                    "Working: %02d:%02d",
+                    it.toHours(), it.toMinutesInHour()
+                )
+            }
         }
 
         val icon = when (timerState) {
@@ -89,18 +119,22 @@ class TimerNotificationManager(
             is TimerState.Running -> R.drawable.running
         }
 
-
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        val notif = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(content)
             .setOngoing(true)
             .setSmallIcon(icon)
+            .setAutoCancel(false)
             //.setSound(null)
-            // .setColor()  //accent with task color?
+            .setColor(timerState.task.color.toArgb())  //accent with task color?
             //.setSilent(true)
             .addAction(resumePauseAction) // resume/pause
-            // .addAction() // suspend
+            .setContentIntent(deepLinkIntent)
             // .addAction() // finish?
-            .build()
+            .setContentText(timerState.task.name)
+        if (timerState is TimerState.Running) {
+            notif.addAction(markerAction)
+        }
+        return notif.build()
     }
 
     private fun createServiceIntent(action: String?): PendingIntent {
@@ -111,6 +145,22 @@ class TimerNotificationManager(
         return PendingIntent.getService(
             context,
             0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun createDeepLinkIntent(id: Long): PendingIntent {
+        val intent = Intent(
+            Intent.ACTION_VIEW,
+            "com.wordco.clockworkandroid://timer_route?id=$id".toUri(),
+            context,
+            MainActivity::class.java
+        )
+
+        return PendingIntent.getActivity(
+            context,
+            id.toInt(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

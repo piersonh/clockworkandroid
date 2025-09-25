@@ -22,14 +22,19 @@ import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
+import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToCompletion
+import com.wordco.clockworkandroid.session_completion_feature.ui.taskCompletionPage
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
+import com.wordco.clockworkandroid.timer_feature.ui.TimerRoute
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
 import com.wordco.clockworkandroid.timer_feature.ui.timerPage
+import com.wordco.clockworkandroid.user_stats_feature.ui.UserStatsRoute
+import com.wordco.clockworkandroid.user_stats_feature.ui.userStatsPage
 
 val topLevelDestinations = listOf(
     TopLevelDestination(
-        route = Unit,
+        route = UserStatsRoute,
         icon = R.drawable.user,
         label = "Statistics",
     ),
@@ -107,16 +112,19 @@ fun NavHost(
 
         timerPage(
             onBackClick = navController::popBackStack,
-            onEditClick = navController::navigateToEditSession
+            onFinishClick = { sessionId ->
+                navController.navigateToCompletion(sessionId) {
+                    popUpTo(route = TimerRoute(sessionId)) {
+                        inclusive = true
+                    }
+                }
+            },
+            onEditClick = navController::navigateToEditSession,
         )
 
         editTaskPage(
             onBackClick = navController::popBackStack
         )
-
-        //composable<PageRoutes.TaskComplete> {
-        //    TaskCompletionPage(navController, taskViewModel)
-        //}
 
         profileListPage(
             navBar = { navBar(ProfileListRoute) },
@@ -137,7 +145,18 @@ fun NavHost(
             onEditClick = navController::navigateToEditProfile,
             onSessionClick = navController::navigateToTimer,
             onCreateNewSessionClick = navController::navigateToCreateNewTask,
+            onCompletedSessionClick = navController::navigateToCompletion,
             navBar = { navBar(ProfileListRoute) },
+        )
+
+        taskCompletionPage(
+            onBackClick = navController::popBackStack,
+            onContinueClick = navController::popBackStack
+        )
+
+        userStatsPage(
+            navBar = { navBar(UserStatsRoute) },
+            onCompletedSessionClick = navController::navigateToCompletion
         )
     }
 }
