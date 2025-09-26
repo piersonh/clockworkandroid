@@ -139,7 +139,7 @@ class EditTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
     }
 
-    fun onDismissDatePicker() {
+    fun onDismissModal() {
         _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
@@ -155,10 +155,6 @@ class EditTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
     }
 
-    fun onDismissTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
-    }
-
     fun onDueTimeChange(newTime: LocalTime) {
         _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
     }
@@ -171,11 +167,36 @@ class EditTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
     }
 
-    fun onDismissEstimatePicker() {
+
+    private fun hasUserChangedFields() : Boolean {
+        return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
+            (taskName != _loadedTask.name)
+                .or(_profileId != _loadedTask.profileId)
+                .or(colorSliderPos != _loadedTask.color.hue() / 360)
+                .or(dueDate != _loadedTask.dueDate?.atZone(ZoneId.systemDefault())
+                    ?.toLocalDate())
+                .or(difficulty != _loadedTask.difficulty.toFloat())
+                .or(estimate?.toDuration() != _loadedTask.userEstimate)
+        } ?: false
+    }
+
+    fun onShowDiscardAlert() : Boolean {
+        return hasUserChangedFields().also { hasUserChangedFields ->
+            if (hasUserChangedFields) {
+                _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
+            }
+        }
+    }
+
+    fun onShowDeleteAlert() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Delete) }
+    }
+
+    fun onDismissDeleteAlert() {
         _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
-    fun onEditTaskClick() : Fallible<SaveSessionError> {
+    fun onSaveClick() : Fallible<SaveSessionError> {
         return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
                 return Fallible.Error(SaveSessionError.MISSING_NAME)

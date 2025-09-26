@@ -10,10 +10,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,16 +65,15 @@ fun EditTaskPage (
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
         onShowDatePicker = viewModel::onShowDatePicker,
-        onDismissDatePicker = viewModel::onDismissDatePicker,
+        onDismissModal = viewModel::onDismissModal,
         onDueDateChange = viewModel::onDueDateChange,
         onShowTimePicker = viewModel::onShowTimePicker,
-        onDismissTimePicker = viewModel::onDismissTimePicker,
         onDueTimeChange = viewModel::onDueTimeChange,
         onEstimateChange = viewModel::onEstimateChange,
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
-        onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
         onCreateNewProfileClick = onCreateProfileClick,
-        onSaveClick = viewModel::onEditTaskClick,
+        onShowDiscardAlert = viewModel::onShowDiscardAlert,
+        onSaveClick = viewModel::onSaveClick,
     )
 }
 
@@ -85,15 +87,14 @@ internal fun EditTaskPage(
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
     onShowDatePicker: () -> Unit,
-    onDismissDatePicker: () -> Unit,
+    onDismissModal: () -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onShowTimePicker: () -> Unit,
-    onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
-    onDismissEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
+    onShowDiscardAlert: () -> Boolean,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -114,20 +115,22 @@ internal fun EditTaskPage(
         is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
             uiState = uiState,
             snackbarHostState = snackbarHostState,
-            onBackClick = onBackClick,
+            onBackClick = {
+                if (uiState.currentModal == Modal.Discard || !onShowDiscardAlert()) {
+                    onBackClick()
+                }
+            },
             onProfileChange = onProfileChange,
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,
             onShowDatePicker = onShowDatePicker,
-            onDismissDatePicker = onDismissDatePicker,
+            onDismissModal = onDismissModal,
             onDueDateChange = onDueDateChange,
             onShowTimePicker = onShowTimePicker,
-            onDismissTimePicker = onDismissTimePicker,
             onDueTimeChange = onDueTimeChange,
             onEstimateChange = onEstimateChange,
             onShowEstimatePicker = onShowEstimatePicker,
-            onDismissEstimatePicker = onDismissEstimatePicker,
             onCreateNewProfileClick = onCreateNewProfileClick,
             onSaveClick = onSaveClick,
         )
@@ -144,14 +147,12 @@ private fun EditSessionPageRetrieved(
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
     onShowDatePicker: () -> Unit,
-    onDismissDatePicker: () -> Unit,
+    onDismissModal: () -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onShowTimePicker: () -> Unit,
-    onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
-    onDismissEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
@@ -244,13 +245,13 @@ private fun EditSessionPageRetrieved(
                                 onColorSliderChange = onColorSliderChange,
                                 onDifficultyChange = onDifficultyChange,
                                 onShowDatePicker = onShowDatePicker,
-                                onDismissDatePicker = onDismissDatePicker,
+                                onDismissDatePicker = onDismissModal,
                                 onDueDateChange = onDueDateChange,
                                 onShowTimePicker = onShowTimePicker,
-                                onDismissTimePicker = onDismissTimePicker,
+                                onDismissTimePicker = onDismissModal,
                                 onDueTimeChange = onDueTimeChange,
                                 onShowEstimatePicker = onShowEstimatePicker,
-                                onDismissEstimatePicker = onDismissEstimatePicker,
+                                onDismissEstimatePicker = onDismissModal,
                                 onEstimateChange = onEstimateChange,
                             )
                         }
@@ -272,7 +273,39 @@ private fun EditSessionPageRetrieved(
             }
 
             when (uiState.currentModal) {
-                Modal.Discard -> TODO()
+                Modal.Discard -> AlertDialog(
+                    onDismissRequest = onDismissModal,
+
+                    title = {
+                        Text(text = "Changes Not Saved")
+                    },
+
+                    text = { Text("Are sure you want to leave without saving your changes?") },
+
+                    confirmButton = {
+                        TextButton(
+                            onClick = onBackClick
+                        ) {
+                            Text(
+                                "Discard Changes",
+                                fontFamily = LATO,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    },
+
+                    dismissButton = {
+                        TextButton(
+                            onClick = onDismissModal
+                        ) {
+                            Text(
+                                "Cancel",
+                                fontFamily = LATO,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                )
                 Modal.Delete -> TODO()
                 else -> {}
             }
@@ -303,15 +336,14 @@ private fun EditTaskPagePreview() {
             onColorSliderChange = { },
             onDifficultyChange = { },
             onShowDatePicker = { },
-            onDismissDatePicker = { },
+            onDismissModal = { },
             onDueDateChange = { },
             onShowTimePicker = { },
-            onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
             onShowEstimatePicker = { },
-            onDismissEstimatePicker = { },
             onCreateNewProfileClick = {},
+            onShowDiscardAlert = {false},
             onSaveClick = { Fallible.Success },
         )
     }
