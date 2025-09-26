@@ -40,12 +40,14 @@ import java.time.ZoneOffset
 class CreateNewTaskViewModel (
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
-    private var profileId: Long?
+    private val profileId: Long?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CreateNewSessionUiState>(CreateNewSessionUiState.Retrieving)
 
     val uiState: StateFlow<CreateNewSessionUiState> = _uiState.asStateFlow()
+
+    private var _profileId: Long? = profileId
 
     private lateinit var _profiles: StateFlow<List<Profile>>
 
@@ -102,7 +104,7 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { uiState ->
             val oldDefaults = _fieldDefaults
 
-            profileId = newProfileId
+            _profileId = newProfileId
 
             _fieldDefaults = getFieldDefaults(
                 newProfileId?.let { _profiles.value.first { it.id == newProfileId } }
@@ -143,7 +145,7 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
     }
 
-    fun onDismissDatePicker() {
+    fun onDismissModal() {
         _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
@@ -159,9 +161,6 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
     }
 
-    fun onDismissTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
-    }
 
     fun onDueTimeChange(newTime: LocalTime) {
         _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
@@ -175,8 +174,27 @@ class CreateNewTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
     }
 
-    fun onDismissEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
+    private fun hasUserChangedFields() : Boolean {
+        return _uiState.getIfType<CreateNewSessionUiState.Retrieved>()?.run {
+            (taskName != _fieldDefaults.taskName)
+                .or(profileId != _profileId)
+                .or(colorSliderPos != _fieldDefaults.colorSliderPos)
+                .or(dueDate != _fieldDefaults.dueDate?.let {
+                    LocalDateTime.of(it, _fieldDefaults.dueTime)
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                })
+                .or(difficulty != _fieldDefaults.difficulty)
+                .or(estimate != _fieldDefaults.estimate)
+        } ?: false
+    }
+
+    fun onShowDiscardAlert() : Boolean {
+        return hasUserChangedFields().also { hasUserChangedFields ->
+            if (hasUserChangedFields) {
+                _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
+            }
+        }
     }
 
     fun onSaveClick() : Fallible<SaveSessionError> {
@@ -189,7 +207,7 @@ class CreateNewTaskViewModel (
                 taskRepository.insertNewTask(
                     NewTask(
                         taskId = 0,
-                        profileId = profileId,
+                        profileId = _profileId,
                         name = taskName,
                         // 2007-12-03T10:15:30.00Z
                         dueDate = dueDate?.let {

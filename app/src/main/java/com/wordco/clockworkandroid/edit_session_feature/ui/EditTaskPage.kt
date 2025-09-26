@@ -10,13 +10,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +33,7 @@ import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionForm
@@ -79,7 +77,7 @@ fun EditTaskPage (
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EditTaskPage(
+private fun EditTaskPage(
     uiState: EditTaskUiState,
     onBackClick: () -> Unit,
     onTaskNameChange: (String) -> Unit,
@@ -218,99 +216,69 @@ private fun EditSessionPageRetrieved(
             }
         },
         snackbarHostState = snackbarHostState,
-        { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = false,
-                verticalAlignment = Alignment.Top,
-            ) { page ->
-                when (page) {
-                    1 -> Column {
-                        Box(
-                            modifier = Modifier.padding(paddingValues),
-                        ) {
-                            SessionForm(
-                                uiState = uiState.toFormUiState(),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 30.dp, vertical = 20.dp)
-                                    .verticalScroll(scrollState),
-                                onShowProfilePicker = {
-                                    isBottomBarVisible = false
-                                    coroutineScope.launch {
-                                        pagerState.tweenToPage(0)
-                                    }
-                                },
-                                onTaskNameChange = onTaskNameChange,
-                                onColorSliderChange = onColorSliderChange,
-                                onDifficultyChange = onDifficultyChange,
-                                onShowDatePicker = onShowDatePicker,
-                                onDismissDatePicker = onDismissModal,
-                                onDueDateChange = onDueDateChange,
-                                onShowTimePicker = onShowTimePicker,
-                                onDismissTimePicker = onDismissModal,
-                                onDueTimeChange = onDueTimeChange,
-                                onShowEstimatePicker = onShowEstimatePicker,
-                                onDismissEstimatePicker = onDismissModal,
-                                onEstimateChange = onEstimateChange,
-                            )
-                        }
-                    }
-
-                    0 -> ProfilePicker(
-                        profiles = uiState.profiles,
+    ) { paddingValues ->
+        HorizontalPager(
+            state = pagerState,
+            userScrollEnabled = false,
+            verticalAlignment = Alignment.Top,
+        ) { page ->
+            when (page) {
+                1 -> Column {
+                    Box(
                         modifier = Modifier.padding(paddingValues),
-                        onProfileClick = { profileId ->
-                            onProfileChange(profileId)
-                            coroutineScope.launch {
-                                pagerState.tweenToPage(1)
-                            }
-                            isBottomBarVisible = true
-                        },
-                        onCreateProfileClick = onCreateNewProfileClick,
-                    )
-                }
-            }
-
-            when (uiState.currentModal) {
-                Modal.Discard -> AlertDialog(
-                    onDismissRequest = onDismissModal,
-
-                    title = {
-                        Text(text = "Changes Not Saved")
-                    },
-
-                    text = { Text("Are sure you want to leave without saving your changes?") },
-
-                    confirmButton = {
-                        TextButton(
-                            onClick = onBackClick
-                        ) {
-                            Text(
-                                "Discard Changes",
-                                fontFamily = LATO,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    },
-
-                    dismissButton = {
-                        TextButton(
-                            onClick = onDismissModal
-                        ) {
-                            Text(
-                                "Cancel",
-                                fontFamily = LATO,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
+                    ) {
+                        SessionForm(
+                            uiState = uiState.toFormUiState(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 30.dp, vertical = 20.dp)
+                                .verticalScroll(scrollState),
+                            onShowProfilePicker = {
+                                isBottomBarVisible = false
+                                coroutineScope.launch {
+                                    pagerState.tweenToPage(0)
+                                }
+                            },
+                            onTaskNameChange = onTaskNameChange,
+                            onColorSliderChange = onColorSliderChange,
+                            onDifficultyChange = onDifficultyChange,
+                            onShowDatePicker = onShowDatePicker,
+                            onDismissDatePicker = onDismissModal,
+                            onDueDateChange = onDueDateChange,
+                            onShowTimePicker = onShowTimePicker,
+                            onDismissTimePicker = onDismissModal,
+                            onDueTimeChange = onDueTimeChange,
+                            onShowEstimatePicker = onShowEstimatePicker,
+                            onDismissEstimatePicker = onDismissModal,
+                            onEstimateChange = onEstimateChange,
+                        )
                     }
+                }
+
+                0 -> ProfilePicker(
+                    profiles = uiState.profiles,
+                    modifier = Modifier.padding(paddingValues),
+                    onProfileClick = { profileId ->
+                        onProfileChange(profileId)
+                        coroutineScope.launch {
+                            pagerState.tweenToPage(1)
+                        }
+                        isBottomBarVisible = true
+                    },
+                    onCreateProfileClick = onCreateNewProfileClick,
                 )
-                Modal.Delete -> TODO()
-                else -> {}
             }
-        },
-    )
+        }
+
+        when (uiState.currentModal) {
+            Modal.Discard -> DiscardAlert(
+                onDismiss = onDismissModal,
+                onConfirm = onBackClick
+            )
+            Modal.Delete -> TODO()
+            else -> {}
+        }
+    }
 }
 
 
