@@ -167,15 +167,20 @@ private fun ProfilePickerNoProfiles(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        AccentRectangleTextButton(
-            onClick = onCreateProfileClick,
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Create Profile",
-                fontFamily = LATO,
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp
-            )
+            AccentRectangleTextButton(
+                onClick = onCreateProfileClick,
+            ) {
+                Text(
+                    text = "Create Profile",
+                    fontFamily = LATO,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp
+                )
+            }
         }
     }
 }

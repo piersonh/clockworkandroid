@@ -43,9 +43,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.util.DummyData
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
-import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
@@ -182,16 +182,22 @@ private fun EmptyTaskList(
 
         //Spacer(modifier = Modifier.height(20.dp))
 
-        AccentRectangleTextButton(
-            onClick = onCreateNewTaskClick,
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Create New Session",
-                fontFamily = LATO,
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp
-            )
+            AccentRectangleTextButton(
+                onClick = onCreateNewTaskClick,
+            ) {
+                Text(
+                    text = "Create New Session",
+                    fontFamily = LATO,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp
+                )
+            }
         }
+
 
         //Spacer(modifier = Modifier.weight(0.15f))
     }

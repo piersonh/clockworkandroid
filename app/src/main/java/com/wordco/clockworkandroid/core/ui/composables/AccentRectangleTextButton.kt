@@ -2,7 +2,6 @@ package com.wordco.clockworkandroid.core.ui.composables
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,7 +29,7 @@ fun AccentRectangleTextButton(
         ),
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
-            .fillMaxWidth()
+            //.fillMaxWidth()
             .padding(horizontal = 20.dp)
             .heightIn(minHeight, maxHeight)
             .aspectRatio(aspectRatio,true),
