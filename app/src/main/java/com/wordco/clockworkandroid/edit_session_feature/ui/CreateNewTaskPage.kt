@@ -35,3 +35,7 @@ fun CreateNewTaskPage (
         onSaveClick = viewModel::onSaveClick,
     )
 }
+
+private fun CreateNewTaskPage() {
+
+}

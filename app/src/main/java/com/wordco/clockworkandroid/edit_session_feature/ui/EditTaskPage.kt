@@ -52,7 +52,6 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionErro
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.tweenToPage
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -237,22 +236,37 @@ private fun EditSessionPageRetrieved(
             }
         },
         bottomBar = {
-            // Mimic Horizontal Pager transition
-            AnimatedVisibility(
-                visible = isBottomBarVisible,
-                enter = slideInHorizontally(
-                    initialOffsetX = { it }, animationSpec = tween(280)
-                ),
-                exit = slideOutHorizontally(
-                    targetOffsetX = { it }, animationSpec = tween(280)
-                )
+            SlideAwayBottomBar(
+                isBottomBarVisible = isBottomBarVisible
             ) {
-                BottomBar(
-                    onSaveClick = onSaveClick,
-                    onBackClick = onBackClick,
-                    coroutineScope = coroutineScope,
-                    snackbarHostState = snackbarHostState
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AccentRectangleTextButton(
+                        onClick = {
+                            when (onSaveClick().takeIfError()) {
+                                SaveSessionError.MISSING_NAME -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Failed to save session: Missing Name"
+                                        )
+                                    }
+                                }
+                                null -> onBackClick()
+                            }
+                        },
+                        maxHeight = 56.dp,
+                        aspectRatio = 1.8f
+                    ) {
+                        Text(
+                            "Save",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 25.sp,
+                        )
+                    }
+                }
             }
         },
         snackbarHostState = snackbarHostState,
@@ -315,43 +329,24 @@ private fun EditSessionPageRetrieved(
 
 
 @Composable
-private fun BottomBar(
-    onSaveClick: () -> Fallible<SaveSessionError>,
-    onBackClick: () -> Unit,
-    coroutineScope: CoroutineScope,
-    snackbarHostState: SnackbarHostState
+private fun SlideAwayBottomBar(
+    isBottomBarVisible: Boolean,
+    content: @Composable (RowScope.() -> Unit)
 ) {
-    BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+    // Mimic Horizontal Pager transition
+    AnimatedVisibility(
+        visible = isBottomBarVisible,
+        enter = slideInHorizontally(
+            initialOffsetX = { it }, animationSpec = tween(280)
+        ),
+        exit = slideOutHorizontally(
+            targetOffsetX = { it }, animationSpec = tween(280)
+        )
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center,
-        ) {
-            AccentRectangleTextButton(
-                onClick = {
-                    when (onSaveClick().takeIfError()) {
-                        SaveSessionError.MISSING_NAME -> {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    "Failed to save session: Missing Name"
-                                )
-                            }
-                        }
-                        null -> onBackClick()
-                    }
-                },
-                maxHeight = 56.dp,
-                aspectRatio = 1.8f
-            ) {
-                Text(
-                    "Save",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp,
-                )
-            }
-        }
+        BottomAppBar(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            content = content
+        )
     }
 }
 
