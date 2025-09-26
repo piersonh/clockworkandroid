@@ -28,4 +28,8 @@ class ProfileRepositoryImpl(
     override suspend fun updateProfile(profile: Profile) {
         profileDao.updateProfile(profile.toProfileEntity())
     }
+
+    override suspend fun deleteProfile(id: Long) {
+        profileDao.deleteProfile(id)
+    }
 }
