@@ -16,7 +16,7 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -43,13 +43,13 @@ class CreateNewTaskViewModel (
     private var profileId: Long?
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
+    private val _uiState = MutableStateFlow<CreateNewSessionUiState>(CreateNewSessionUiState.Retrieving)
 
-    val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<CreateNewSessionUiState> = _uiState.asStateFlow()
 
     private lateinit var _profiles: StateFlow<List<Profile>>
 
-    private lateinit var _fieldDefaults: EditTaskFormUiState
+    private lateinit var _fieldDefaults: SessionFormUiState
 
     init {
         viewModelScope.launch {
@@ -64,7 +64,7 @@ class CreateNewTaskViewModel (
                         )
 
                         _uiState.update {
-                            EditTaskUiState.Retrieved(
+                            CreateNewSessionUiState.Retrieved(
                                 profiles = profiles.map { it.toProfilePickerItem() },
                                 taskName = _fieldDefaults.taskName,
                                 profileName = _fieldDefaults.profileName,
@@ -72,7 +72,7 @@ class CreateNewTaskViewModel (
                                 difficulty = _fieldDefaults.difficulty,
                                 dueDate = _fieldDefaults.dueDate,
                                 dueTime = _fieldDefaults.dueTime,
-                                currentModal = _fieldDefaults.currentModal,
+                                currentModal = null,
                                 estimate = _fieldDefaults.estimate,
                             )
                         }
@@ -140,7 +140,7 @@ class CreateNewTaskViewModel (
     }
 
     fun onShowDatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.DATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
     }
 
     fun onDismissDatePicker() {
@@ -156,7 +156,7 @@ class CreateNewTaskViewModel (
     }
 
     fun onShowTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.TIME) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
     }
 
     fun onDismissTimePicker() {
@@ -172,7 +172,7 @@ class CreateNewTaskViewModel (
     }
 
     fun onShowEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.ESTIMATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
     }
 
     fun onDismissEstimatePicker() {

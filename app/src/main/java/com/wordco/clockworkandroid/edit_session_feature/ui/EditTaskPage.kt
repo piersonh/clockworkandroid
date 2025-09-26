@@ -1,13 +1,7 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,16 +10,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,13 +29,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
-import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SlideAwayBottomBar
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -90,8 +80,6 @@ fun EditTaskPage (
 internal fun EditTaskPage(
     uiState: EditTaskUiState,
     onBackClick: () -> Unit,
-    title: String = "Edit Session",
-    initialPage: Int = 1,
     onTaskNameChange: (String) -> Unit,
     onProfileChange: (Long?) -> Unit,
     onColorSliderChange: (Float) -> Unit,
@@ -111,11 +99,11 @@ internal fun EditTaskPage(
     val snackbarHostState = remember { SnackbarHostState() }
     when (uiState) {
         EditTaskUiState.Retrieving -> EditPageScaffold(
-            title = title,
+            title = "Edit Session",
             onBackClick = onBackClick,
             snackbarHostState = snackbarHostState,
             content = { paddingValues ->
-                Box (
+                Box(
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     Text("Loading...")
@@ -125,11 +113,9 @@ internal fun EditTaskPage(
 
         is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
             uiState = uiState,
-            title = title,
             snackbarHostState = snackbarHostState,
             onBackClick = onBackClick,
             onProfileChange = onProfileChange,
-            initialPage = initialPage,
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,
@@ -148,52 +134,12 @@ internal fun EditTaskPage(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun EditPageScaffold(
-    title: String,
-    onBackClick: () -> Unit,
-    topBarActions: @Composable (RowScope.() -> Unit) = {},
-    bottomBar: @Composable (() -> Unit) = {},
-    snackbarHostState: SnackbarHostState,
-    content: @Composable ((PaddingValues) -> Unit),
-) {
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.primary,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        title,
-                        fontFamily = LATO
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        BackImage()
-                    }
-                },
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                ),
-                actions = topBarActions
-            )
-        },
-        bottomBar = bottomBar,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        content = content
-    )
-}
-
 @Composable
 private fun EditSessionPageRetrieved(
     uiState: EditTaskUiState.Retrieved,
-    title: String,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onProfileChange: (Long?) -> Unit,
-    initialPage: Int,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
@@ -211,7 +157,7 @@ private fun EditSessionPageRetrieved(
 ) {
     val scrollState = rememberScrollState()
     val pagerState = rememberPagerState(
-        initialPage = if (uiState.profiles.isEmpty()) 1 else initialPage,
+        initialPage = 1,
         pageCount = { 2 }
     )
     val coroutineScope = rememberCoroutineScope()
@@ -219,8 +165,8 @@ private fun EditSessionPageRetrieved(
         mutableStateOf(pagerState.targetPage == 1)
     }
 
-    EditPageScaffold (
-        title = title,
+    EditPageScaffold(
+        title = "Edit Session",
         onBackClick = onBackClick,
         topBarActions = {
             if (pagerState.currentPage == 0) {
@@ -253,6 +199,7 @@ private fun EditSessionPageRetrieved(
                                         )
                                     }
                                 }
+
                                 null -> onBackClick()
                             }
                         },
@@ -281,8 +228,8 @@ private fun EditSessionPageRetrieved(
                         Box(
                             modifier = Modifier.padding(paddingValues),
                         ) {
-                            EditTaskForm(
-                                uiState = uiState,
+                            SessionForm(
+                                uiState = uiState.toFormUiState(),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 30.dp, vertical = 20.dp)
@@ -320,35 +267,19 @@ private fun EditSessionPageRetrieved(
                             isBottomBarVisible = true
                         },
                         onCreateProfileClick = onCreateNewProfileClick,
-                    ) 
+                    )
                 }
+            }
+
+            when (uiState.currentModal) {
+                Modal.Discard -> TODO()
+                Modal.Delete -> TODO()
+                else -> {}
             }
         },
     )
 }
 
-
-@Composable
-private fun SlideAwayBottomBar(
-    isBottomBarVisible: Boolean,
-    content: @Composable (RowScope.() -> Unit)
-) {
-    // Mimic Horizontal Pager transition
-    AnimatedVisibility(
-        visible = isBottomBarVisible,
-        enter = slideInHorizontally(
-            initialOffsetX = { it }, animationSpec = tween(280)
-        ),
-        exit = slideOutHorizontally(
-            targetOffsetX = { it }, animationSpec = tween(280)
-        )
-    ) {
-        BottomAppBar(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            content = content
-        )
-    }
-}
 
 @Preview
 @Composable

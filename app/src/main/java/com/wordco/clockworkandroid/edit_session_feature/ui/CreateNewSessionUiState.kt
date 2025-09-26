@@ -1,13 +1,13 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditPageModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreatePageModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.LocalDate
 import java.time.LocalTime
 
-sealed interface EditTaskUiState {
-    data object Retrieving : EditTaskUiState
+sealed interface CreateNewSessionUiState {
+    data object Retrieving : CreateNewSessionUiState
 
     data class Retrieved (
         val taskName: String,
@@ -16,10 +16,10 @@ sealed interface EditTaskUiState {
         val difficulty: Float,
         val dueDate: LocalDate?,
         val dueTime: LocalTime?,
-        val currentModal: EditPageModal?,
+        val currentModal: CreatePageModal?,
         val estimate: UserEstimate?,
         val profiles: List<ProfilePickerItem>
-    ) : EditTaskUiState {
+    ) : CreateNewSessionUiState {
         fun toFormUiState() : SessionFormUiState {
             return SessionFormUiState(
                 taskName = taskName,

@@ -19,7 +19,7 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -53,7 +53,7 @@ class EditTaskViewModel (
 
     private lateinit var _profiles: StateFlow<List<Profile>>
 
-    private lateinit var _fieldDefaults: EditTaskFormUiState
+    private lateinit var _fieldDefaults: SessionFormUiState
 
 
     init {
@@ -86,7 +86,7 @@ class EditTaskViewModel (
                                 dueTime = _loadedTask.dueDate?.run {
                                     atZone(ZoneId.systemDefault())?.toLocalTime()
                                 } ?: _fieldDefaults.dueTime,
-                                currentModal = _fieldDefaults.currentModal,
+                                currentModal = null,
                                 estimate = _loadedTask.userEstimate?.toEstimate(),
                             )
                         }
@@ -136,7 +136,7 @@ class EditTaskViewModel (
     }
 
     fun onShowDatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.DATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
     }
 
     fun onDismissDatePicker() {
@@ -152,7 +152,7 @@ class EditTaskViewModel (
     }
 
     fun onShowTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.TIME) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
     }
 
     fun onDismissTimePicker() {
@@ -168,7 +168,7 @@ class EditTaskViewModel (
     }
 
     fun onShowEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.ESTIMATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
     }
 
     fun onDismissEstimatePicker() {

@@ -42,18 +42,17 @@ import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.edit_session_feature.ui.EditTaskFormUiState
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormUiState
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditTaskForm(
-    uiState: EditTaskFormUiState,
+fun SessionForm(
+    uiState: SessionFormUiState,
     modifier: Modifier = Modifier,
     onShowProfilePicker: () -> Unit,
     onTaskNameChange: (String) -> Unit,
@@ -208,7 +207,7 @@ fun EditTaskForm(
         )
 
         when (uiState.currentModal) {
-            PickerModal.DATE -> {
+            Modal.Date -> {
                 DatePickerDialog(
                     onDismissRequest = onDismissDatePicker,
                     confirmButton = {
@@ -250,7 +249,7 @@ fun EditTaskForm(
                     )
                 }
             }
-            PickerModal.TIME -> {
+            Modal.Time -> {
                 Dialog(
                     onDismissRequest = onDismissTimePicker,
                 ) {
@@ -307,7 +306,7 @@ fun EditTaskForm(
                     }
                 }
             }
-            PickerModal.ESTIMATE -> {
+            Modal.Estimate -> {
                 var est = uiState.estimate ?: UserEstimate(0,0)
                 Dialog(
                     onDismissRequest = onDismissEstimatePicker,
@@ -430,20 +429,17 @@ fun EditTaskForm(
 @Composable
 private fun EditTaskFormPreview() {
     ClockworkTheme {
-        EditTaskForm(
-            uiState = object : EditTaskFormUiState {
-                override val taskName: String = "Preview"
-                override val profileName: String? = "Preview"
-                override val colorSliderPos: Float
-                    get() = Random.nextFloat()
-                override val difficulty: Float
-                    get() = Random.nextInt(0, 5).toFloat()
-                override val dueDate: LocalDate? = null
-                override val dueTime: LocalTime? = null
-                override val currentModal: PickerModal? = null
-                override val estimate: UserEstimate? = null
-
-            },
+        SessionForm(
+            uiState = SessionFormUiState (
+                taskName = "Preview",
+                profileName = "Preview",
+                colorSliderPos = Random.nextFloat(),
+                difficulty = Random.nextInt(0, 5).toFloat(),
+                dueDate= null,
+                dueTime = null,
+                currentModal = null,
+                estimate = null,
+                ),
             onShowProfilePicker = {},
             onTaskNameChange = {},
             onColorSliderChange = {},
