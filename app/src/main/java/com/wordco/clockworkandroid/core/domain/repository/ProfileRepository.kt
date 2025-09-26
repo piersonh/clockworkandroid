@@ -11,4 +11,6 @@ interface ProfileRepository {
     suspend fun insertProfile(profile: Profile)
 
     suspend fun updateProfile(profile: Profile)
+
+    suspend fun deleteProfile(id: Long)
 }

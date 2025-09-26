@@ -1,6 +1,8 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -26,8 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
+import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
@@ -93,10 +95,35 @@ private fun EditProfilePage(
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
             ) {
-                Box(
+                Row (
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        20.dp, Alignment.CenterHorizontally)
                 ) {
+                    AccentRectangleTextButton(
+                        onClick = {
+                            when (onSaveClick().takeIfError()) {
+                                SaveProfileError.MISSING_NAME -> {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Failed to save profile: Missing Name"
+                                        )
+                                    }
+                                }
+                                null -> onBackClick()
+                            }
+                        },
+                        maxHeight = 56.dp,
+                        aspectRatio = 1.8f
+                    ) {
+                        Text(
+                            "Delete",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 25.sp,
+                        )
+                    }
+
                     AccentRectangleTextButton(
                         onClick = {
                             when (onSaveClick().takeIfError()) {
