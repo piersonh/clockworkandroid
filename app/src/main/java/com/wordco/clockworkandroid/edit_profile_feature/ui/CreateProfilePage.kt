@@ -28,10 +28,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.launch
 
@@ -48,7 +50,9 @@ fun CreateProfilePage(
         onNameChange = viewModel::onNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
-        onCreateProfileClick = viewModel::onCreateProfileClick,
+        onShowDiscardAlert = viewModel::onShowDiscardAlert,
+        onDismissModal = viewModel::onDismissModal,
+        onCreateProfileClick = viewModel::onSaveClick
     )
 }
 
@@ -60,6 +64,8 @@ private fun CreateProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
+    onShowDiscardAlert: () -> Boolean,
+    onDismissModal: () -> Unit,
     onCreateProfileClick: () -> Fallible<SaveProfileError>,
 ) {
     val scrollState = rememberScrollState()
@@ -143,6 +149,13 @@ private fun CreateProfilePage(
                 confirmButton = { }
             )
         }
+
+        if (uiState.currentModal == Modal.Discard) {
+            DiscardAlert(
+                onDismiss = onDismissModal,
+                onConfirm = onBackClick
+            )
+        }
     }
 }
 
@@ -155,12 +168,15 @@ private fun CreateProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
+                currentModal = null
             ),
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onCreateProfileClick = { Fallible.Success },
+            onShowDiscardAlert = {false},
+            onDismissModal = {},
+            onCreateProfileClick = { Fallible.Success }
         )
     }
 }

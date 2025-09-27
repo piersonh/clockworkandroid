@@ -15,6 +15,7 @@ import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +47,8 @@ class EditProfileViewModel (
                     EditProfileUiState.Retrieved(
                         name = name,
                         colorSliderPos = color.hue() / 360,
-                        difficulty = defaultDifficulty.toFloat()
+                        difficulty = defaultDifficulty.toFloat(),
+                        currentModal = null,
                     )
                 }
             }
@@ -66,6 +68,22 @@ class EditProfileViewModel (
 
     fun onDifficultyChange(newDifficulty: Float) {
         _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
+    }
+
+    private fun hasUserChangedFields() : Boolean {
+        return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
+            (name != _loadedProfile.name)
+                .or(colorSliderPos != _loadedProfile.color.hue() / 360)
+                .or(difficulty != _loadedProfile.defaultDifficulty.toFloat())
+        } ?: false
+    }
+
+    fun onShowDiscardAlert() : Boolean {
+        return hasUserChangedFields().also { hasUserChangedFields ->
+            if (hasUserChangedFields) {
+                _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
+            }
+        }
     }
 
 

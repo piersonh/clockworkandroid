@@ -48,6 +48,7 @@ fun EditProfilePage(
         onNameChange = viewModel::onNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
+        onShowDiscardAlert = viewModel::onShowDiscardAlert,
         onSaveClick = viewModel::onSaveClick,
     )
 }
@@ -60,12 +61,12 @@ private fun EditProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
+    onShowDiscardAlert: () -> Boolean,
     onSaveClick: () -> Fallible<SaveProfileError>,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -128,7 +129,6 @@ private fun EditProfilePage(
         Box(
             modifier = Modifier.padding(paddingValues)
         ) {
-
             when (uiState) {
                 is EditProfileUiState.Retrieved -> {
                     EditProfileForm(
@@ -147,8 +147,6 @@ private fun EditProfilePage(
                 }
                 EditProfileUiState.Retrieving -> Text("Loading...")
             }
-
-
         }
     }
 }
@@ -162,11 +160,13 @@ private fun EditProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
+                currentModal = null,
             ),
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
+            onShowDiscardAlert = {false},
             onSaveClick = { Fallible.Success },
         )
     }

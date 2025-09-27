@@ -15,11 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
-import com.wordco.clockworkandroid.edit_profile_feature.ui.EditProfileFormUiState
+import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileFormUiState
 
 @Composable
 fun EditProfileForm(
-    uiState: EditProfileFormUiState,
+    uiState: ProfileFormUiState,
     modifier: Modifier = Modifier,
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,

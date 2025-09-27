@@ -192,10 +192,6 @@ class EditTaskViewModel (
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Delete) }
     }
 
-    fun onDismissDeleteAlert() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
-    }
-
     fun onSaveClick() : Fallible<SaveSessionError> {
         return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {

@@ -3,6 +3,7 @@ package com.wordco.clockworkandroid.edit_session_feature.ui
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.CreatePageModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.toOptionalSessionFormModal
 import java.time.LocalDate
 import java.time.LocalTime
 

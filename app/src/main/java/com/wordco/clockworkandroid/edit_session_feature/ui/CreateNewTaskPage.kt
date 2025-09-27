@@ -27,10 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
+import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionForm
@@ -112,11 +112,7 @@ private fun CreateTaskPage(
         is CreateNewSessionUiState.Retrieved -> CreateSessionPageRetrieved(
             uiState = uiState,
             snackbarHostState = snackbarHostState,
-            onBackClick = {
-                if (uiState.currentModal == Modal.Discard || !onShowDiscardAlert()) {
-                    onBackClick()
-                }
-            },
+            onBackClick = onBackClick,
             onProfileChange = onProfileChange,
             initialPage = initialPage,
             onTaskNameChange = onTaskNameChange,
@@ -130,6 +126,7 @@ private fun CreateTaskPage(
             onEstimateChange = onEstimateChange,
             onShowEstimatePicker = onShowEstimatePicker,
             onCreateNewProfileClick = onCreateNewProfileClick,
+            onShowDiscardAlert = onShowDiscardAlert,
             onSaveClick = onSaveClick,
         )
     }
@@ -153,6 +150,7 @@ private fun CreateSessionPageRetrieved(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
+    onShowDiscardAlert: () -> Boolean,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()

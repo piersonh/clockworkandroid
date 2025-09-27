@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_session_feature.ui.composables
+package com.wordco.clockworkandroid.core.ui.composables
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme

@@ -198,7 +198,7 @@ class CreateNewTaskViewModel (
     }
 
     fun onSaveClick() : Fallible<SaveSessionError> {
-        return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
+        return _uiState.getIfType<CreateNewSessionUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
                 return Fallible.Error(SaveSessionError.MISSING_NAME)
             }
