@@ -35,38 +35,36 @@ class CreateProfileViewModel (
         name = _fieldDefaults.name,
         colorSliderPos = _fieldDefaults.colorSliderPos,
         difficulty = _fieldDefaults.difficulty,
-        currentModal = null
+        currentModal = null,
+        hasFieldChanges = false,
     ))
 
     val uiState = _uiState.asStateFlow()
 
 
     fun onNameChange(newName: String) {
-        _uiState.update { it.copy(name = newName) }
+        _uiState.update { it.copy(
+            name = newName,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.update { it.copy(colorSliderPos = newPos) }
+        _uiState.update { it.copy(
+            colorSliderPos = newPos,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.update { it.copy(difficulty = newDifficulty) }
+        _uiState.update { it.copy(
+            difficulty = newDifficulty,
+            hasFieldChanges = true,
+        ) }
     }
 
-    private fun hasUserChangedFields() : Boolean {
-        return _uiState.value.run {
-            (name != _fieldDefaults.name)
-                .or(colorSliderPos != _fieldDefaults.colorSliderPos)
-                .or(difficulty != _fieldDefaults.difficulty)
-        }
-    }
-
-    fun onShowDiscardAlert() : Boolean {
-        return hasUserChangedFields().also { hasUserChangedFields ->
-            if (hasUserChangedFields) {
-                _uiState.update { it.copy(currentModal = Modal.Discard) }
-            }
-        }
+    fun onShowDiscardAlert() {
+        _uiState.update { it.copy(currentModal = Modal.Discard) }
     }
 
     fun onDismissModal() {
@@ -93,6 +91,8 @@ class CreateProfileViewModel (
                 )
             }
         }
+
+        _uiState.update { it.copy(hasFieldChanges = false) }
 
         return Fallible.Success
     }

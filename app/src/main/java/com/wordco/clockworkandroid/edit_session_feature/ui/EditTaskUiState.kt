@@ -19,7 +19,8 @@ sealed interface EditTaskUiState {
         val dueTime: LocalTime?,
         val currentModal: EditPageModal?,
         val estimate: UserEstimate?,
-        val profiles: List<ProfilePickerItem>
+        val profiles: List<ProfilePickerItem>,
+        val hasFieldChanges: Boolean,
     ) : EditTaskUiState {
         fun toFormUiState() : SessionFormUiState {
             return SessionFormUiState(

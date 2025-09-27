@@ -88,6 +88,7 @@ class EditTaskViewModel (
                                 } ?: _fieldDefaults.dueTime,
                                 currentModal = null,
                                 estimate = _loadedTask.userEstimate?.toEstimate(),
+                                hasFieldChanges = false,
                             )
                         }
                     }
@@ -105,7 +106,10 @@ class EditTaskViewModel (
 
 
     fun onTaskNameChange(newName: String) {
-        _uiState.updateIfRetrieved { it.copy(taskName = newName) }
+        _uiState.updateIfRetrieved { it.copy(
+            taskName = newName,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onProfileChange(newProfileId: Long?) {
@@ -122,17 +126,24 @@ class EditTaskViewModel (
 
             uiState.copy(
                 profileName = profileName,
+                hasFieldChanges = true,
             )
         }
     }
 
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
+        _uiState.updateIfRetrieved { it.copy(
+            colorSliderPos = newPos,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
+        _uiState.updateIfRetrieved { it.copy(
+            difficulty = newDifficulty,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onShowDatePicker() {
@@ -148,7 +159,9 @@ class EditTaskViewModel (
             Instant.ofEpochMilli(newDate)
                 .atZone(ZoneOffset.UTC)
                 .toLocalDate()
-        }) }
+        },
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onShowTimePicker() {
@@ -156,36 +169,25 @@ class EditTaskViewModel (
     }
 
     fun onDueTimeChange(newTime: LocalTime) {
-        _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
+        _uiState.updateIfRetrieved { it.copy(
+            dueTime = newTime,
+            hasFieldChanges = true,
+            ) }
     }
 
     fun onEstimateChange(newEstimate: UserEstimate?) {
-        _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
+        _uiState.updateIfRetrieved { it.copy(
+            estimate = newEstimate,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onShowEstimatePicker() {
         _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
     }
 
-
-    private fun hasUserChangedFields() : Boolean {
-        return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
-            (taskName != _loadedTask.name)
-                .or(_profileId != _loadedTask.profileId)
-                .or(colorSliderPos != _loadedTask.color.hue() / 360)
-                .or(dueDate != _loadedTask.dueDate?.atZone(ZoneId.systemDefault())
-                    ?.toLocalDate())
-                .or(difficulty != _loadedTask.difficulty.toFloat())
-                .or(estimate?.toDuration() != _loadedTask.userEstimate)
-        } ?: false
-    }
-
-    fun onShowDiscardAlert() : Boolean {
-        return hasUserChangedFields().also { hasUserChangedFields ->
-            if (hasUserChangedFields) {
-                _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
-            }
-        }
+    fun onShowDiscardAlert() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
     }
 
     fun onShowDeleteAlert() {
@@ -251,9 +253,9 @@ class EditTaskViewModel (
                             profileId = _profileId,
                         )
                     }
-
                 )
             }
+            _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
             Fallible.Success
         } ?: error("Can only save if retrieved")
     }

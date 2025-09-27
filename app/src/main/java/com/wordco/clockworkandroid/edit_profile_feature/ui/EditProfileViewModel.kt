@@ -49,6 +49,7 @@ class EditProfileViewModel (
                         colorSliderPos = color.hue() / 360,
                         difficulty = defaultDifficulty.toFloat(),
                         currentModal = null,
+                        hasFieldChanges = false,
                     )
                 }
             }
@@ -57,35 +58,33 @@ class EditProfileViewModel (
 
 
     fun onNameChange(newName: String) {
-        _uiState.updateIfRetrieved {
-            it.copy(name = newName)
-        }
+        _uiState.updateIfRetrieved { it.copy(
+            name = newName,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
+        _uiState.updateIfRetrieved { it.copy(
+            colorSliderPos = newPos,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
+        _uiState.updateIfRetrieved { it.copy(
+            difficulty = newDifficulty,
+            hasFieldChanges = true,
+        ) }
     }
 
-    private fun hasUserChangedFields() : Boolean {
-        return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
-            (name != _loadedProfile.name)
-                .or(colorSliderPos != _loadedProfile.color.hue() / 360)
-                .or(difficulty != _loadedProfile.defaultDifficulty.toFloat())
-        } ?: false
+    fun onShowDiscardAlert()  {
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
     }
 
-    fun onShowDiscardAlert() : Boolean {
-        return hasUserChangedFields().also { hasUserChangedFields ->
-            if (hasUserChangedFields) {
-                _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
-            }
-        }
+    fun onDismissModal()  {
+        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
-
 
     fun onSaveClick() : Fallible<SaveProfileError> {
         return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
@@ -104,6 +103,8 @@ class EditProfileViewModel (
                     )
                 )
             }
+            _uiState.updateIfRetrieved { it.copy(hasFieldChanges = true) }
+
             Fallible.Success
         } ?: error("Can only save if retrieved")
     }

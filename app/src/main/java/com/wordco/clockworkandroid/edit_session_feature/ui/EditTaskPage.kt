@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -92,7 +93,7 @@ private fun EditTaskPage(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onShowDiscardAlert: () -> Boolean,
+    onShowDiscardAlert: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -149,7 +150,7 @@ private fun EditSessionPageRetrieved(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onShowDiscardAlert: () -> Boolean,
+    onShowDiscardAlert: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()
@@ -162,9 +163,21 @@ private fun EditSessionPageRetrieved(
         mutableStateOf(pagerState.targetPage == 1)
     }
 
+    val onBackClickCheckChanges = {
+        if (uiState.hasFieldChanges) {
+            onShowDiscardAlert()
+        } else {
+            onBackClick()
+        }
+    }
+
+    BackHandler(enabled = uiState.hasFieldChanges) {
+        onShowDiscardAlert()
+    }
+
     EditPageScaffold(
         title = "Edit Session",
-        onBackClick = onBackClick,
+        onBackClick = onBackClickCheckChanges,
         topBarActions = {
             if (pagerState.currentPage == 0) {
                 IconButton(
@@ -294,7 +307,8 @@ private fun EditTaskPagePreview() {
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
                 estimate = UserEstimate(15, 2),
-                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() }
+                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
+                hasFieldChanges = false
             ),
             onBackClick = { },
             onTaskNameChange = { },

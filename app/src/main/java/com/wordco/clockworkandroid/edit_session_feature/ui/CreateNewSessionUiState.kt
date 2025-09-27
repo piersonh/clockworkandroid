@@ -19,7 +19,8 @@ sealed interface CreateNewSessionUiState {
         val dueTime: LocalTime?,
         val currentModal: CreatePageModal?,
         val estimate: UserEstimate?,
-        val profiles: List<ProfilePickerItem>
+        val profiles: List<ProfilePickerItem>,
+        val hasFieldChanges: Boolean,
     ) : CreateNewSessionUiState {
         fun toFormUiState() : SessionFormUiState {
             return SessionFormUiState(

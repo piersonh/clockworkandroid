@@ -10,5 +10,6 @@ sealed interface EditProfileUiState {
         override val colorSliderPos: Float,
         override val difficulty: Float,
         val currentModal: EditPageModal?,
+        val hasFieldChanges: Boolean,
     ) : EditProfileUiState, ProfileFormUiState
 }

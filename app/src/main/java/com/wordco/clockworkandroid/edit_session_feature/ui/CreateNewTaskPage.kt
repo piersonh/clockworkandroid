@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -91,7 +92,7 @@ private fun CreateTaskPage(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onShowDiscardAlert: () -> Boolean,
+    onShowDiscardAlert: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -150,7 +151,7 @@ private fun CreateSessionPageRetrieved(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onShowDiscardAlert: () -> Boolean,
+    onShowDiscardAlert: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()
@@ -163,9 +164,21 @@ private fun CreateSessionPageRetrieved(
         mutableStateOf(pagerState.targetPage == 1)
     }
 
+    val onBackClickCheckChanges = {
+        if (uiState.hasFieldChanges) {
+            onShowDiscardAlert()
+        } else {
+            onBackClick()
+        }
+    }
+
+    BackHandler(enabled = uiState.hasFieldChanges) {
+        onShowDiscardAlert()
+    }
+
     EditPageScaffold(
         title = "Create New Session",
-        onBackClick = onBackClick,
+        onBackClick = onBackClickCheckChanges,
         topBarActions = {
             if (pagerState.currentPage == 0) {
                 IconButton(

@@ -1,5 +1,7 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -64,7 +66,7 @@ private fun CreateProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onShowDiscardAlert: () -> Boolean,
+    onShowDiscardAlert: () -> Unit,
     onDismissModal: () -> Unit,
     onCreateProfileClick: () -> Fallible<SaveProfileError>,
 ) {
@@ -72,6 +74,18 @@ private fun CreateProfilePage(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val onBackClickCheckChanges = {
+        if (uiState.hasFieldChanges) {
+            onShowDiscardAlert()
+        } else {
+            onBackClick()
+        }
+    }
+
+    BackHandler(enabled = uiState.hasFieldChanges) {
+        Log.i("BackHandler", "triggered")
+        onShowDiscardAlert()
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -85,7 +99,7 @@ private fun CreateProfilePage(
 
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = onBackClickCheckChanges) {
                         BackImage()
                     }
                 },
@@ -120,7 +134,7 @@ private fun CreateProfilePage(
                         aspectRatio = 1.8f
                     ) {
                         Text(
-                            "Add",
+                            "Save",
                             fontFamily = LATO,
                             fontWeight = FontWeight.Bold,
                             fontSize = 25.sp,
@@ -168,13 +182,14 @@ private fun CreateProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
-                currentModal = null
+                currentModal = null,
+                hasFieldChanges = false,
             ),
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onShowDiscardAlert = {false},
+            onShowDiscardAlert = {},
             onDismissModal = {},
             onCreateProfileClick = { Fallible.Success }
         )
