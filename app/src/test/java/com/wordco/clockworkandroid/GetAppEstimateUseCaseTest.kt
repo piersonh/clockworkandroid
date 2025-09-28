@@ -699,10 +699,18 @@ class GetAppEstimateUseCaseTest {
             dueDate = null,
             difficulty = 0,
             color = Color.Cyan,
-            userEstimate = Duration.ofMinutes(45), // Underestimated
+            userEstimate = Duration.ofMinutes(60), // Underestimated
             profileId = 4, // Reading
             appEstimate = null
         )
+
+        println(sessionHistory2
+            .filter { it.profileId == 4L }
+            .let { profile4s ->
+                profile4s.sumOf { it.userEstimate!!.minus(it.workTime + it.breakTime).toMillis() }
+                .div(profile4s.count().toDouble())
+            }
+            .let { Duration.ofMillis(it.toLong())})
 
 
         val sessionHistory = listOf(

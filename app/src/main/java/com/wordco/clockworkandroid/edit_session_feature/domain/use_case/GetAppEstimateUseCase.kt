@@ -6,6 +6,7 @@ import com.wordco.clockworkandroid.core.domain.model.Task
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.absoluteValue
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -38,7 +39,7 @@ class GetAppEstimateUseCase {
                         .toMillis()
                         .div(range.toDouble())
                 },
-                weight = 1.0
+                weight = 2.0
             ),
             // Difficulty Input
             GowerField(
@@ -62,13 +63,13 @@ class GetAppEstimateUseCase {
             // Task Profile
             GowerField(
                 similarityExpr = { s1, s2 ->
-                    if (s1.profileId == s2.profileId && s1.profileId == null) {
+                    if (s1.profileId == s2.profileId && s1.profileId != null) {
                         1.0
                     } else {
                         0.0
                     }
                 },
-                weight = 1.0
+                weight = 3.0
             )
         )
 
@@ -76,6 +77,8 @@ class GetAppEstimateUseCase {
         val similarityScores = sessionHistory.map {
             gowerSimilarity(it, todoSession, gowerFields)
         }
+
+        //println(similarityScores)
 
         val recencyWeight = 1.0
         val similarityWeight = 1.0
@@ -95,32 +98,62 @@ class GetAppEstimateUseCase {
                     )
 
             }
+        //val weights = similarityScores
 
         // History of error (difference between user estimate and actual time)
-        val historicalError = sessionHistory.map {
+        val historicalErrorWork = sessionHistory.map {
             it.userEstimate!!.minus(it.workTime).toMillis()
         }
 
-        val weightedMean = weightedMean(
-            points = historicalError,
+        val historicalErrorTotal = sessionHistory.map {
+            it.userEstimate!!.minus(it.workTime.plus(it.breakTime)).toMillis()
+        }
+
+        //println("historicalError $historicalError")
+
+        val weightedMeanWork = weightedMean(
+            points = historicalErrorWork,
             weights = weights
         )
 
-        val weightedStandardDeviation = weightedStandardDeviation(
-            weightedMean = weightedMean,
-            points = historicalError,
-            weights = weights,
+        val weightedMeanTotal = weightedMean(
+            points = historicalErrorTotal,
+            weights = weights
         )
 
+        //println(Duration.ofMillis(weightedMean.toLong()))
 
-        val userEstimate = todoSession.userEstimate!!
+//        val weightedStandardDeviation = unBiasedWeightedStandardDeviation(
+//            weightedMean = weightedMean,
+//            points = historicalError,
+//            weights = weights,
+//        )
 
-        val lowEstimate = userEstimate.minusMillis(
-            (weightedMean + weightedStandardDeviation).toLong()
+        //println(Duration.ofMillis(weightedStandardDeviation.toLong()))
+
+
+        val correctedUserEstimateWork = todoSession.userEstimate!!
+            .minusMillis(weightedMeanWork.toLong())
+
+        val correctedUserEstimateTotal = todoSession.userEstimate!!
+                    .minusMillis(weightedMeanTotal.toLong())
+
+//        val lowEstimate = correctedUserEstimate.minusMillis(
+//            (weightedStandardDeviation).toLong()
+//        )
+//
+//        val highEstimate = correctedUserEstimate.plusMillis(
+//            (weightedStandardDeviation).toLong()
+//        )
+
+        val lowEstimate = minOf(
+            a = correctedUserEstimateWork,
+            b = correctedUserEstimateTotal
         )
 
-        val highEstimate = userEstimate.plusMillis(
-            (weightedMean + weightedStandardDeviation).toLong()
+        val highEstimate = maxOf(
+            a = correctedUserEstimateWork,
+            b = correctedUserEstimateTotal
         )
         // +/- (mean + standardDeviation)
 
@@ -150,7 +183,7 @@ class GetAppEstimateUseCase {
     ) : Double {
         val sigmaWeights = fields.sumOf { it.weight }
         val sigmaWeightedSimilarities = fields.sumOf {
-            it.similarityExpr(session1,session2)
+            it.similarityExpr(session1,session2).times(it.weight)
         }
 
         return sigmaWeightedSimilarities / sigmaWeights
@@ -213,6 +246,41 @@ class GetAppEstimateUseCase {
         return sigmaWeightedSquareDeviation
             .div(normalizedSigmaWeights)
             .let { sqrt(it) }
+    }
+
+    private fun unBiasedWeightedStandardDeviation(
+        weightedMean: Double,
+        points: List<Long>,
+        weights: List<Double>
+    ): Double {
+        // 1. Calculate the numerator: the sum of weighted squared deviations.
+        // This part was already correct.
+        val sumOfWeightedSquareDeviations = points.zip(weights).sumOf { (point, weight) ->
+            val deviation = point - weightedMean
+            weight * deviation.pow(2)
+        }
+
+        // 2. Calculate the components for the standard denominator.
+        val sumOfWeights = weights.sum()
+        val sumOfSquaredWeights = weights.sumOf { it * it }
+
+        // Edge Case: If the sum of weights is zero, the deviation is undefined.
+        if (sumOfWeights.absoluteValue < 1E-10) {
+            return 0.0
+        }
+
+        // 3. Calculate the unbiased denominator.
+        val denominator = sumOfWeights - (sumOfSquaredWeights / sumOfWeights)
+
+        // Edge Case: If the denominator is not positive, the result is undefined.
+        // This can happen if there is only one data point with a non-zero weight.
+        if (denominator <= 0) {
+            return 0.0
+        }
+
+        // 4. Calculate the variance and return its square root.
+        val weightedVariance = sumOfWeightedSquareDeviations / denominator
+        return sqrt(weightedVariance)
     }
 
 }
