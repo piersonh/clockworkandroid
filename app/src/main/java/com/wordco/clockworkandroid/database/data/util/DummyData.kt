@@ -1065,4 +1065,80 @@ object DummyData {
             orphanSessions = emptyList()
         )
     }
+
+    val package4_laundry by lazy {
+        UserDataPackage.factory(
+            profiles = listOf(
+                Profile(
+                    id = 0,
+                    name = "Laundry",
+                    color = Color.hsv(34f,1f,1f),
+                    defaultDifficulty = 0,
+                    sessions = listOf(
+                        CompletedTask(
+                            taskId = 0,
+                            name = "Laundry 1",
+                            dueDate = null,
+                            difficulty = 0,
+                            color = Color.hsv(34f,1f,1f),
+                            userEstimate = Duration.ofMinutes(15),
+                            segments = listOf(
+                                Segment(
+                                    segmentId = 0,
+                                    taskId = 0,
+                                    startTime = Instant.parse("2025-09-29T18:15:30.00Z"),
+                                    duration = Duration.ofMinutes(7),
+                                    type = Segment.Type.WORK
+                                )
+                            ),
+                            markers = emptyList(),
+                            profileId = 0,
+                            appEstimate = null
+                        ),
+                        CompletedTask(
+                            taskId = 0,
+                            name = "Laundry 2",
+                            dueDate = null,
+                            difficulty = 0,
+                            color = Color.hsv(34f,1f,1f),
+                            userEstimate = Duration.ofMinutes(15),
+                            segments = listOf(
+                                Segment(
+                                    segmentId = 0,
+                                    taskId = 0,
+                                    startTime = Instant.parse("2025-09-29T18:33:30.00Z"),
+                                    duration = Duration.ofMinutes(10),
+                                    type = Segment.Type.WORK
+                                )
+                            ),
+                            markers = emptyList(),
+                            profileId = 0,
+                            appEstimate = null
+                        ),
+                        CompletedTask(
+                            taskId = 0,
+                            name = "Laundry 3",
+                            dueDate = null,
+                            difficulty = 0,
+                            color = Color.hsv(34f,1f,1f),
+                            userEstimate = Duration.ofMinutes(15),
+                            segments = listOf(
+                                Segment(
+                                    segmentId = 0,
+                                    taskId = 0,
+                                    startTime = Instant.parse("2025-09-29T18:45:30.00Z"),
+                                    duration = Duration.ofMinutes(14),
+                                    type = Segment.Type.WORK
+                                )
+                            ),
+                            markers = emptyList(),
+                            profileId = 0,
+                            appEstimate = null
+                        ),
+                    )
+                )
+            ),
+            orphanSessions = emptyList()
+        )
+    }
 }

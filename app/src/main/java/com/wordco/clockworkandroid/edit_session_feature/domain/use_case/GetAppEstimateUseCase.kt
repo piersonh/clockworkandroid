@@ -32,6 +32,9 @@ class GetAppEstimateUseCase {
                         max.minus(min)
                     }.toMillis()
 
+                    // Range 0 mean all values are the same
+                    if (range == 0L) return@GowerField 1.0
+
                     s1.userEstimate!!
                         .minus(s2.userEstimate!!)
                         .abs()
@@ -51,6 +54,9 @@ class GetAppEstimateUseCase {
                         val (min, max) = it
                         max.minus(min)
                     }
+
+                    // Range 0 mean all values are the same
+                    if (range == 0) return@GowerField 1.0
 
                     s1.difficulty
                         .minus(s2.difficulty)
@@ -77,7 +83,6 @@ class GetAppEstimateUseCase {
             gowerSimilarity(it, todoSession, gowerFields)
         }
 
-        //println(similarityScores)
 
         val recencyWeight = 1.0
         val similarityWeight = 4.0
@@ -100,10 +105,10 @@ class GetAppEstimateUseCase {
         //val weights = similarityScores
 
         // History of error (difference between user estimate and actual time)
-        val historicalErrorWork = sessionHistory.map {
-            it.workTime.toMillis()
-                .div(it.userEstimate!!.toMillis().toDouble())
-        }
+//        val historicalErrorWork = sessionHistory.map {
+//            it.workTime.toMillis()
+//                .div(it.userEstimate!!.toMillis().toDouble())
+//        }
 
         val historicalErrorTotal = sessionHistory.map {
             it.workTime.plus(it.breakTime).toMillis()
@@ -122,15 +127,12 @@ class GetAppEstimateUseCase {
             weights = weights
         )
 
-        println(weightedMeanTotal)
 
         val weightedStandardDeviation = unbiasedWeightedStandardDeviation(
             weightedMean = weightedMeanTotal,
             points = historicalErrorTotal,
             weights = weights,
         )
-
-        println(weightedStandardDeviation)
 
 
 //        val correctedUserEstimateWork = todoSession.userEstimate!!
