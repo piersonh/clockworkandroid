@@ -5,18 +5,25 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.util.Log
+import androidx.core.content.ContextCompat
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Timer
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class TimerManager(private val context: Context) : Timer {
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+class TimerManager(
+    private val context: Context,
+    private val taskRepository: TaskRepository,
+) : Timer {
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private var serviceCollectorJob: Job? = null
 
     private var timerService: TimerService? = null
     private var isBound = false
@@ -32,18 +39,21 @@ class TimerManager(private val context: Context) : Timer {
             val binder = p1 as TimerService.TimerBinder
             timerService = binder.getService()
             isBound = true
-            coroutineScope.launch {
+
+            serviceCollectorJob?.cancel()
+            serviceCollectorJob = scope.launch {
                 timerService?.state?.collect { serviceState ->
                     _state.update { serviceState }
                 }
             }
-            Log.i("TimerServiceConnection", "Timer Service Connected")
+
+            restoreAfterExit()
         }
 
         override fun onServiceDisconnected(p0: ComponentName?) {
             isBound = false
             timerService = null
-            Log.i("TimerServiceConnection", "Timer Service Disconnected")
+            serviceCollectorJob?.cancel()
         }
 
     }
@@ -53,20 +63,37 @@ class TimerManager(private val context: Context) : Timer {
             context,
             TimerService::class.java
         ).also { intent ->
-            context.startService(intent)
             context.bindService(
                 intent,
                 connection,
                 Context.BIND_AUTO_CREATE,
             )
         }
-        Log.i("TimerManagerInit", "Timer Manager Initialized")
     }
 
-    override fun start(taskId: Long) = timerService?.start(taskId) ?: Unit
+    private fun restoreAfterExit() {
+        scope.launch {
+            taskRepository.getActiveTask()?.first()?.let {
+                timerService?.prepareAndStartActiveSession(it.taskId)
+            }
+        }
+    }
+
+    override fun start(taskId: Long) {
+        ContextCompat.startForegroundService(context, Intent(context, TimerService::class.java))
+        timerService?.start(taskId)
+    }
     override fun resume() = timerService?.resume() ?: Unit
     override fun pause() = timerService?.pause() ?: Unit
-    override fun suspend(replaceWith: Long?) = timerService?.suspend(replaceWith) ?: Unit
-    override fun finish() = timerService?.finish() ?: Unit
+    override fun suspend(replaceWith: Long?) {
+        timerService?.suspend(replaceWith)
+        if (replaceWith == null) {
+            timerService?.stop()
+        }
+    }
+    override fun finish() {
+        timerService?.finish()
+        timerService?.stop()
+    }
     override fun addMarker() : String = timerService?.addMarker() ?: error("Timer service failed")
 }

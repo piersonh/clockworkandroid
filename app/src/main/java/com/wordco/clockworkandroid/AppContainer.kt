@@ -48,7 +48,7 @@ class ProductionContainer(context: Context) : AppContainer {
     private val profileDao = db.profileDao()
     override val profileRepository = ProfileRepositoryImpl(profileDao)
 
-    override val timer = TimerManager(context)
+    override val timer = TimerManager(context,sessionRepository)
 }
 
 class FakeContainer(context: Context) : AppContainer {
@@ -56,5 +56,5 @@ class FakeContainer(context: Context) : AppContainer {
 
     override val profileRepository = FakeProfileRepository(DummyData.PROFILES)
 
-    override val timer = TimerManager(context)
+    override val timer = TimerManager(context,sessionRepository)
 }

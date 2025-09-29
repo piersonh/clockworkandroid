@@ -49,6 +49,12 @@ class TimerNotificationManager(
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
+    fun buildPreparingNotification() : Notification {
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle("Preparing...")
+            .build()
+    }
+
     fun buildNotification(timerState: TimerState.Active): Notification {
         val markerIntent = createServiceIntent(
             "ACTION_MARKER",

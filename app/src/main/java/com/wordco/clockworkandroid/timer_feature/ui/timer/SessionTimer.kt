@@ -1,15 +1,12 @@
 package com.wordco.clockworkandroid.timer_feature.ui.timer
 
-import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.ui.timer.Second
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class SessionTimer(
-    val session: StateFlow<StartedTask>,
     private val coroutineScope: CoroutineScope,
     initialWorkSeconds: Second,
     initialBreakMinutes: Int,
@@ -22,13 +19,13 @@ class SessionTimer(
 
     private val workTimer = Incrementer.of(
         interval = 1000,
-        initialOffset = { session.value.workTime.toMillis() },
+        initialOffset = { initialWorkSeconds.times(1000).toLong() },
         stateField = _elapsedWorkSeconds
     )
 
     val breakTimer = Incrementer.of(
         interval = 60000,
-        initialOffset = { session.value.breakTime.toMillis() },
+        initialOffset = { initialBreakMinutes.times(60 * 1000).toLong() },
         stateField =  _elapsedBreakMinutes
     )
 
