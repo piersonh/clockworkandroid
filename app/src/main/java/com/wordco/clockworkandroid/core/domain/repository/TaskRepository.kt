@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.core.domain.repository
 
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -23,6 +24,10 @@ interface TaskRepository {
     fun getTask(taskId: Long) : Flow<Task>
 
     fun getTasks() : Flow<List<Task>>
+
+    fun getTodoTasks() : Flow<List<Task.Todo>>
+
+    fun getCompletedTasks() : Flow<List<CompletedTask>>
 
     fun getSessionsForProfile(profileId: Long) : Flow<List<Task>>
 

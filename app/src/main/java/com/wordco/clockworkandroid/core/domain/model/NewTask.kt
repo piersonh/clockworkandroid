@@ -11,5 +11,6 @@ data class NewTask(
     override val difficulty: Int,
     override val color: Color,
     override val userEstimate: Duration?,
-    override val profileId: Long?
-) : Task
+    override val profileId: Long?,
+    override val appEstimate: AppEstimate?,
+) : Task.Todo

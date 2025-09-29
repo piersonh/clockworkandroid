@@ -21,6 +21,7 @@ class FakeSessionRepositoryTest {
                 color = Color.Companion.Red,
                 userEstimate = null,
                 profileId = null,
+                appEstimate = null,
             )
         )
 
@@ -36,6 +37,7 @@ class FakeSessionRepositoryTest {
                 color = Color.Companion.Red,
                 userEstimate = null,
                 profileId = null,
+                appEstimate = null,
             )
         )
 

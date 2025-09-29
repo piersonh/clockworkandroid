@@ -9,7 +9,6 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -20,6 +19,8 @@ import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -44,11 +45,12 @@ import java.time.ZoneOffset
 class EditTaskViewModel (
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
-    private val taskId: Long
+    private val taskId: Long,
+    private var getAppEstimateUseCase: GetAppEstimateUseCase = GetAppEstimateUseCase(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
-    private lateinit var _loadedTask: Task
+    private lateinit var _loadedTask: Task.Todo
     private var _profileId: Long? = null
 
     private lateinit var _profiles: StateFlow<List<Profile>>
@@ -58,7 +60,8 @@ class EditTaskViewModel (
 
     init {
         viewModelScope.launch {
-            _loadedTask = taskRepository.getTask(taskId).first()
+            _loadedTask = taskRepository.getTask(taskId).first() as? Task.Todo
+                ?: error("Only Todo tasks can be edited here")
 
             // Set defaults when done loading
             _profiles = profileRepository.getProfiles().run {
@@ -218,42 +221,54 @@ class EditTaskViewModel (
 
             val userEstimate = estimate?.toDuration()
 
-            viewModelScope.launch {
-                taskRepository.updateTask(
-                    when (_loadedTask) {
-                        is CompletedTask -> CompletedTask(
-                            taskId,
-                            name,
-                            dueDate,
-                            difficulty,
-                            color,
-                            userEstimate,
-                            segments = (_loadedTask as CompletedTask).segments,
-                            markers = (_loadedTask as CompletedTask).markers,
-                            profileId = _profileId,
-                        )
-                        is NewTask -> NewTask(
-                            taskId,
-                            name,
-                            dueDate,
-                            difficulty,
-                            color,
-                            userEstimate,
-                            profileId = _profileId,
-                        )
-                        is StartedTask -> StartedTask(
-                            taskId,
-                            name,
-                            dueDate,
-                            difficulty,
-                            color,
-                            userEstimate,
-                            segments = (_loadedTask as StartedTask).segments,
-                            markers = (_loadedTask as StartedTask).markers,
-                            profileId = _profileId,
-                        )
-                    }
+            val task = when (_loadedTask) {
+                is NewTask -> NewTask(
+                    taskId,
+                    name,
+                    dueDate,
+                    difficulty,
+                    color,
+                    userEstimate,
+                    profileId = _profileId,
+                    appEstimate = _loadedTask.appEstimate,
                 )
+
+                is StartedTask -> StartedTask(
+                    taskId,
+                    name,
+                    dueDate,
+                    difficulty,
+                    color,
+                    userEstimate,
+                    segments = (_loadedTask as StartedTask).segments,
+                    markers = (_loadedTask as StartedTask).markers,
+                    profileId = _profileId,
+                    appEstimate = _loadedTask.appEstimate,
+                )
+            }
+
+            val shouldRecalculateEstimate = (_profileId != _loadedTask.profileId)
+                .or(difficulty != _loadedTask.difficulty)
+                .or(userEstimate?.equals(_loadedTask.userEstimate)?.not() ?: false)
+
+            viewModelScope.launch {
+                val sessionHistory = taskRepository.getCompletedTasks().first()
+
+                if (shouldRecalculateEstimate) {
+                    val appEstimate = getAppEstimateUseCase(
+                        todoSession = task,
+                        sessionHistory = sessionHistory
+                    )
+                    taskRepository.updateTask(
+                        when(task) {
+                            is NewTask -> task.copy(appEstimate = appEstimate)
+                            is StartedTask -> task.copy(appEstimate = appEstimate)
+                        }
+                    )
+                } else {
+                    taskRepository.updateTask(task)
+                }
+
             }
             _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
             Fallible.Success
@@ -271,7 +286,7 @@ class EditTaskViewModel (
                 val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
                 val taskId = this[TASK_ID_KEY] as Long
 
-                EditTaskViewModel (
+                EditTaskViewModel(
                     taskRepository = taskRepository,
                     profileRepository = profileRepository,
                     taskId = taskId,

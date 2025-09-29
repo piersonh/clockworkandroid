@@ -18,6 +18,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(0f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 2,
@@ -27,6 +28,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(0f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 3,
@@ -36,6 +38,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(0f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 4,
@@ -45,6 +48,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(120f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 5,
@@ -54,6 +58,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(120f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 6,
@@ -63,6 +68,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(240f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         CompletedTask(
             taskId = 7,
@@ -81,7 +87,8 @@ object DummyData {
                 )
             ),
             markers = emptyList(),
-            profileId = null
+            profileId = null,
+            appEstimate = null,
         )
     )
 

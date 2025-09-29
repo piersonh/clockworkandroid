@@ -17,6 +17,8 @@ import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -40,7 +42,8 @@ import java.time.ZoneOffset
 class CreateNewTaskViewModel (
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
-    private val profileId: Long?
+    private var profileId: Long?,
+    private var getAppEstimateUseCase: GetAppEstimateUseCase = GetAppEstimateUseCase(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CreateNewSessionUiState>(CreateNewSessionUiState.Retrieving)
@@ -204,22 +207,30 @@ class CreateNewTaskViewModel (
             }
 
             viewModelScope.launch {
-                taskRepository.insertNewTask(
-                    NewTask(
-                        taskId = 0,
-                        profileId = _profileId,
-                        name = taskName,
-                        // 2007-12-03T10:15:30.00Z
-                        dueDate = dueDate?.let {
-                            LocalDateTime.of(it, dueTime)
-                                .atZone(ZoneId.systemDefault())
-                                .toInstant()
-                        },
-                        difficulty = difficulty.toInt(),
-                        color = Color.fromSlider(colorSliderPos),
-                        userEstimate = estimate?.toDuration(),
-                    )
+                val newSession = NewTask(
+                    taskId = 0,
+                    profileId = _profileId,
+                    name = taskName,
+                    // 2007-12-03T10:15:30.00Z
+                    dueDate = dueDate?.let {
+                        LocalDateTime.of(it, dueTime)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                    },
+                    difficulty = difficulty.toInt(),
+                    color = Color.fromSlider(colorSliderPos),
+                    userEstimate = estimate?.toDuration(),
+                    appEstimate = null,
                 )
+
+                val sessionHistory = taskRepository.getCompletedTasks().first()
+
+                val appEstimate = getAppEstimateUseCase(
+                    todoSession = newSession,
+                    sessionHistory = sessionHistory
+                )
+
+                taskRepository.insertNewTask(newSession.copy(appEstimate = appEstimate))
             }
             _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
             Fallible.Success

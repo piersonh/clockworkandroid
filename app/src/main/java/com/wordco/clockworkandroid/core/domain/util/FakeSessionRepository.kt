@@ -94,6 +94,20 @@ class FakeSessionRepository(
         return _sessions.asStateFlow()
     }
 
+    override fun getTodoTasks(): Flow<List<Task.Todo>> {
+        return _sessions.map { sessions ->
+            sessions.filter { it is Task.Todo }
+                .map { it as Task.Todo }
+        }
+    }
+
+    override fun getCompletedTasks(): Flow<List<CompletedTask>> {
+        return _sessions.map { sessions ->
+            sessions.filter { it is CompletedTask }
+                .map { it as CompletedTask }
+        }
+    }
+
     override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
         return _sessions.map { sessions ->
             sessions.filter{ it.profileId == profileId }
@@ -141,6 +155,7 @@ class FakeSessionRepository(
                             segments = listOf(segment.copy(segmentId = newId)),
                             markers = emptyList(),
                             profileId = session.profileId,
+                            appEstimate = session.appEstimate,
                         )
 
                         is CompletedTask -> session.copy(

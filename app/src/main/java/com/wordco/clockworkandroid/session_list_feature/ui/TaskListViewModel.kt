@@ -38,7 +38,7 @@ class TaskListViewModel(
 
     private val _timerState = timer.state
 
-    private val _tasks = taskRepository.getTasks()
+    private val _tasks = taskRepository.getTodoTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -52,15 +52,15 @@ class TaskListViewModel(
                     return@combine TaskListUiState.Retrieving
                 }
 
-                val newTasks = tasks.filter {
-                    it is NewTask
-                }.map { (it as NewTask).toNewTaskListItem() }
-                        .sortedWith(NewTaskListItemComparator())
+                val newTasks = tasks
+                    .filter { it is NewTask }
+                    .map { (it as NewTask).toNewTaskListItem() }
+                    .sortedWith(NewTaskListItemComparator())
 
 
-                val suspendedTasks = tasks.filter {
-                    it is StartedTask && it.status() == StartedTask.Status.SUSPENDED
-                }.map { task -> (task as StartedTask).toSuspendedTaskListItem() }
+                val suspendedTasks = tasks
+                    .filter { it is StartedTask && it.status() == StartedTask.Status.SUSPENDED }
+                    .map { (it as StartedTask).toSuspendedTaskListItem() }
 
                 when (timerState) {
                     TimerState.Closing,

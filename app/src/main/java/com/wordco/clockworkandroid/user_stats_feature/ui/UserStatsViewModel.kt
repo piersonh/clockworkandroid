@@ -48,7 +48,7 @@ class UserStatsViewModel(
 
 
     // TODO: make a getCompletedTasks (?)
-    private val _tasks = taskRepository.getTasks()
+    private val _tasks = taskRepository.getCompletedTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -59,8 +59,7 @@ class UserStatsViewModel(
                 } else {
                     UserStatsUiState.Retrieved(
                         completedTasks = tasks
-                            .filter { it is CompletedTask }
-                            .map { (it as CompletedTask).toCompletedSessionListItem() }
+                            .map { it.toCompletedSessionListItem() }
                             .sortedBy { it.completedAt }
                             .reversed()
                     )

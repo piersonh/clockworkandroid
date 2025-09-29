@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
         MarkerEntity::class,
         ProfileEntity::class,
                ],
-    version = 11)
+    version = 12)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 
