@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -122,7 +123,9 @@ private fun TaskListPage(
         {
             when (uiState) {
                 is TaskListUiState.Retrieved if (
-                        uiState.newTasks.isEmpty() && uiState.suspendedTasks.isEmpty()
+                        uiState.newTasks.isEmpty()
+                                && uiState.suspendedTasks.isEmpty()
+                                && uiState is TaskListUiState.TimerDormant
                     ) -> EmptyTaskList(
                     onCreateNewTaskClick = onCreateNewTaskClick
                 )
@@ -229,8 +232,19 @@ private fun TaskList(
                 modifier = Modifier.padding(horizontal = 20.dp)
             )
         }
-
-        if (uiState.suspendedTasks.isEmpty()) {
+        if (uiState is TaskListUiState.TimerActive) {
+            item {
+                ActiveTaskUiItem(
+                    task = uiState.activeTask,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(shape = RoundedCornerShape(10.dp))
+                        .background(color = MaterialTheme.colorScheme.primaryContainer)
+                        .height(IntrinsicSize.Min)
+                        .clickable(onClick = { onTaskClick(uiState.activeTask.taskId) })
+                )
+            }
+        } else if (uiState.suspendedTasks.isEmpty()) {
             item {
                 Column(
                     modifier = Modifier.fillMaxHeight(),
@@ -268,21 +282,6 @@ private fun TaskList(
         }
 
 
-        if (uiState is TaskListUiState.TimerActive) {
-            item {
-                ActiveTaskUiItem(
-                    task = uiState.activeTask,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(10.dp))
-                        .background(color = MaterialTheme.colorScheme.primaryContainer)
-                        .height(100.dp)
-                        .clickable(onClick = { onTaskClick(uiState.activeTask.taskId) })
-                )
-            }
-        }
-
-
         items(
             uiState.suspendedTasks,
             key = { task -> task.taskId }
@@ -293,7 +292,7 @@ private fun TaskList(
                     .fillMaxWidth()
                     .clip(shape = RoundedCornerShape(10.dp))
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .height(100.dp)
+                    .height(IntrinsicSize.Min)
                     .clickable(onClick = { onTaskClick(it.taskId) })
             )
         }
@@ -361,7 +360,7 @@ private fun TaskList(
                     .fillMaxWidth()
                     .clip(shape = RoundedCornerShape(10.dp))
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .height(100.dp)
+                    .height(IntrinsicSize.Min)
                     .clickable(onClick = { onTaskClick(it.taskId) })
             )
         }

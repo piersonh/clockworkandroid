@@ -20,7 +20,6 @@ import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem

@@ -9,6 +9,7 @@ import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.database.data.local.entities.ProfileEntity
 import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
+import com.wordco.clockworkandroid.database.data.util.DummyData
 import com.wordco.clockworkandroid.database.data.util.UserDataPackage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 null
 //                                DummyData.package0
 //                                DummyData.package1
+                                //DummyData.package3_csStudentHistory
                             if (loadPackage != null) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     getDatabase(context).clearAllTables()
@@ -86,12 +88,12 @@ abstract class AppDatabase : RoomDatabase() {
             profileDao: ProfileDao,
         ) {
             dataPackage.run {
-                taskDao.insertTasks(sessions)
-                taskDao.insertSegments(segments)
-                taskDao.insertMarkers(markers)
                 profiles.forEach {
                     profileDao.insertProfile(it)
                 }
+                taskDao.insertTasks(sessions)
+                taskDao.insertSegments(segments)
+                taskDao.insertMarkers(markers)
             }
         }
     }

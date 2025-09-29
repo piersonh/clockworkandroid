@@ -1,5 +1,6 @@
 package com.wordco.clockworkandroid.session_list_feature.ui.composables
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,15 +10,20 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.ClockImage
 import com.wordco.clockworkandroid.core.ui.composables.MoonImage
 import com.wordco.clockworkandroid.core.ui.composables.MugImage
@@ -51,7 +57,8 @@ fun StartedListItem(
             fontSize = 23.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 2,
         )
 
         Row(
@@ -60,7 +67,13 @@ fun StartedListItem(
             modifier = Modifier.height(30.dp),
 
             ) {
-            MoonImage()
+            Image(
+                painter = painterResource(id = R.drawable.moon),
+                contentDescription = "Suspended",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(20.dp),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+            )
             Text(
                 "Suspended",
                 fontFamily = LATO,
@@ -76,7 +89,13 @@ fun StartedListItem(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         )
         {
-            ClockImage()
+            Image(
+                painter = painterResource(id = R.drawable.clock),
+                contentDescription = "Work Time",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(23.dp),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+            )
             Text(
                 task.workTime.asHHMM(),
                 fontFamily = LATO,
@@ -84,7 +103,13 @@ fun StartedListItem(
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.width(65.dp)
             )
-            MugImage()
+            Image(
+                painter = painterResource(id = R.drawable.mug),
+                contentDescription = "Break Time",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(23.dp),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+            )
             Text(
                 task.breakTime.asHHMM(),
                 fontFamily = LATO,

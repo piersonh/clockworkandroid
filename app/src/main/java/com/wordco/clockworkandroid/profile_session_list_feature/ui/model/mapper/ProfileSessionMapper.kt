@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper
 
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.TodoSessionListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toAppEstimateUiItem
 import java.time.Duration
 
 fun Task.toTodoSessionListItem() : TodoSessionListItem {
@@ -16,6 +17,6 @@ fun Task.toTodoSessionListItem() : TodoSessionListItem {
         difficulty = difficulty,
         color = color,
         userEstimate = userEstimate,
-        appEstimate = Duration.ZERO,
+        appEstimate = appEstimate?.toAppEstimateUiItem(),
     )
 }
