@@ -2,17 +2,14 @@ package com.wordco.clockworkandroid.profile_session_list_feature.ui.elements
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,9 +29,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
-import com.wordco.clockworkandroid.core.ui.composables.CheckedBoxImage
-import com.wordco.clockworkandroid.core.ui.composables.ClockImage
-import com.wordco.clockworkandroid.core.ui.composables.MugImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 
-internal fun interface Incrementer {
+fun interface Incrementer {
     operator fun invoke(): suspend CoroutineScope.() -> Unit
 
     companion object {

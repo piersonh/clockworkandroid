@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.database.data.util
 
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.Marker
