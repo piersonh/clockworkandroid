@@ -222,14 +222,18 @@ class CreateNewTaskViewModel (
                     appEstimate = null,
                 )
 
-                val sessionHistory = taskRepository.getCompletedTasks().first()
+                if (estimate != null) {
+                    val sessionHistory = taskRepository.getCompletedTasks().first()
+                        .filter { it.userEstimate != null }
 
-                val appEstimate = getAppEstimateUseCase(
-                    todoSession = newSession,
-                    sessionHistory = sessionHistory
-                )
-
-                taskRepository.insertNewTask(newSession.copy(appEstimate = appEstimate))
+                    val appEstimate = getAppEstimateUseCase(
+                        todoSession = newSession,
+                        sessionHistory = sessionHistory
+                    )
+                    taskRepository.insertNewTask(newSession.copy(appEstimate = appEstimate))
+                } else {
+                    taskRepository.insertNewTask(newSession)
+                }
             }
             _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
             Fallible.Success

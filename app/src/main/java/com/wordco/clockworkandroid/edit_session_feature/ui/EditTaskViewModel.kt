@@ -251,9 +251,10 @@ class EditTaskViewModel (
                 .or(userEstimate?.equals(_loadedTask.userEstimate)?.not() ?: false)
 
             viewModelScope.launch {
-                val sessionHistory = taskRepository.getCompletedTasks().first()
+                if (shouldRecalculateEstimate && userEstimate != null) {
+                    val sessionHistory = taskRepository.getCompletedTasks().first()
+                        .filter { it.userEstimate != null }
 
-                if (shouldRecalculateEstimate) {
                     val appEstimate = getAppEstimateUseCase(
                         todoSession = task,
                         sessionHistory = sessionHistory
