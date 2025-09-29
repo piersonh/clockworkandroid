@@ -10,8 +10,9 @@ import com.wordco.clockworkandroid.database.data.local.AppDatabase
 import com.wordco.clockworkandroid.database.data.repository.ProfileRepositoryImpl
 import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
 import com.wordco.clockworkandroid.timer_feature.ui.timer.TimerManager
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 interface AppContainer {
     val sessionRepository: TaskRepository
@@ -20,11 +21,20 @@ interface AppContainer {
 
     val permissionRequestSignal: PermissionRequestSignaller
         get() = object : PermissionRequestSignaller {
-            private val _steam = MutableSharedFlow<String>()
-            override val stream = _steam.asSharedFlow()
+            private val _requestChannel = Channel<PermissionRequest>()
+            override val requestStream = _requestChannel.receiveAsFlow()
 
-            override suspend fun request(permission: String) {
-                _steam.emit(permission)
+            /**
+             * The component calls this function. It suspends until the result is available.
+             * @return True if the permission was granted, false otherwise.
+             */
+            override suspend fun request(permission: String): Boolean {
+                val request = PermissionRequest(
+                    permission = permission,
+                    result = CompletableDeferred()
+                )
+                _requestChannel.send(request)
+                return request.result.await() // Suspends here until the result is set
             }
         }
 }

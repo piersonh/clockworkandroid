@@ -18,17 +18,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,7 +49,11 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.user_stats_feature.ui.composables.CompletedTaskUIListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun UserStatsPage(
@@ -57,6 +67,7 @@ fun UserStatsPage(
         uiState = uiState,
         navBar = navBar,
         onCompletedSessionClick = onCompletedSessionClick,
+        onExportUserData = viewModel::onExportUserData,
     )
 }
 
@@ -67,7 +78,11 @@ private fun UserStatsPage(
     uiState: UserStatsUiState,
     navBar: @Composable () -> Unit,
     onCompletedSessionClick: (Long) -> Unit,
+    onExportUserData: suspend () -> Result<String, ExportDataError>,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -82,10 +97,43 @@ private fun UserStatsPage(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
+                actions = {
+                    TextButton(
+                        onClick = {
+                            scope.launch (Dispatchers.IO) {
+                                val result = onExportUserData()
+                                val message = when (result) {
+                                    is Result.Error<ExportDataError> -> {
+                                        when (result.error) {
+                                            ExportDataError.NO_URI -> "Export Failed: No URI"
+                                            ExportDataError.NO_PERMISSION -> "Export Failed: No Permission"
+                                            ExportDataError.IO -> "Export Failed: IO Error"
+                                            ExportDataError.NO_FILE -> "Export Failed: File not found"
+                                            ExportDataError.SECURITY -> "Export Failed: Security error"
+                                            ExportDataError.OTHER -> "Export Failed: Error"
+                                        }
+                                    }
+                                    is Result.Success<String> -> "Export Complete: downloads/${result.result}"
+                                }
+                                snackbarHostState.showSnackbar(message)
+                            }
+                        }
+                    ) {
+                        Text(
+                            text = "Export",
+                            style = TextStyle(fontSize = 25.sp),
+                            textAlign = TextAlign.Right,
+                            fontFamily = LATO,
+                            color = MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
+                },
             )
         },
         bottomBar = navBar,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+
     ) { paddingValues ->
 
         Box(
@@ -195,12 +243,15 @@ private fun UserStatsPagePreview() {
                     .filter { it is CompletedTask }
                     .map { (it as CompletedTask).toCompletedSessionListItem() }
             ),
-            navBar = { NavBar(
-                items = FAKE_TOP_LEVEL_DESTINATIONS,
-                currentDestination = Unit::class,
-                navigateTo = {},
-            ) },
-            onCompletedSessionClick = { },
+            navBar = {
+                NavBar(
+                    items = FAKE_TOP_LEVEL_DESTINATIONS,
+                    currentDestination = Unit::class,
+                    navigateTo = {},
+                )
+            },
+            onCompletedSessionClick = {  },
+            onExportUserData = { Result.Success("") },
         )
     }
 }
@@ -221,7 +272,8 @@ private fun UserStatsNoCompletedSessionsPagePreview() {
                     navigateTo = {},
                 )
             },
-            onCompletedSessionClick = { },
+            onCompletedSessionClick = {  },
+            onExportUserData = { Result.Success("") },
         )
     }
 }

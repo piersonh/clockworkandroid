@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.timer_feature.ui.timer
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
@@ -39,7 +40,7 @@ class TimerService() : Service() {
 
     private val binder = TimerBinder()
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private lateinit var notificationManager: TimerNotificationManager
+    private var notificationManager: TimerNotificationManager? = null
     private lateinit var taskRepository: TaskRepository
 
 
@@ -66,18 +67,22 @@ class TimerService() : Service() {
         super.onCreate()
         taskRepository = (application as MainApplication).taskRepository
         val permissionRequestSignaller = (application as MainApplication).permissionRequestSignaller
-        notificationManager = TimerNotificationManager(
-            this,
-            onRequestNotificationPermission = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    coroutineScope.launch {
-                        permissionRequestSignaller.request(
-                            Manifest.permission.POST_NOTIFICATIONS
-                        )
-                    }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            coroutineScope.launch {
+                if (permissionRequestSignaller.request(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )) {
+                    notificationManager = TimerNotificationManager(
+                        this@TimerService,
+                    )
                 }
             }
-        )
+        } else {
+            notificationManager = TimerNotificationManager(
+                this,
+            )
+        }
+
         Log.i("TimerService", "Timer Service Created")
         restoreAfterExit()
     }
@@ -175,6 +180,7 @@ class TimerService() : Service() {
     }
 
 
+    @SuppressLint("MissingPermission") // THERE IS A CHECK SEE onCreate()
     private fun startCollection() {
         collectionJob = coroutineScope.launch {
             combine (
@@ -208,7 +214,7 @@ class TimerService() : Service() {
                 _state.update { state }
 
                 if (state is TimerState.Active) {
-                    notificationManager.showNotification(state)
+                    notificationManager?.showNotification(state)
                 }
             }
         }
@@ -306,7 +312,7 @@ class TimerService() : Service() {
         _internalState.update { State.CLOSING }
 
         cancelIncrementer()
-        notificationManager.cancelNotification()
+        notificationManager?.cancelNotification()
     }
 
     fun start(taskId: Long) {

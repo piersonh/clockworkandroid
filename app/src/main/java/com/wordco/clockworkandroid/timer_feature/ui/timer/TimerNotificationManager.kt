@@ -1,15 +1,13 @@
 package com.wordco.clockworkandroid.timer_feature.ui.timer
 
-import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
@@ -22,7 +20,6 @@ import java.util.Locale
 
 class TimerNotificationManager(
     private val context: Context,
-    private val onRequestNotificationPermission: () -> Unit,
 ) {
 
     companion object {
@@ -42,17 +39,9 @@ class TimerNotificationManager(
         notificationManager.createNotificationChannel(channel)
     }
 
+    @SuppressLint("MissingPermission") // MANAGER IS ONLY CREATED AFTER CHECK SUCCEEDS
     fun showNotification(timerState: TimerState.Active) {
         val notification = buildNotification(timerState)
-        if (ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-
-            onRequestNotificationPermission()
-        }
-
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
