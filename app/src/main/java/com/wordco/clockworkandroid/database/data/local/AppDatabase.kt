@@ -9,6 +9,7 @@ import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.database.data.local.entities.ProfileEntity
 import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
+import com.wordco.clockworkandroid.database.data.util.DummyData
 import com.wordco.clockworkandroid.database.data.util.UserDataPackage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,9 +60,10 @@ abstract class AppDatabase : RoomDatabase() {
 
                             val loadPackage =
                                 null
-//                                DummyData.package0
-//                                DummyData.package1
+                                //DummyData.package0_empty
+                                //DummyData.package1
                                 //DummyData.package3_csStudentHistory
+                                //DummyData.package4_laundry
                             if (loadPackage != null) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     getDatabase(context).clearAllTables()
