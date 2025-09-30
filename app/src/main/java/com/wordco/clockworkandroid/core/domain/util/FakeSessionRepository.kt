@@ -114,20 +114,11 @@ class FakeSessionRepository(
         }
     }
 
-    override suspend fun hasActiveTask(): Boolean {
-        return _sessions.value.firstOrNull {
-            it is StartedTask && it.segments.last().type == Segment.Type.WORK
-        } != null
-    }
 
-    override suspend fun getActiveTask(): Flow<StartedTask>? {
+    override suspend fun getActiveTaskId(): Long? {
         return _sessions.value.firstOrNull {
             it is StartedTask && it.segments.last().type == Segment.Type.WORK
-        }?.let { activeSession ->
-            _sessions.map { sessions ->
-                sessions.first { it.taskId == activeSession.taskId } as StartedTask
-            }
-        }
+        }?.taskId
     }
 
     override suspend fun insertSegment(segment: Segment) {

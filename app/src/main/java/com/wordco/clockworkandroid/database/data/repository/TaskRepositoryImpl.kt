@@ -79,16 +79,8 @@ class TaskRepositoryImpl (
         }
     }
 
-    override suspend fun hasActiveTask(): Boolean {
-        return taskDao.hasActiveTask()
-    }
-
-    override suspend fun getActiveTask(): Flow<StartedTask>? {
-        return taskDao.getActiveTaskId()?.let { id ->
-            return taskDao.getTaskWithExecutionData(id).map {
-                it.toTask() as StartedTask
-            }
-        }
+    override suspend fun getActiveTaskId(): Long? {
+        return taskDao.getActiveTaskId()
     }
 
     override suspend fun insertSegment(segment: Segment) {

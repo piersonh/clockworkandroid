@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -73,8 +72,8 @@ class TimerManager(
 
     private fun restoreAfterExit() {
         scope.launch {
-            taskRepository.getActiveTask()?.first()?.let {
-                timerService?.prepareAndStartActiveSession(it.taskId)
+            taskRepository.getActiveTaskId()?.let {
+                timerService?.prepareAndStartActiveSession(it)
             }
         }
     }

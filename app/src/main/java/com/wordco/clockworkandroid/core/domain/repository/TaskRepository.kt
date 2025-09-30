@@ -3,7 +3,6 @@ package com.wordco.clockworkandroid.core.domain.repository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.Segment
-import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import kotlinx.coroutines.flow.Flow
 
@@ -31,9 +30,7 @@ interface TaskRepository {
 
     fun getSessionsForProfile(profileId: Long) : Flow<List<Task>>
 
-    suspend fun hasActiveTask() : Boolean
-
-    suspend fun getActiveTask() : Flow<StartedTask>?
+    suspend fun getActiveTaskId() : Long?
 
     suspend fun insertSegment(segment: Segment)
 
