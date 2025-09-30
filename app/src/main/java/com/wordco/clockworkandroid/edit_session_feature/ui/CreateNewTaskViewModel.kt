@@ -16,6 +16,8 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
+import com.wordco.clockworkandroid.edit_profile_feature.ui.EditProfileUiState
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.DeleteSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
@@ -206,6 +208,12 @@ class CreateNewTaskViewModel (
             Fallible.Success
         } ?: error("Can only save if retrieved")
     }
+    fun onDeleteClick() : Fallible<DeleteSessionError> {
+        return Fallible.Success
+    }
+
+
+
 
 
     companion object {

@@ -43,6 +43,9 @@ class TaskRepositoryImpl (
     override suspend fun updateTask(task: Task) {
         taskDao.updateTask(task.toTaskEntity())
     }
+    override suspend fun deleteTask(task: Task) {
+        taskDao.deleteTask(task.toTaskEntity())
+    }
 
     override fun getTask(taskId: Long): Flow<Task> {
         return taskDao.getTaskWithExecutionData(taskId).map {

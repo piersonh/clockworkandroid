@@ -19,6 +19,7 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.DeleteSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
@@ -240,7 +241,18 @@ class EditTaskViewModel (
             Fallible.Success
         } ?: error("Can only save if retrieved")
     }
+    fun onDeleteClick() : Fallible<DeleteSessionError> {
+        return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
+            if (taskName.isBlank()) {
+                return Fallible.Error(DeleteSessionError.MISSING_NAME)
+            }
 
+            viewModelScope.launch {
+                taskRepository.deleteTask(_loadedTask)
+            }
+            Fallible.Success
+        } ?: error("Can only delete if retrieved")
+    }
 
     companion object {
 

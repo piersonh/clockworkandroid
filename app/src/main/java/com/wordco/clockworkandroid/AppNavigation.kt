@@ -123,7 +123,8 @@ fun NavHost(
         )
 
         editTaskPage(
-            onBackClick = navController::popBackStack
+            onBackClick = navController::popBackStack,
+            onDeleteBack = {navController.popBackStack(route = TaskListRoute, false)}
         )
 
         profileListPage(

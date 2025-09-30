@@ -31,5 +31,7 @@ fun CreateNewTaskPage (
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
         onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
         onSaveClick = viewModel::onSaveClick,
+        onDeleteClick = viewModel::onDeleteClick,
+        onDeleteBack = viewModel::onDeleteClick
     )
 }
