@@ -15,6 +15,7 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Second
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.ui.util.complete
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ class TimerService() : Service() {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var notificationManager: TimerNotificationManager? = null
     private lateinit var taskRepository: TaskRepository
+    private lateinit var addMarkerUseCase: AddMarkerUseCase
 
 
     private enum class State {
@@ -60,6 +62,7 @@ class TimerService() : Service() {
     override fun onCreate() {
         super.onCreate()
         taskRepository = (application as MainApplication).taskRepository
+        addMarkerUseCase = AddMarkerUseCase()
 
         val permissionRequestSignaller = (application as MainApplication).permissionRequestSignaller
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -81,16 +84,46 @@ class TimerService() : Service() {
         setState(State.DORMANT)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = notificationManager?.buildPreparingNotification()
-            ?: return START_NOT_STICKY
+    companion object {
+        const val ACTION_START = "ACTION_START"
+        const val ACTION_RESTORE = "ACTION_RESTORE"
+        const val ACTION_PAUSE = "ACTION_PAUSE"
+        const val ACTION_RESUME = "ACTION_RESUME"
+        const val ACTION_SUSPEND = "ACTION_SUSPEND"
+        const val ACTION_FINISH = "ACTION_FINISH"
+        const val ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE"
+        const val EXTRA_TASK_ID = "EXTRA_TASK_ID"
+        const val ACTION_MARKER = "ACTION_MARKER"
+    }
 
-        startForeground(TimerNotificationManager.NOTIFICATION_ID, notification)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+//        val notification = notificationManager?.buildPreparingNotification()
+//            ?: return START_NOT_STICKY
+//
+//        startForeground(TimerNotificationManager.NOTIFICATION_ID, notification)
 
         when (intent?.action) {
-            "ACTION_RESUME" -> resume()
-            "ACTION_PAUSE" -> pause()
-            "ACTION_MARKER" -> addMarker()
+            ACTION_START -> {
+                val taskId = intent.getLongExtra(EXTRA_TASK_ID, -1L)
+                if (taskId != -1L) {
+                    start(taskId)
+                }
+            }
+            ACTION_RESTORE -> {
+                val taskId = intent.getLongExtra(EXTRA_TASK_ID, -1L)
+                if (taskId != -1L) {
+                    prepareAndStartActiveSession(taskId)
+                }
+            }
+            ACTION_RESUME -> resume()
+            ACTION_PAUSE -> pause()
+            ACTION_SUSPEND -> {
+                val replaceWithId = intent.getLongExtra(EXTRA_TASK_ID, -1L)
+                suspend(if (replaceWithId != -1L) replaceWithId else null)
+            }
+            ACTION_FINISH -> finish()
+            ACTION_STOP_SERVICE -> stop()
+            ACTION_MARKER -> addMarker()
         }
 
         return START_STICKY
@@ -104,7 +137,8 @@ class TimerService() : Service() {
         return binder
     }
 
-    fun stop() {
+    private fun stop() {
+        setState(State.DORMANT)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -140,7 +174,7 @@ class TimerService() : Service() {
     }
 
 
-    fun prepareAndStartActiveSession(taskId: Long) {
+    private fun prepareAndStartActiveSession(taskId: Long) {
         coroutineScope.launch {
             taskRepository.getTask(taskId).let { flow ->
                 val task = flow.first() as? StartedTask
@@ -307,7 +341,7 @@ class TimerService() : Service() {
         _loadedTaskId.update { null }
     }
 
-    fun start(taskId: Long) {
+    private fun start(taskId: Long) {
         when (_internalState.value) {
             State.DORMANT -> prepareAndStartInactiveSession(taskId)
             State.INIT,
@@ -385,7 +419,7 @@ class TimerService() : Service() {
     }
 
 
-    fun resume() {
+    private fun resume() {
         when (_internalState.value) {
             State.INIT,
             State.DORMANT,
@@ -404,7 +438,7 @@ class TimerService() : Service() {
     }
 
 
-    fun pause() {
+    private fun pause() {
         when (_internalState.value) {
             State.INIT,
             State.DORMANT,
@@ -422,7 +456,7 @@ class TimerService() : Service() {
         }
     }
 
-    fun addMarker() : String {
+    private fun addMarker() {
         when (_internalState.value) {
             State.INIT,
             State.DORMANT,
@@ -432,26 +466,16 @@ class TimerService() : Service() {
             State.RUNNING -> {}
         }
 
-        val now = Instant.now()
-
-        return _loadedTask?.value?.let { session ->
-            "Marker ${session.markers.size + 1}".also { name ->
-                coroutineScope.launch {
-                    taskRepository.insertMarker(
-                        Marker(
-                            markerId = 0,
-                            taskId = session.taskId,
-                            startTime = now,
-                            label = name
-                        )
-                    )
-                }
-            }
-        } ?: error ("loaded task is null")
+        coroutineScope.launch {
+            addMarkerUseCase(
+                sessionRepository = taskRepository,
+                session = _loadedTask?.value ?: error ("loaded task is null")
+            )
+        }
     }
 
 
-    fun suspend(replaceWith: Long? = null) {
+    private fun suspend(replaceWith: Long? = null) {
         when (_internalState.value) {
             State.INIT,
             State.DORMANT,
@@ -472,10 +496,10 @@ class TimerService() : Service() {
 
         replaceWith?.let{ replacement ->
             prepareAndStartInactiveSession(replacement)
-        } ?: setState(State.DORMANT)
+        } ?: stop()
     }
 
-    fun finish() {
+    private fun finish() {
         when (_internalState.value) {
             State.INIT,
             State.DORMANT,
@@ -494,6 +518,6 @@ class TimerService() : Service() {
             session.complete(taskRepository)
         }
 
-        setState(State.DORMANT)
+        stop()
     }
 }

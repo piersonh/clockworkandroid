@@ -72,27 +72,54 @@ class TimerManager(
 
     private fun restoreAfterExit() {
         scope.launch {
-            taskRepository.getActiveTaskId()?.let {
-                timerService?.prepareAndStartActiveSession(it)
+            taskRepository.getActiveTaskId()?.let { taskId ->
+                val restoreIntent = Intent(context, TimerService::class.java).apply {
+                    action = TimerService.ACTION_RESTORE
+                    putExtra(TimerService.EXTRA_TASK_ID, taskId)
+                }
+
+                // Start the service with this explicit command
+                ContextCompat.startForegroundService(context, restoreIntent)
             }
         }
     }
 
     override fun start(taskId: Long) {
-        ContextCompat.startForegroundService(context, Intent(context, TimerService::class.java))
-        timerService?.start(taskId)
-    }
-    override fun resume() = timerService?.resume() ?: Unit
-    override fun pause() = timerService?.pause() ?: Unit
-    override fun suspend(replaceWith: Long?) {
-        timerService?.suspend(replaceWith)
-        if (replaceWith == null) {
-            timerService?.stop()
+        val startIntent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_START
+            putExtra(TimerService.EXTRA_TASK_ID, taskId)
         }
+
+        // Start the service with this explicit command
+        ContextCompat.startForegroundService(context, startIntent)
+    }
+    override fun resume() {
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_RESUME
+        }
+        // You can use startService here, as the service is already in the foreground
+        context.startService(intent)
+    }
+    override fun pause() {
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_PAUSE
+        }
+        context.startService(intent)
+    }
+    override fun suspend(replaceWith: Long?) {
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_SUSPEND
+            replaceWith?.let {
+                putExtra(TimerService.EXTRA_TASK_ID, it)
+            }
+        }
+        // Use startService because we are potentially stopping the foreground session
+        context.startService(intent)
     }
     override fun finish() {
-        timerService?.finish()
-        timerService?.stop()
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_FINISH
+        }
+        context.startService(intent)
     }
-    override fun addMarker() : String = timerService?.addMarker() ?: error("Timer service failed")
 }

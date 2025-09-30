@@ -14,6 +14,7 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.timer.Timer
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.ui.util.complete
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +29,7 @@ class TimerViewModel (
     private val taskId: Long,
     private val timer: Timer,
     private val taskRepository: TaskRepository,
+    private val addMarkerUseCase: AddMarkerUseCase = AddMarkerUseCase(),
     //private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -116,8 +118,14 @@ class TimerViewModel (
         timer.resume()
     }
 
-    fun addMark() : String {
-        return timer.addMarker()
+    fun addMark() {
+        viewModelScope.launch {
+            addMarkerUseCase(
+                sessionRepository = taskRepository,
+                session = _loadedTask.value as? StartedTask
+                    ?: error ("addMark can only be called when timer is running")
+            )
+        }
     }
 
     fun finish() {
