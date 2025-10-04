@@ -16,9 +16,11 @@ import com.wordco.clockworkandroid.core.ui.timer.Timer
 import com.wordco.clockworkandroid.core.ui.timer.TimerState
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.ui.util.complete
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -34,8 +36,10 @@ class TimerViewModel (
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<TimerUiState>(TimerUiState.Retrieving)
-
     val uiState: StateFlow<TimerUiState> = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<TimerUiEvent>()
+    val events = _events.asSharedFlow()
 
     private val _loadedTask = taskRepository.getTask(taskId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
@@ -120,10 +124,15 @@ class TimerViewModel (
 
     fun addMark() {
         viewModelScope.launch {
-            addMarkerUseCase(
+            val session = _loadedTask.value as? StartedTask
+                ?: error ("addMark can only be called when timer is running")
+            val markerName = addMarkerUseCase(
                 sessionRepository = taskRepository,
-                session = _loadedTask.value as? StartedTask
-                    ?: error ("addMark can only be called when timer is running")
+                session = session
+            )
+
+            _events.emit(
+                TimerUiEvent.ShowSnackbar("Added $markerName to Timeline")
             )
         }
     }

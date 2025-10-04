@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.IBinder
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.model.Marker
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -97,10 +96,10 @@ class TimerService() : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-//        val notification = notificationManager?.buildPreparingNotification()
-//            ?: return START_NOT_STICKY
-//
-//        startForeground(TimerNotificationManager.NOTIFICATION_ID, notification)
+        val notification = notificationManager?.buildPreparingNotification()
+            ?: return START_NOT_STICKY
+
+        startForeground(TimerNotificationManager.NOTIFICATION_ID, notification)
 
         when (intent?.action) {
             ACTION_START -> {

@@ -22,9 +22,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -38,10 +38,7 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimeDisplay
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimerControls
-import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
-import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +52,24 @@ fun TimerPage(
 ) {
     val uiState by timerViewModel.uiState.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        timerViewModel.events.collect { event ->
+            when (event) {
+                is TimerUiEvent.ShowSnackbar -> {
+                    launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.showSnackbar(event.message)
+                    }
+                }
+            }
+        }
+    }
+
     TimerPage(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
         onEditClick = onEditClick,
         onInitClick = timerViewModel::initTimer,
@@ -75,17 +88,16 @@ fun TimerPage(
 @Composable
 private fun TimerPage(
     uiState: TimerUiState,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onInitClick: () -> Unit,
     onBreakClick: () -> Unit,
     onSuspendClick: () -> Unit,
     onResumeClick: () -> Unit,
-    onMarkClick: () -> String,
+    onMarkClick: () -> Unit,
     onFinishClick: () -> Unit,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -182,22 +194,7 @@ private fun TimerPage(
                             onBreakClick,
                             onSuspendClick,
                             onResumeClick,
-                            onMarkClick = {
-                                val name = onMarkClick()
-
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(
-                                        uiState.elapsedSeconds.let {
-                                            String.format(
-                                                Locale.getDefault(),
-                                                "Added %s at %02d:%02d",
-                                                name, it.toHours(), it.toMinutesInHour()
-                                            )
-                                        }
-                                    )
-                                }
-                            },
+                            onMarkClick = onMarkClick,
                             onFinishClick,
                         )
                     }
@@ -219,13 +216,14 @@ private fun SuspendedTimerPagePreview() {
                 elapsedSeconds = 1000,
                 false
             ),
+            snackbarHostState = remember { SnackbarHostState() },
             onBackClick = {},
             onEditClick = {},
             onInitClick = {},
             onBreakClick = {},
             onSuspendClick = {},
             onResumeClick = {},
-            onMarkClick = {""},
+            onMarkClick = {},
             onFinishClick = {}
         )
     }
