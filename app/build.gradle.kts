@@ -16,8 +16,8 @@ android {
         applicationId = "com.wordco.clockworkandroid"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "m4-2025-09-29-db1-ui2"
+        versionCode = 3
+        versionName = "m4-2025-09-29-db1-ui3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
