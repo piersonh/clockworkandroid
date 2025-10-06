@@ -3,9 +3,11 @@ package com.wordco.clockworkandroid.edit_session_feature.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -34,6 +36,7 @@ import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
@@ -234,36 +237,35 @@ private fun EditSessionPageRetrieved(
             verticalAlignment = Alignment.Top,
         ) { page ->
             when (page) {
-                1 -> Column {
-                    Box(
-                        modifier = Modifier.padding(paddingValues),
-                    ) {
-                        SessionForm(
-                            uiState = uiState.toFormUiState(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 30.dp, vertical = 20.dp)
-                                .verticalScroll(scrollState),
-                            onShowProfilePicker = {
-                                isBottomBarVisible = false
-                                coroutineScope.launch {
-                                    pagerState.tweenToPage(0)
-                                }
-                            },
-                            onTaskNameChange = onTaskNameChange,
-                            onColorSliderChange = onColorSliderChange,
-                            onDifficultyChange = onDifficultyChange,
-                            onShowDatePicker = onShowDatePicker,
-                            onDismissDatePicker = onDismissModal,
-                            onDueDateChange = onDueDateChange,
-                            onShowTimePicker = onShowTimePicker,
-                            onDismissTimePicker = onDismissModal,
-                            onDueTimeChange = onDueTimeChange,
-                            onShowEstimatePicker = onShowEstimatePicker,
-                            onDismissEstimatePicker = onDismissModal,
-                            onEstimateChange = onEstimateChange,
-                        )
-                    }
+                1 -> Column(
+                    modifier = Modifier.padding(paddingValues)
+                        .verticalScroll(scrollState),
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SessionForm(
+                        uiState = uiState.toFormUiState(),
+                        modifier = Modifier
+                            .padding(horizontal = 30.dp),
+                        onShowProfilePicker = {
+                            isBottomBarVisible = false
+                            coroutineScope.launch {
+                                pagerState.tweenToPage(0)
+                            }
+                        },
+                        onTaskNameChange = onTaskNameChange,
+                        onColorSliderChange = onColorSliderChange,
+                        onDifficultyChange = onDifficultyChange,
+                        onShowDatePicker = onShowDatePicker,
+                        onDismissDatePicker = onDismissModal,
+                        onDueDateChange = onDueDateChange,
+                        onShowTimePicker = onShowTimePicker,
+                        onDismissTimePicker = onDismissModal,
+                        onDueTimeChange = onDueTimeChange,
+                        onShowEstimatePicker = onShowEstimatePicker,
+                        onDismissEstimatePicker = onDismissModal,
+                        onEstimateChange = onEstimateChange,
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 0 -> ProfilePicker(
@@ -293,7 +295,7 @@ private fun EditSessionPageRetrieved(
 }
 
 
-@Preview
+@AspectRatioPreviews
 @Composable
 private fun EditTaskPagePreview() {
     ClockworkTheme {

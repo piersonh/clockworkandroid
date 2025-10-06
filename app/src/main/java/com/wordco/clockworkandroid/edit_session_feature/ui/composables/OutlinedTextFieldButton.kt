@@ -41,16 +41,17 @@ fun OutlinedTextFieldButton (
             value = value,
             enabled = false,
             modifier = Modifier
-                .fillMaxWidth()
                 .combinedClickable(
                     onClick = onClick
                 ),
             label = label?.let {
                 {
                     Text(
-                        it, style = TextStyle(
-                            letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
-                        )
+                        it,
+                        style = TextStyle(
+                            letterSpacing = 0.02.em, // or use TextUnit(value, TextUnitType.Sp)
+                        ),
+                        maxLines = 1
                     )
                 }
             },

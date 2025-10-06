@@ -26,6 +26,18 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 
+private val brush = Brush.horizontalGradient(
+    listOf(
+        Color.hsv(0f, 1f, 1f),
+        Color.hsv(60f, 1f, 1f),
+        Color.hsv(120f, 1f, 1f),
+        Color.hsv(180f, 1f, 1f),
+        Color.hsv(240f, 1f, 1f),
+        Color.hsv(300f, 1f, 1f),
+        Color.hsv(360f, 1f, 1f)
+    )
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorSlider(
@@ -33,19 +45,6 @@ fun ColorSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
 ) {
-    val brush = remember {
-        Brush.horizontalGradient(
-            listOf(
-                Color.hsv(0f, 1f, 1f),
-                Color.hsv(60f, 1f, 1f),
-                Color.hsv(120f, 1f, 1f),
-                Color.hsv(180f, 1f, 1f),
-                Color.hsv(240f, 1f, 1f),
-                Color.hsv(300f, 1f, 1f),
-                Color.hsv(360f, 1f, 1f)
-            )
-        )
-    }
     Text(
         textAlign = TextAlign.Left,
         fontSize = 14.sp,

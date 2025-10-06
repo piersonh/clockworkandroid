@@ -3,6 +3,8 @@ package com.wordco.clockworkandroid.edit_session_feature.ui.composables
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +48,7 @@ import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormUiState
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.session_list_feature.ui.util.toDp
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
@@ -148,12 +152,15 @@ fun SessionForm(
 
         Spacer(Modifier.height(5.dp))
 
-        Row (
-            modifier = Modifier.fillMaxWidth()
+
+        val density = LocalDensity.current
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextFieldButton(
                 value = uiState.dueDate?.format(dateFormatter) ?: "Not Scheduled",
-                modifier = Modifier.weight(0.45f),
+                modifier = Modifier.width(200.sp.toDp(density)),
                 label = "Due Date",
                 onClick = onShowDatePicker,
                 trailingIcon = {
@@ -171,18 +178,50 @@ fun SessionForm(
             )
 
             uiState.dueDate?.let {
-                Spacer(
-                    Modifier.weight(0.05f)
-                )
-
                 OutlinedTextFieldButton(
                     value = uiState.dueTime!!.format(timeFormatter),
-                    modifier = Modifier.weight(0.35f),
+                    //modifier = Modifier.width(IntrinsicSize.Min),
                     label = "Due Time",
                     onClick = onShowTimePicker,
                 )
             }
         }
+
+//        Row (
+//            modifier = Modifier.fillMaxWidth()
+//        ) {
+//            OutlinedTextFieldButton(
+//                value = uiState.dueDate?.format(dateFormatter) ?: "Not Scheduled",
+//                modifier = Modifier.weight(0.45f),
+//                label = "Due Date",
+//                onClick = onShowDatePicker,
+//                trailingIcon = {
+//                    uiState.dueDate?.let {
+//                        Icon(
+//                            Icons.Default.Clear,
+//                            contentDescription = "Clear selected date",
+//                            tint = MaterialTheme.colorScheme.onPrimary,
+//                            modifier = Modifier.combinedClickable(
+//                                onClick = { onDueDateChange(null) }
+//                            )
+//                        )
+//                    }
+//                }
+//            )
+//
+//            uiState.dueDate?.let {
+//                Spacer(
+//                    Modifier.weight(0.05f)
+//                )
+//
+//                OutlinedTextFieldButton(
+//                    value = uiState.dueTime!!.format(timeFormatter),
+//                    modifier = Modifier.weight(0.35f),
+//                    label = "Due Time",
+//                    onClick = onShowTimePicker,
+//                )
+//            }
+//        }
 
         Spacer(Modifier.height(5.dp))
 

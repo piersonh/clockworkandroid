@@ -237,14 +237,13 @@ private fun CreateSessionPageRetrieved(
             when (page) {
                 1 -> Column {
                     Box(
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier.padding(paddingValues)
+                            .verticalScroll(scrollState),
                     ) {
                         SessionForm(
                             uiState = uiState.toFormUiState(),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 30.dp, vertical = 20.dp)
-                                .verticalScroll(scrollState),
+                                .padding(horizontal = 30.dp, vertical = 20.dp),
                             onShowProfilePicker = {
                                 isBottomBarVisible = false
                                 coroutineScope.launch {
