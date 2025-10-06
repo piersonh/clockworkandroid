@@ -198,7 +198,7 @@ private fun EmptyTaskList(
                     style = TextStyle(
                         fontFamily = LATO,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         textAlign = TextAlign.Center,
                     ),
                     maxLines = 1,

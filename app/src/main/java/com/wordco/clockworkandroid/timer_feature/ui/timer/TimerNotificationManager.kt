@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.timer_feature.ui.timer
 
 import android.annotation.SuppressLint
 import android.app.Notification
+import android.app.Notification.VISIBILITY_PUBLIC
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -24,7 +25,10 @@ class TimerNotificationManager(
 
     companion object {
         const val NOTIFICATION_ID = 1
-        const val CHANNEL_ID = "TimerChannel"
+
+        // every time the channel changes, the id needs to change
+        // or it won't be reflected without a restart
+        const val CHANNEL_ID = "TimerChannel_v2"
     }
 
     private val notificationManager = NotificationManagerCompat.from(context)
@@ -33,9 +37,15 @@ class TimerNotificationManager(
         val channel = NotificationChannel(
             CHANNEL_ID,
             "Timer Notifications",
-            NotificationManager.IMPORTANCE_LOW
-        )
-        channel.description = "Live notifications for timer status"
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = "Live notifications for timer status"
+            setSound(null,null)
+            enableVibration(false)
+            enableLights(false)
+            setShowBadge(false)
+            lockscreenVisibility = VISIBILITY_PUBLIC
+        }
         notificationManager.createNotificationChannel(channel)
     }
 
@@ -114,22 +124,22 @@ class TimerNotificationManager(
             is TimerState.Running -> R.drawable.running
         }
 
-        val notif = NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(content)
             .setOngoing(true)
             .setSmallIcon(icon)
             .setAutoCancel(false)
-            //.setSound(null)
             .setColor(timerState.task.color.toArgb())  //accent with task color?
-            //.setSilent(true)
             .addAction(resumePauseAction) // resume/pause
             .setContentIntent(deepLinkIntent)
-            // .addAction() // finish?
             .setContentText(timerState.task.name)
-        if (timerState is TimerState.Running) {
-            notif.addAction(markerAction)
-        }
-        return notif.build()
+            .setOnlyAlertOnce(true)
+            .apply {
+                if (timerState is TimerState.Running) {
+                    addAction(markerAction)
+                }
+            }
+            .build()
     }
 
     private fun createServiceIntent(action: String?): PendingIntent {
