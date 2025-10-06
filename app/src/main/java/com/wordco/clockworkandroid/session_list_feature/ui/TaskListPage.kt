@@ -2,11 +2,9 @@ package com.wordco.clockworkandroid.session_list_feature.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,7 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,14 +29,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,12 +48,14 @@ import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTaskUiItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.util.toDp
 import java.time.Duration
 
 @Composable
@@ -192,11 +193,18 @@ private fun EmptyTaskList(
             AccentRectangleTextButton(
                 onClick = onCreateNewTaskClick,
             ) {
-                Text(
+                BasicText(
                     text = "Create New Session",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp
+                    style = TextStyle(
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                    ),
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(
+                        maxFontSize = 50.sp
+                    )
                 )
             }
         }
@@ -236,12 +244,8 @@ private fun TaskList(
             item {
                 ActiveTaskUiItem(
                     task = uiState.activeTask,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(shape = RoundedCornerShape(10.dp))
-                        .background(color = MaterialTheme.colorScheme.primaryContainer)
-                        .height(IntrinsicSize.Min)
-                        .clickable(onClick = { onTaskClick(uiState.activeTask.taskId) })
+                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                    onClick = { onTaskClick(uiState.activeTask.taskId) }
                 )
             }
         } else if (uiState.suspendedTasks.isEmpty()) {
@@ -260,7 +264,7 @@ private fun TaskList(
                             painter = painterResource(id = R.drawable.stopwatch),
                             contentDescription = "Stopwatch",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.height(33.dp),
+                            modifier = Modifier.height(33.sp.toDp(LocalDensity.current)),
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
 
@@ -288,12 +292,8 @@ private fun TaskList(
         ) {
             StartedListItem(
                 it,
-                Modifier
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .height(IntrinsicSize.Min)
-                    .clickable(onClick = { onTaskClick(it.taskId) })
+                MaterialTheme.colorScheme.primaryContainer,
+                onClick = { onTaskClick(it.taskId) }
             )
         }
 
@@ -356,12 +356,8 @@ private fun TaskList(
         ) {
             UpcomingTaskUIListItem(
                 it,
-                Modifier
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .height(IntrinsicSize.Min)
-                    .clickable(onClick = { onTaskClick(it.taskId) })
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                onClick = { onTaskClick(it.taskId) },
             )
         }
 
@@ -372,7 +368,7 @@ private fun TaskList(
 }
 
 
-@Preview
+@AspectRatioPreviews
 @Composable
 private fun TaskListPagePreview() {
     ClockworkTheme {
@@ -403,7 +399,7 @@ private fun TaskListPagePreview() {
 }
 
 
-@Preview
+@AspectRatioPreviews
 @Composable
 private fun EmptyTaskListPagePreview() {
     ClockworkTheme {
@@ -423,7 +419,7 @@ private fun EmptyTaskListPagePreview() {
     }
 }
 
-@Preview
+@AspectRatioPreviews
 @Composable
 private fun NoNewTasksListPagePreview() {
     ClockworkTheme {
@@ -452,7 +448,7 @@ private fun NoNewTasksListPagePreview() {
 }
 
 
-@Preview
+@AspectRatioPreviews
 @Composable
 private fun NoStartedTasksListPagePreview() {
     ClockworkTheme {
