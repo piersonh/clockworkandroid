@@ -1,11 +1,13 @@
 package com.wordco.clockworkandroid.timer_feature.ui.timer
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
@@ -38,6 +40,9 @@ class TimerService() : Service() {
 
     private val binder = TimerBinder()
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private var wakeLock: PowerManager.WakeLock? = null
+
     private var notificationManager: TimerNotificationManager? = null
     private lateinit var taskRepository: TaskRepository
     private lateinit var addMarkerUseCase: AddMarkerUseCase
@@ -81,6 +86,32 @@ class TimerService() : Service() {
         }
 
         setState(State.DORMANT)
+    }
+
+    @SuppressLint("WakelockTimeout") // we don't want a timeout for a stopwatch
+    private fun acquireWakeLock() {
+        if (wakeLock == null) {
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK, "TimerService::Wakelock"
+            )
+            wakeLock?.setReferenceCounted(false)
+            wakeLock?.acquire()
+        }
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.let {
+            if (it.isHeld) {
+                it.release()
+            }
+        }
+        wakeLock = null
+    }
+
+    override fun onDestroy() {
+        releaseWakeLock()
+        super.onDestroy()
     }
 
     companion object {
@@ -139,6 +170,7 @@ class TimerService() : Service() {
     private fun stop() {
         setState(State.DORMANT)
         stopForeground(STOP_FOREGROUND_REMOVE)
+        releaseWakeLock()
         stopSelf()
     }
 
@@ -174,6 +206,7 @@ class TimerService() : Service() {
 
 
     private fun prepareAndStartActiveSession(taskId: Long) {
+        acquireWakeLock()
         coroutineScope.launch {
             taskRepository.getTask(taskId).let { flow ->
                 val task = flow.first() as? StartedTask
@@ -354,6 +387,7 @@ class TimerService() : Service() {
     }
 
     private fun prepareAndStartInactiveSession(taskId: Long) {
+        acquireWakeLock()
         coroutineScope.launch {
             setPreparing(taskId)
             val taskFlow = taskRepository.getTask(taskId)
