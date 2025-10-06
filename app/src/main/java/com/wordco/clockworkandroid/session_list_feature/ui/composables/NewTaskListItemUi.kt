@@ -41,7 +41,7 @@ fun UpcomingTaskUIListItem(
         onClick = onClick
     ) {
         Text(
-            task.name,
+            "${23.sp.toDp(density)}",
             fontFamily = LATO,
             fontSize = 23.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
