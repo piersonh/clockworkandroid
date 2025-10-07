@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_list_feature.ui.composables
+package com.wordco.clockworkandroid.core.ui.composables
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

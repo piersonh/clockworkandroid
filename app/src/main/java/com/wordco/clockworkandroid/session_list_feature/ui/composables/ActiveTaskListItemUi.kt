@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
+import com.wordco.clockworkandroid.core.ui.composables.SessionListItemUiCard
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
@@ -75,6 +75,7 @@ fun ActiveTaskUiItem(
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
+
                     ActiveTaskListItem.Status.PAUSED -> {
                         Image(
                             painter = painterResource(id = R.drawable.mug),
@@ -120,7 +121,6 @@ fun ActiveTaskUiItem(
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.width(65.dp)
                     )
                 }
 
@@ -146,7 +146,6 @@ fun ActiveTaskUiItem(
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.width(65.dp)
                     )
                 }
             }
