@@ -3,9 +3,11 @@ package com.wordco.clockworkandroid.edit_session_feature.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -240,10 +242,11 @@ private fun CreateSessionPageRetrieved(
                         modifier = Modifier.padding(paddingValues)
                             .verticalScroll(scrollState),
                     ) {
+                        Spacer(modifier = Modifier.height(20.dp))
                         SessionForm(
                             uiState = uiState.toFormUiState(),
                             modifier = Modifier
-                                .padding(horizontal = 30.dp, vertical = 20.dp),
+                                .padding(horizontal = 30.dp),
                             onShowProfilePicker = {
                                 isBottomBarVisible = false
                                 coroutineScope.launch {
@@ -263,6 +266,7 @@ private fun CreateSessionPageRetrieved(
                             onDismissEstimatePicker = onDismissModal,
                             onEstimateChange = onEstimateChange,
                         )
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
 

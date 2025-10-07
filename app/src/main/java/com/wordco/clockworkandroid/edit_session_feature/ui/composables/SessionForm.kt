@@ -4,12 +4,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -21,7 +21,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -33,12 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -48,10 +44,10 @@ import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormUiState
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.session_list_feature.ui.util.toDp
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.random.Random
@@ -60,7 +56,6 @@ import kotlin.random.Random
 @Composable
 fun SessionForm(
     uiState: SessionFormUiState,
-    density: Density,
     modifier: Modifier = Modifier,
     onShowProfilePicker: () -> Unit,
     onTaskNameChange: (String) -> Unit,
@@ -119,7 +114,8 @@ fun SessionForm(
             onValueChange = onTaskNameChange,
             label = {
                 Text(
-                    "Assignment Name", style = TextStyle(
+                    "Assignment Name",
+                    style = TextStyle(
                         letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                     )
                 )
@@ -128,11 +124,12 @@ fun SessionForm(
                 if (uiState.taskName.isNotEmpty()) {
                     Icon(
                         Icons.Default.Clear,
-                        contentDescription = "Clear current name",
+                        contentDescription = "Clear current profile",
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.combinedClickable(
                             onClick = { onTaskNameChange("") }
                         )
+                            .size(23.dpScaledWith(16.sp))
                     )
                 }
             }
@@ -156,26 +153,33 @@ fun SessionForm(
 
         Spacer(Modifier.height(5.dp))
 
-        Text("${23.sp.toDp(density)}")
 
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedTextFieldButton(
                 value = uiState.dueDate?.format(dateFormatter) ?: "Not Scheduled",
-                modifier = Modifier.width(150.dp.times(density.fontScale)),
+                modifier = Modifier.run {
+                    if (uiState.dueDate != null) {
+                        width(160.dpScaledWith(16.sp)).weight(3f)
+                    } else {
+                        fillMaxWidth()
+                    }
+                },
                 label = "Due Date",
                 onClick = onShowDatePicker,
-                trailingIcon = {
-                    uiState.dueDate?.let {
+                trailingIcon = uiState.dueDate?.let {
+                    {
                         Icon(
                             Icons.Default.Clear,
                             contentDescription = "Clear selected date",
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.combinedClickable(
-                                onClick = { onDueDateChange(null) }
-                            )
+                            modifier = Modifier
+                                .combinedClickable(
+                                    onClick = { onDueDateChange(null) }
+                                )
+                                .size(23.dpScaledWith(16.sp))
                         )
                     }
                 }
@@ -184,48 +188,12 @@ fun SessionForm(
             uiState.dueDate?.let {
                 OutlinedTextFieldButton(
                     value = uiState.dueTime!!.format(timeFormatter),
-                    //modifier = Modifier.width(IntrinsicSize.Min),
+                    modifier = Modifier.width(110.dpScaledWith(16.sp)).weight(2f),
                     label = "Due Time",
                     onClick = onShowTimePicker,
                 )
             }
         }
-
-//        Row (
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            OutlinedTextFieldButton(
-//                value = uiState.dueDate?.format(dateFormatter) ?: "Not Scheduled",
-//                modifier = Modifier.weight(0.45f),
-//                label = "Due Date",
-//                onClick = onShowDatePicker,
-//                trailingIcon = {
-//                    uiState.dueDate?.let {
-//                        Icon(
-//                            Icons.Default.Clear,
-//                            contentDescription = "Clear selected date",
-//                            tint = MaterialTheme.colorScheme.onPrimary,
-//                            modifier = Modifier.combinedClickable(
-//                                onClick = { onDueDateChange(null) }
-//                            )
-//                        )
-//                    }
-//                }
-//            )
-//
-//            uiState.dueDate?.let {
-//                Spacer(
-//                    Modifier.weight(0.05f)
-//                )
-//
-//                OutlinedTextFieldButton(
-//                    value = uiState.dueTime!!.format(timeFormatter),
-//                    modifier = Modifier.weight(0.35f),
-//                    label = "Due Time",
-//                    onClick = onShowTimePicker,
-//                )
-//            }
-//        }
 
         Spacer(Modifier.height(5.dp))
 
@@ -235,8 +203,8 @@ fun SessionForm(
             } ?: "No Estimate",
             label = "Estimated Duration",
             onClick = onShowEstimatePicker,
-            trailingIcon = {
-                uiState.estimate?.let {
+            trailingIcon = uiState.estimate?.let {
+                {
                     Icon(
                         Icons.Default.Clear,
                         contentDescription = "Clear estimate",
@@ -244,9 +212,11 @@ fun SessionForm(
                         modifier = Modifier.combinedClickable(
                             onClick = { onEstimateChange(null) }
                         )
+                            .size(23.dpScaledWith(16.sp))
                     )
                 }
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
         )
 
         when (uiState.currentModal) {
@@ -483,7 +453,6 @@ private fun EditTaskFormPreview() {
                 currentModal = null,
                 estimate = null,
             ),
-            density = LocalDensity.current,
             onShowProfilePicker = {},
             onTaskNameChange = {},
             onColorSliderChange = {},

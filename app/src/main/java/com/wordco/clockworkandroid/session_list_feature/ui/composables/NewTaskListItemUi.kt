@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,9 +22,9 @@ import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.theme.ROBOTO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
+import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.model.NewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.util.asTaskDueFormat
-import com.wordco.clockworkandroid.session_list_feature.ui.util.toDp
 
 @Composable
 fun UpcomingTaskUIListItem(
@@ -33,15 +32,13 @@ fun UpcomingTaskUIListItem(
     backgroundColor: Color,
     onClick: () -> Unit,
 ) {
-    val density = LocalDensity.current
-
     SessionListItemUiCard(
         stripeColor = task.color,
         backgroundColor = backgroundColor,
         onClick = onClick
     ) {
         Text(
-            "${23.sp.toDp(density)}",
+            task.name,
             fontFamily = LATO,
             fontSize = 23.sp,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -57,7 +54,7 @@ fun UpcomingTaskUIListItem(
                 painter = painterResource(id = R.drawable.cal),
                 contentDescription = "Calendar",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.size(23.sp.toDp(density)),
+                modifier = Modifier.size(23.dpScaledWith(23.sp)),
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
             )
             Text(
@@ -80,7 +77,7 @@ fun UpcomingTaskUIListItem(
                     painter = painterResource(id = R.drawable.user),
                     contentDescription = "Completed",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(23.sp.toDp(density)),
+                    modifier = Modifier.size(23.dpScaledWith(23.sp)),
                     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                 )
                 Text(
@@ -102,7 +99,7 @@ fun UpcomingTaskUIListItem(
                     painter = painterResource(id = R.drawable.computer),
                     contentDescription = "Completed",
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(23.sp.toDp(density)),
+                    modifier = Modifier.size(23.dpScaledWith(23.sp)),
                     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                 )
 

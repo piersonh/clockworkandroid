@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -50,12 +49,12 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
+import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTaskUiItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.toDp
 import java.time.Duration
 
 @Composable
@@ -264,7 +263,7 @@ private fun TaskList(
                             painter = painterResource(id = R.drawable.stopwatch),
                             contentDescription = "Stopwatch",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.height(33.sp.toDp(LocalDensity.current)),
+                            modifier = Modifier.height(33.dpScaledWith(25.sp)),
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
 

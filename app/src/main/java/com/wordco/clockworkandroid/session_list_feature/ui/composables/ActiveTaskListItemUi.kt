@@ -18,15 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.toDp
 import java.util.Locale
 
 @Composable
@@ -40,8 +39,6 @@ fun ActiveTaskUiItem(
         backgroundColor = backgroundColor,
         onClick = onClick,
     ) {
-        val density = LocalDensity.current
-
         Column(
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.padding(2.dp)
@@ -66,7 +63,7 @@ fun ActiveTaskUiItem(
                             painter = painterResource(id = R.drawable.running),
                             contentDescription = "Running",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(23.sp.toDp(density)),
+                            modifier = Modifier.size(23.dpScaledWith(23.sp)),
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
                         Text(
@@ -83,7 +80,7 @@ fun ActiveTaskUiItem(
                             painter = painterResource(id = R.drawable.mug),
                             contentDescription = "On Break",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.size(23.sp.toDp(density)),
+                            modifier = Modifier.size(23.dpScaledWith(23.sp)),
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
                         Text(
@@ -109,7 +106,7 @@ fun ActiveTaskUiItem(
                         painter = painterResource(id = R.drawable.clock),
                         contentDescription = "Work Time",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.size(23.sp.toDp(density)),
+                        modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
@@ -135,7 +132,7 @@ fun ActiveTaskUiItem(
                         painter = painterResource(id = R.drawable.mug),
                         contentDescription = "Break Time",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.size(23.sp.toDp(density)),
+                        modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(

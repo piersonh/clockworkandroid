@@ -25,9 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -253,7 +251,6 @@ private fun EditSessionPageRetrieved(
                                 pagerState.tweenToPage(0)
                             }
                         },
-                        density = LocalDensity.current,
                         onTaskNameChange = onTaskNameChange,
                         onColorSliderChange = onColorSliderChange,
                         onDifficultyChange = onDifficultyChange,
