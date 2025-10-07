@@ -74,7 +74,7 @@ class TimerManager(
         scope.launch {
             taskRepository.getActiveTaskId()?.let { taskId ->
                 val restoreIntent = Intent(context, TimerService::class.java).apply {
-                    action = TimerService.ACTION_RESTORE
+                    action = TimerService.ACTION_START
                     putExtra(TimerService.EXTRA_TASK_ID, taskId)
                 }
 
