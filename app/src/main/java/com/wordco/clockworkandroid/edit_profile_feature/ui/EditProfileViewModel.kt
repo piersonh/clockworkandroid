@@ -119,7 +119,8 @@ class EditProfileViewModel (
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val profileId = this[PROFILE_ID_KEY] as Long
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val profileRepository = appContainer.profileRepository
 
                 EditProfileViewModel (
                     profileRepository = profileRepository,

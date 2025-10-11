@@ -10,8 +10,8 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.ui.timer.Timer
-import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toActiveTaskItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 
 class TaskListViewModel(
     private val taskRepository: TaskRepository,
-    private val timer: Timer,
+    private val timerRepository: TimerRepository,
 ) : ViewModel() {
 
 
@@ -36,7 +36,7 @@ class TaskListViewModel(
 
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
-    private val _timerState = timer.state
+    private val _timerState = timerRepository.state
 
     private val _tasks = taskRepository.getTodoTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
@@ -74,13 +74,17 @@ class TaskListViewModel(
 
                     is TimerState.Paused,
                     is TimerState.Running -> {
+                        val activeTask = tasks.first { it.taskId == timerState.taskId }
+                            .let { it as StartedTask }
+                            .toActiveTaskItem(
+                                elapsedWorkSeconds = timerState.elapsedWorkSeconds,
+                                elapsedBreakMinutes = timerState.elapsedBreakMinutes,
+                            )
+
                         TaskListUiState.TimerActive(
                             newTasks = newTasks,
                             suspendedTasks = suspendedTasks,
-                            activeTask = timerState.task.toActiveTaskItem(
-                                elapsedWorkSeconds = timerState.elapsedWorkSeconds,
-                                elapsedBreakMinutes = timerState.elapsedBreakMinutes,
-                            ),
+                            activeTask = activeTask,
                         )
                     }
                 }
@@ -99,12 +103,13 @@ class TaskListViewModel(
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
-                val timer = (this[APPLICATION_KEY] as MainApplication).timer
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
+                val timer = appContainer.timerRepository
 
                 TaskListViewModel (
                     taskRepository = taskRepository,
-                    timer = timer,
+                    timerRepository = timer,
                     //savedStateHandle = savedStateHandle
                 )
             }

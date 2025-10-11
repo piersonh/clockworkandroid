@@ -1,8 +1,7 @@
-package com.wordco.clockworkandroid.timer_feature.ui.timer
+package com.wordco.clockworkandroid.timer_feature.data
 
 import android.annotation.SuppressLint
 import android.app.Notification
-import android.app.Notification.VISIBILITY_PUBLIC
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -14,7 +13,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.wordco.clockworkandroid.MainActivity
 import com.wordco.clockworkandroid.R
-import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.model.Task
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
 import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
 import java.util.Locale
@@ -44,14 +44,17 @@ class TimerNotificationManager(
             enableVibration(false)
             enableLights(false)
             setShowBadge(false)
-            lockscreenVisibility = VISIBILITY_PUBLIC
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
         notificationManager.createNotificationChannel(channel)
     }
 
     @SuppressLint("MissingPermission") // MANAGER IS ONLY CREATED AFTER CHECK SUCCEEDS
-    fun showNotification(timerState: TimerState.Active) {
-        val notification = buildNotification(timerState)
+    fun showNotification(
+        timerState: TimerState.Active,
+        session: Task,
+    ) {
+        val notification = buildNotification(timerState, session)
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
@@ -65,7 +68,10 @@ class TimerNotificationManager(
             .build()
     }
 
-    fun buildNotification(timerState: TimerState.Active): Notification {
+    fun buildNotification(
+        timerState: TimerState.Active,
+        session: Task,
+    ): Notification {
         val markerIntent = createServiceIntent(
             "ACTION_MARKER",
         )
@@ -100,18 +106,18 @@ class TimerNotificationManager(
             }
         }
 
-        val deepLinkIntent = createDeepLinkIntent(timerState.task.taskId)
+        val deepLinkIntent = createDeepLinkIntent(timerState.taskId)
 
         val content = when (timerState) {
             is TimerState.Paused -> timerState.elapsedBreakMinutes.let {
-                String.format(
+                String.Companion.format(
                     Locale.getDefault(),
                     "On Break: %02d:%02d",
                     it / 60, it % 60
                 )
             }
             is TimerState.Running -> timerState.elapsedWorkSeconds.let {
-                String.format(
+                String.Companion.format(
                     Locale.getDefault(),
                     "Working: %02d:%02d",
                     it.toHours(), it.toMinutesInHour()
@@ -129,10 +135,10 @@ class TimerNotificationManager(
             .setOngoing(true)
             .setSmallIcon(icon)
             .setAutoCancel(false)
-            .setColor(timerState.task.color.toArgb())  //accent with task color?
+            .setColor(session.color.toArgb())  //accent with task color?
             .addAction(resumePauseAction) // resume/pause
             .setContentIntent(deepLinkIntent)
-            .setContentText(timerState.task.name)
+            .setContentText(session.name)
             .setOnlyAlertOnce(true)
             .apply {
                 if (timerState is TimerState.Running) {

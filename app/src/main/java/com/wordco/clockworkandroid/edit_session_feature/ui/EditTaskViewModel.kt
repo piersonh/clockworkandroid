@@ -282,8 +282,9 @@ class EditTaskViewModel (
         val Factory: ViewModelProvider.Factory = viewModelFactory {
 
             initializer {
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
+                val profileRepository = appContainer.profileRepository
                 val taskId = this[TASK_ID_KEY] as Long
 
                 EditTaskViewModel(

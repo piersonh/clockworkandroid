@@ -59,7 +59,8 @@ class TaskCompletionViewModel (
         val Factory: ViewModelProvider.Factory = viewModelFactory {
 
             initializer {
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
                 val taskId = this[TASK_ID_KEY] as Long
 
                 TaskCompletionViewModel(

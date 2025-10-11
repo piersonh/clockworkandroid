@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.timer_feature.ui.timer
+package com.wordco.clockworkandroid.timer_feature.data
 
 import android.content.ComponentName
 import android.content.Context
@@ -7,8 +7,8 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.core.content.ContextCompat
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.ui.timer.Timer
-import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,10 +17,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class TimerManager(
+class TimerRepositoryImpl(
     private val context: Context,
     private val taskRepository: TaskRepository,
-) : Timer {
+) : TimerRepository {
     private val scope = CoroutineScope(Dispatchers.Main)
     private var serviceCollectorJob: Job? = null
 

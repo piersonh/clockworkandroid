@@ -9,7 +9,11 @@ import com.wordco.clockworkandroid.core.domain.util.FakeSessionRepository
 import com.wordco.clockworkandroid.database.data.local.AppDatabase
 import com.wordco.clockworkandroid.database.data.repository.ProfileRepositoryImpl
 import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
-import com.wordco.clockworkandroid.timer_feature.ui.timer.TimerManager
+import com.wordco.clockworkandroid.timer_feature.data.TimerRepositoryImpl
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.EndLastSegmentAndStartNewUseCase
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.StartNewSessionUseCase
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -17,7 +21,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 interface AppContainer {
     val sessionRepository: TaskRepository
     val profileRepository: ProfileRepository
-    val timer: TimerManager
+    val timerRepository: TimerRepositoryImpl
+
+    val addMarkerUseCase: AddMarkerUseCase
+    val endLastSegmentAndStartNewUseCase: EndLastSegmentAndStartNewUseCase
+    val startNewSessionUseCase: StartNewSessionUseCase
+    val completeStartedSessionUseCase: CompleteStartedSessionUseCase
 
     val permissionRequestSignal: PermissionRequestSignaller
         get() = object : PermissionRequestSignaller {
@@ -40,21 +49,65 @@ interface AppContainer {
 }
 
 class ProductionContainer(context: Context) : AppContainer {
-    private val db = AppDatabase.getDatabase(context)
+    private val db by lazy { AppDatabase.getDatabase(context) }
 
-    private val taskDao = db.taskDao()
-    override val sessionRepository = TaskRepositoryImpl(taskDao)
+    private val taskDao by lazy { db.taskDao() }
+    override val sessionRepository by lazy { TaskRepositoryImpl(taskDao) }
 
-    private val profileDao = db.profileDao()
-    override val profileRepository = ProfileRepositoryImpl(profileDao)
+    private val profileDao by lazy { db.profileDao() }
+    override val profileRepository by lazy { ProfileRepositoryImpl(profileDao) }
 
-    override val timer = TimerManager(context,sessionRepository)
+    override val timerRepository by lazy { TimerRepositoryImpl(context, sessionRepository) }
+
+    override val addMarkerUseCase by lazy {
+        AddMarkerUseCase()
+    }
+    override val endLastSegmentAndStartNewUseCase by lazy {
+        EndLastSegmentAndStartNewUseCase(
+            sessionRepository = sessionRepository
+        )
+    }
+    override val startNewSessionUseCase by lazy {
+        StartNewSessionUseCase(
+            sessionRepository = sessionRepository
+        )
+    }
+    override val completeStartedSessionUseCase by lazy {
+        CompleteStartedSessionUseCase(
+            sessionRepository = sessionRepository
+        )
+    }
 }
 
 class FakeContainer(context: Context) : AppContainer {
-    override val sessionRepository = FakeSessionRepository(DummyData.SESSIONS)
+    override val sessionRepository by lazy {
+        FakeSessionRepository(DummyData.SESSIONS)
+    }
 
-    override val profileRepository = FakeProfileRepository(DummyData.PROFILES)
+    override val profileRepository by lazy {
+        FakeProfileRepository(DummyData.PROFILES)
+    }
 
-    override val timer = TimerManager(context,sessionRepository)
+    override val timerRepository by lazy {
+        TimerRepositoryImpl(context,sessionRepository)
+    }
+
+    override val addMarkerUseCase by lazy {
+        AddMarkerUseCase()
+    }
+    override val endLastSegmentAndStartNewUseCase by lazy {
+        EndLastSegmentAndStartNewUseCase(
+            sessionRepository = sessionRepository
+        )
+    }
+    override val startNewSessionUseCase by lazy {
+        StartNewSessionUseCase(
+            sessionRepository = sessionRepository
+        )
+    }
+    override val completeStartedSessionUseCase by lazy {
+        CompleteStartedSessionUseCase(
+            sessionRepository = sessionRepository
+        )
+    }
 }

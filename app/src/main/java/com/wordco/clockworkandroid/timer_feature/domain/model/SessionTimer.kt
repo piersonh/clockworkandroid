@@ -1,6 +1,6 @@
-package com.wordco.clockworkandroid.timer_feature.ui.timer
+package com.wordco.clockworkandroid.timer_feature.domain.model
 
-import com.wordco.clockworkandroid.core.ui.timer.Second
+import com.wordco.clockworkandroid.core.domain.model.Second
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

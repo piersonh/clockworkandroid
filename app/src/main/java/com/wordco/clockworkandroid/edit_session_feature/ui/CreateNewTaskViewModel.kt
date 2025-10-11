@@ -249,8 +249,9 @@ class CreateNewTaskViewModel (
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
+                val profileRepository = appContainer.profileRepository
                 val withProfile = this[PROFILE_ID_KEY]
 
                 CreateNewTaskViewModel(

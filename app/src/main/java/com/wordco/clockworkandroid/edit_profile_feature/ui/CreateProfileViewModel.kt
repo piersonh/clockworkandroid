@@ -103,7 +103,8 @@ class CreateProfileViewModel (
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val profileRepository = appContainer.profileRepository
 
                 CreateProfileViewModel (
                     profileRepository = profileRepository

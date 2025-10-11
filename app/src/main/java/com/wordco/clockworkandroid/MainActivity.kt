@@ -28,7 +28,8 @@ class MainActivity : ComponentActivity() {
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-        val permissionRequestSignaller = (application as MainApplication).permissionRequestSignaller
+        val appContainer = (application as MainApplication).appContainer
+        val permissionRequestSignaller = appContainer.permissionRequestSignal
 
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {

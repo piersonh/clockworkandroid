@@ -9,7 +9,6 @@ import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.database.data.local.entities.ProfileEntity
 import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
-import com.wordco.clockworkandroid.database.data.util.DummyData
 import com.wordco.clockworkandroid.database.data.util.UserDataPackage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

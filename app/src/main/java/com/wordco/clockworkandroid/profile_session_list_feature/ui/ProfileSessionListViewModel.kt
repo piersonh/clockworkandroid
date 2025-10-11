@@ -79,8 +79,9 @@ class ProfileSessionListViewModel(
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val profileId = this[PROFILE_ID_KEY] as Long
-                val sessionRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val sessionRepository = appContainer.sessionRepository
+                val profileRepository = appContainer.profileRepository
 
                 ProfileSessionListViewModel (
                     profileId = profileId,

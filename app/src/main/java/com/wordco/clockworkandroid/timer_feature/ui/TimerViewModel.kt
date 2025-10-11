@@ -12,10 +12,10 @@ import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.ui.timer.Timer
-import com.wordco.clockworkandroid.core.ui.timer.TimerState
+import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
-import com.wordco.clockworkandroid.timer_feature.ui.util.complete
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,9 +29,10 @@ import kotlinx.coroutines.launch
 
 class TimerViewModel (
     private val taskId: Long,
-    private val timer: Timer,
+    private val timerRepository: TimerRepository,
     private val taskRepository: TaskRepository,
-    private val addMarkerUseCase: AddMarkerUseCase = AddMarkerUseCase(),
+    private val addMarkerUseCase: AddMarkerUseCase,
+    private val completeStartedSessionUseCase: CompleteStartedSessionUseCase
     //private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -44,7 +45,7 @@ class TimerViewModel (
     private val _loadedTask = taskRepository.getTask(taskId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
-    private val _timerState = timer.state
+    private val _timerState = timerRepository.state
         //.stateIn(viewModelScope, SharingStarted.WhileSubscribed(),timer.timerState.value)
 
     init {
@@ -84,7 +85,7 @@ class TimerViewModel (
                         task.workTime.seconds.toInt(),
                         timerState is TimerState.Preparing && timerState.taskId == taskId
                     )
-                    is TimerState.HasTask if timerState.task.taskId != taskId -> TimerUiState.Suspended(
+                    is TimerState.Active if timerState.taskId != taskId -> TimerUiState.Suspended(
                         task.name,
                         task.workTime.seconds.toInt(),
                         false
@@ -106,20 +107,20 @@ class TimerViewModel (
     }
 
     fun initTimer() {
-        timer.start(taskId)
+        timerRepository.start(taskId)
     }
 
 
     fun takeBreak() {
-        timer.pause()
+        timerRepository.pause()
     }
 
     fun suspendTimer() {
-        timer.suspend()
+        timerRepository.suspend()
     }
 
     fun resumeTimer() {
-        timer.resume()
+        timerRepository.resume()
     }
 
     fun addMark() {
@@ -138,13 +139,12 @@ class TimerViewModel (
     }
 
     fun finish() {
-        if (timer.state.value is TimerState.Empty) {
+        if (timerRepository.state.value is TimerState.Empty) {
             viewModelScope.launch {
-                (_loadedTask.value as? StartedTask)?.complete(taskRepository)
-                    ?: error("can only finish started tasks")
+                completeStartedSessionUseCase(_loadedTask.value as StartedTask)
             }
         } else {
-            timer.finish()
+            timerRepository.finish()
         }
     }
 
@@ -158,14 +158,19 @@ class TimerViewModel (
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
-                val timer = (this[APPLICATION_KEY] as MainApplication).timer
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
+                val timer = appContainer.timerRepository
+                val addMarkerUseCase = appContainer.addMarkerUseCase
+                val completeStartedSessionUseCase = appContainer.completeStartedSessionUseCase
                 val taskId = this[TASK_ID_KEY] as Long
 
-                TimerViewModel (
+                TimerViewModel(
                     taskId = taskId,
-                    timer = timer,
+                    timerRepository = timer,
                     taskRepository = taskRepository,
+                    addMarkerUseCase = addMarkerUseCase,
+                    completeStartedSessionUseCase = completeStartedSessionUseCase,
                     //savedStateHandle = savedStateHandle
                 )
             }

@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.timer_feature.ui.timer
+package com.wordco.clockworkandroid.timer_feature.domain.model
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay

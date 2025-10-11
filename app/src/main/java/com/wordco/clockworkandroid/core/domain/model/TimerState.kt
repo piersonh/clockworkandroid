@@ -1,6 +1,5 @@
-package com.wordco.clockworkandroid.core.ui.timer
+package com.wordco.clockworkandroid.core.domain.model
 
-import com.wordco.clockworkandroid.core.domain.model.StartedTask
 
 sealed interface TimerState {
     sealed interface Empty : TimerState
@@ -13,22 +12,20 @@ sealed interface TimerState {
 
     data object Closing : Empty
 
-    sealed interface HasTask : TimerState {
-        val task: StartedTask
+    sealed interface Active : TimerState {
+        val taskId: Long
         val elapsedWorkSeconds: Second
         val elapsedBreakMinutes: Int
     }
 
-    sealed interface Active : HasTask
-
     data class Running(
-        override val task: StartedTask,
+        override val taskId: Long,
         override val elapsedWorkSeconds: Second,
         override val elapsedBreakMinutes: Int
     ) : Active
 
     data class Paused(
-        override val task: StartedTask,
+        override val taskId: Long,
         override val elapsedWorkSeconds: Second,
         override val elapsedBreakMinutes: Int
     ) : Active

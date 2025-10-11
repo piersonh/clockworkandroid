@@ -1,8 +1,9 @@
-package com.wordco.clockworkandroid.core.ui.timer
+package com.wordco.clockworkandroid.core.domain.repository
 
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import kotlinx.coroutines.flow.StateFlow
 
-interface Timer {
+interface TimerRepository {
     val state: StateFlow<TimerState>
 
     fun start (taskId: Long)

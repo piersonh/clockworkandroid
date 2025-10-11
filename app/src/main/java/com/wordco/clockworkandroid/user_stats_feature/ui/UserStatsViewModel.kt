@@ -163,9 +163,9 @@ class UserStatsViewModel(
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val application = (this[APPLICATION_KEY] as MainApplication)
-                val taskRepository = application.taskRepository
-                val profileRepository = application.profileRepository
-                val permissionRequestSignaller = application.permissionRequestSignaller
+                val taskRepository = application.appContainer.sessionRepository
+                val profileRepository = application.appContainer.profileRepository
+                val permissionRequestSignaller = application.appContainer.permissionRequestSignal
 
                 UserStatsViewModel(
                     application = application,
