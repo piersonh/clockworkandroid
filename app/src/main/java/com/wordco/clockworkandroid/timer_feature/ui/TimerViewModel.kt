@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
@@ -99,8 +100,20 @@ class TimerViewModel (
                         timerState.elapsedWorkSeconds
                     )
                 }
-            }.collect {
-                _uiState.value = it
+            }
+            .collect { newState ->
+                _uiState.update { currentState ->
+                    // prevent time display flashing when suspending the timer
+                    if (
+                        currentState is TimerUiState.Active &&
+                        newState is TimerUiState.Suspended &&
+                        newState.elapsedSeconds < currentState.elapsedSeconds
+                    ) {
+                        newState.copy(elapsedSeconds = currentState.elapsedSeconds)
+                    } else {
+                        newState
+                    }
+                }
             }
         }
 

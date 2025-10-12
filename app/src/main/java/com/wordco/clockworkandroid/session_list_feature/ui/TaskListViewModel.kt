@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -76,11 +77,18 @@ class TaskListViewModel(
                     is TimerState.Paused,
                     is TimerState.Running -> {
                         val activeTask = tasks.first { it.taskId == timerState.taskId }
-                            .let { it as StartedTask }
+                            .let { it as? StartedTask }
+                            ?: run {
+                                Log.w("TodoListVM", "todo list session list flow is behind")
+                                return@combine null
+                            }
 
+
+                        // The session list flow might not update with the activated session
+                        //  before the timerstate flow does.  If, so skip the emission
                         if (activeTask.status() == StartedTask.Status.SUSPENDED) {
                             Log.w("TodoListVM", "todo list session list flow is behind")
-                            return@combine _uiState.value
+                            return@combine null
                         }
 
                         TaskListUiState.TimerActive(
@@ -93,7 +101,9 @@ class TaskListViewModel(
                         )
                     }
                 }
-            }.collect { uiState ->
+            }
+            .filterNotNull()
+            .collect { uiState ->
                 _uiState.update { uiState }
             }
         }
