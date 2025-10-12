@@ -31,7 +31,7 @@ data class StartedTask (
     }
 
     fun status() : Status {
-        return when (segments.last().type) {
+        return when (segments.maxBy { it.startTime }.type) {
             Segment.Type.WORK -> Status.RUNNING
             Segment.Type.BREAK -> Status.PAUSED
             Segment.Type.SUSPEND -> Status.SUSPENDED

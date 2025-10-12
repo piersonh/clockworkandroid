@@ -1,26 +1,34 @@
 package com.wordco.clockworkandroid.timer_feature.data
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.wordco.clockworkandroid.MainActivity
+import com.wordco.clockworkandroid.PermissionRequestSignaller
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
 import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class TimerNotificationManager(
     private val context: Context,
+    private val permissionSignal:  PermissionRequestSignaller,
+    private val coroutineScope: CoroutineScope,
 ) {
 
     companion object {
@@ -49,13 +57,29 @@ class TimerNotificationManager(
         notificationManager.createNotificationChannel(channel)
     }
 
-    @SuppressLint("MissingPermission") // MANAGER IS ONLY CREATED AFTER CHECK SUCCEEDS
     fun showNotification(
         timerState: TimerState.Active,
         session: Task,
     ) {
         val notification = buildNotification(timerState, session)
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            coroutineScope.launch {
+                val hasPermission = permissionSignal.request(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+
+                if (hasPermission) {
+                    notificationManager.notify(NOTIFICATION_ID, notification)
+                }
+            }
+        } else {
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
     }
 
     fun cancelNotification() {

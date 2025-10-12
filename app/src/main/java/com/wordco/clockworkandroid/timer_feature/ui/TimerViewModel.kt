@@ -11,9 +11,9 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
-import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow

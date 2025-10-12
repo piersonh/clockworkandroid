@@ -9,7 +9,7 @@ import com.wordco.clockworkandroid.core.domain.util.FakeSessionRepository
 import com.wordco.clockworkandroid.database.data.local.AppDatabase
 import com.wordco.clockworkandroid.database.data.repository.ProfileRepositoryImpl
 import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
-import com.wordco.clockworkandroid.timer_feature.data.TimerRepositoryImpl
+import com.wordco.clockworkandroid.timer_feature.data.repository.TimerRepositoryImpl
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.EndLastSegmentAndStartNewUseCase

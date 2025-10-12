@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.timer_feature.data
+package com.wordco.clockworkandroid.timer_feature.data.repository
 
 import android.content.ComponentName
 import android.content.Context
@@ -6,9 +6,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.core.content.ContextCompat
+import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
-import com.wordco.clockworkandroid.core.domain.model.TimerState
+import com.wordco.clockworkandroid.timer_feature.data.TimerService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,10 +33,10 @@ class TimerRepositoryImpl(
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(
-            p0: ComponentName?,
-            p1: IBinder?
+            className: ComponentName,
+            service: IBinder
         ) {
-            val binder = p1 as TimerService.TimerBinder
+            val binder = service as TimerService.TimerBinder
             timerService = binder.getService()
             isBound = true
 

@@ -9,14 +9,14 @@ import kotlinx.coroutines.launch
 
 class SegmentTimer(
     coroutineScope: CoroutineScope,
-    private val startTime: Long
+    private var startTime: Long
 ) {
-    private val _elapsedSeconds = MutableStateFlow(0)
+    private val _elapsedSeconds = MutableStateFlow(getElapsedSeconds())
     val elapsedSeconds = _elapsedSeconds.asStateFlow()
 
     private val job = coroutineScope.launch {
         while (true) {
-            val elapsedTimeSeconds = (System.currentTimeMillis() - startTime).toInt() / 1000
+            val elapsedTimeSeconds = getElapsedSeconds()
 
             if (elapsedTimeSeconds != elapsedSeconds.value) {
                 _elapsedSeconds.update { elapsedTimeSeconds }
@@ -26,7 +26,17 @@ class SegmentTimer(
         }
     }
 
+    fun reset(startTime: Long) {
+        this.startTime = startTime
+
+        _elapsedSeconds.update { getElapsedSeconds() }
+    }
+
     fun stop() {
         job.cancel()
+    }
+
+    private fun getElapsedSeconds() : Int {
+        return (System.currentTimeMillis() - startTime).toInt() / 1000
     }
 }

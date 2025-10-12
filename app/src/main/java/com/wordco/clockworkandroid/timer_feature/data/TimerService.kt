@@ -1,11 +1,9 @@
 package com.wordco.clockworkandroid.timer_feature.data
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import com.wordco.clockworkandroid.MainApplication
@@ -13,15 +11,13 @@ import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.domain.model.Second
 import com.wordco.clockworkandroid.core.domain.model.TimerState
-import com.wordco.clockworkandroid.timer_feature.domain.model.SegmentTimer
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.timer_feature.domain.model.SessionTimer
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.EndLastSegmentAndStartNewUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.StartNewSessionUseCase
-import com.wordco.clockworkandroid.timer_feature.domain.model.SessionTimer
-import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -36,8 +32,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Duration
-import java.time.Instant
 
 class TimerService() : Service() {
 
@@ -46,7 +40,7 @@ class TimerService() : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
 
-    private var notificationManager: TimerNotificationManager? = null
+    private lateinit var notificationManager: TimerNotificationManager
     private lateinit var taskRepository: TaskRepository
     private lateinit var addMarkerUseCase: AddMarkerUseCase
     private lateinit var startNewSessionUseCase: StartNewSessionUseCase
@@ -55,15 +49,15 @@ class TimerService() : Service() {
 
 
     private enum class State {
-        INIT, DORMANT, PREPARING, RUNNING, PAUSED, CLOSING
+        INIT, DORMANT, PREPARING, ACTIVE, CLOSING
     }
 
-    private val _internalState = MutableStateFlow(State.INIT)
+    private val internalState = MutableStateFlow(State.INIT)
 
-    private val _loadedTaskId: MutableStateFlow<Long?> = MutableStateFlow(null)
+    private val loadedTaskId: MutableStateFlow<Long?> = MutableStateFlow(null)
 
-    private var _loadedTask: StateFlow<StartedTask>? = null
-    private var timer: SegmentTimer? = null
+    private var loadedTask: StateFlow<StartedTask>? = null
+    private var timer: SessionTimer? = null
     private var collectionJob: Job? = null
 
     private val _state = MutableStateFlow<TimerState>(TimerState.Dormant)
@@ -79,22 +73,11 @@ class TimerService() : Service() {
         startNewSessionUseCase = appContainer.startNewSessionUseCase
         completeStartedSessionUseCase = appContainer.completeStartedSessionUseCase
 
-        val permissionRequestSignaller = appContainer.permissionRequestSignal
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            coroutineScope.launch {
-                if (permissionRequestSignaller.request(
-                    Manifest.permission.POST_NOTIFICATIONS
-                )) {
-                    notificationManager = TimerNotificationManager(
-                        this@TimerService,
-                    )
-                }
-            }
-        } else {
-            notificationManager = TimerNotificationManager(
-                this,
-            )
-        }
+        notificationManager = TimerNotificationManager(
+            this@TimerService,
+            appContainer.permissionRequestSignal,
+            coroutineScope
+        )
 
         setState(State.DORMANT)
     }
@@ -133,8 +116,7 @@ class TimerService() : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = notificationManager?.buildPreparingNotification()
-            ?: return START_NOT_STICKY
+        val notification = notificationManager.buildPreparingNotification()
 
         startForeground(TimerNotificationManager.Companion.NOTIFICATION_ID, notification)
 
@@ -180,15 +162,14 @@ class TimerService() : Service() {
             State.PREPARING,
             State.CLOSING -> {
                 collectionJob?.cancel()
-                _internalState.update { state }
+                internalState.update { state }
                 collectionJob = coroutineScope.launch {
                     collectInactive()
                 }
             }
-            State.RUNNING,
-            State.PAUSED -> {
+            State.ACTIVE -> {
                 collectionJob?.cancel()
-                _internalState.update { state }
+                internalState.update { state }
                 collectionJob = coroutineScope.launch {
                     collectActive()
                 }
@@ -199,39 +180,37 @@ class TimerService() : Service() {
 
     private suspend fun collectActive() {
         combine(
-            _internalState,
-            _loadedTask!!,
-            timer!!.elapsedSeconds,
-        ) { taskState, task, segmentTime ->
+            timer!!.state,
+            loadedTask!!,
+            timer!!.elapsedWorkSeconds,
+            timer!!.elapsedBreakSeconds,
+        ) { taskState, task, workSeconds, breakSeconds ->
             when (taskState) {
-                State.RUNNING -> TimerState.Running(
+                SessionTimer.State.WORK -> TimerState.Running(
                     taskId = task.taskId,
-                    elapsedWorkSeconds = task.workTime.seconds.plus(segmentTime).toInt(),
-                    elapsedBreakMinutes = task.breakTime.toMinutes().toInt()
+                    elapsedWorkSeconds = workSeconds,
+                    elapsedBreakMinutes = breakSeconds / 60
                 )
 
-                State.PAUSED -> TimerState.Paused(
+                SessionTimer.State.BREAK -> TimerState.Paused(
                     taskId = task.taskId,
-                    elapsedWorkSeconds = task.workTime.seconds.toInt(),
-                    elapsedBreakMinutes = task.breakTime
-                        .plusSeconds(segmentTime.toLong()).toMinutes().toInt()
+                    elapsedWorkSeconds = workSeconds,
+                    elapsedBreakMinutes = breakSeconds / 60
                 )
-
-                else -> error("timer is not active")
             }
         }.collect { state ->
             _state.update { state }
-            notificationManager?.showNotification(
+            notificationManager.showNotification(
                 state,
-                _loadedTask!!.value
+                loadedTask!!.value
             )
         }
     }
 
     private suspend fun collectInactive() {
         combine(
-            _internalState,
-            _loadedTaskId,
+            internalState,
+            loadedTaskId,
         ) { taskState, taskId, ->
             when (taskState) {
                 State.DORMANT -> TimerState.Dormant
@@ -260,172 +239,104 @@ class TimerService() : Service() {
             when (session) {
                 is CompletedTask -> error("Attempted to load completed session")
                 is NewTask -> {
-                    setTimer()
                     val session = startNewSessionUseCase(session)
-                    _loadedTask = flow.map { it as StartedTask }
+                    loadedTask = flow.map { it as StartedTask }
                         .stateIn(
                             scope = coroutineScope,
                             started = SharingStarted.Companion.WhileSubscribed(),
                             initialValue = session
                         )
-                    setState(State.RUNNING)
+                    setTimer(loadedTask!!)
                 }
 
                 is StartedTask -> {
-                    val (workSeconds, breakMinutes) = loadElapsedTimes(
-                        workTime = session.workTime,
-                        breakTime = session.breakTime,
-                        lastSegment = session.segments.last()
-                    )
-
                     when (session.status()) {
                         StartedTask.Status.SUSPENDED -> {
-                            setTimer()
                             endLastSegmentAndStartNewUseCase(
                                 session,
                                 Segment.Type.WORK
                             )
-                            _loadedTask = flow.map { it as StartedTask }.run {
+                            loadedTask = flow.map { it as StartedTask }.run {
                                 stateIn(
                                     scope = coroutineScope,
                                     started = SharingStarted.Companion.WhileSubscribed(),
                                     initialValue = first()
                                 )
                             }
-
-                            setState(State.RUNNING)
+                            setTimer(loadedTask!!)
                         }
 
                         StartedTask.Status.RUNNING -> {
-                            setTimer(session.segments.maxBy { it.startTime }.startTime)
-                            _loadedTask = flow.map { it as StartedTask }
+                            loadedTask = flow.map { it as StartedTask }
                                 .stateIn(
                                     scope = coroutineScope,
                                     started = SharingStarted.Companion.WhileSubscribed(),
                                     initialValue = session
                                 )
-                            setState(State.RUNNING)
+                            setTimer(loadedTask!!)
                         }
 
                         StartedTask.Status.PAUSED -> {
-                            setTimer(session.segments.maxBy { it.startTime }.startTime)
-                            _loadedTask = flow.map { it as StartedTask }
+                            loadedTask = flow.map { it as StartedTask }
                                 .stateIn(
                                     scope = coroutineScope,
                                     started = SharingStarted.Companion.WhileSubscribed(),
                                     initialValue = session
                                 )
-                            setState(State.PAUSED)
+                            setTimer(loadedTask!!)
                         }
                     }
                 }
             }
+            setState(State.ACTIVE)
         }
     }
 
-    private fun loadElapsedTimes(
-        workTime: Duration,
-        breakTime: Duration,
-        lastSegment: Segment
-    ) : Pair<Second, Int> {
-        val sinceStarted = Duration.between(lastSegment.startTime, Instant.now()).seconds
 
-        return when (lastSegment.type) {
-            Segment.Type.WORK -> {
-                Pair(
-                    first = workTime.seconds.plus(sinceStarted).toInt(),
-                    second = breakTime.toMinutes().toInt()
-                )
-            }
-            Segment.Type.BREAK -> {
-                Pair(
-                    first = workTime.seconds.toInt(),
-                    second = breakTime.toMinutes().plus(sinceStarted / 60).toInt()
-                )
-            }
-            Segment.Type.SUSPEND -> {
-                Pair(
-                    first = workTime.seconds.toInt(),
-                    second = breakTime.toMinutes().toInt()
-                )
-            }
-        }
-    }
-
-    private fun setTimer(startTime: Instant? = null) : Int? {
+    private fun setTimer(session: StateFlow<StartedTask>) {
         timer?.stop()
-        return timer?.elapsedSeconds?.value.also {
-            timer = SegmentTimer(
-                coroutineScope,
-                startTime?.toEpochMilli() ?: System.currentTimeMillis()
-            )
-        }
+        timer = SessionTimer(
+            coroutineScope = coroutineScope,
+            session = session
+        )
     }
 
-
-//    private fun startIncrementer(sessionTimer: SessionTimer) {
-//        acquireWakeLock()
-//        timer = sessionTimer
-//    }
-//
-//    private fun stopIncrementer() {
-//        releaseWakeLock()
-//        timer = null
-//    }
-
-    private fun setRunning() {
-        setTimer()
-        setState(State.RUNNING)
-    }
-
-    private fun setPaused() {
-        setTimer()
-        setState(State.PAUSED)
-    }
 
     private fun setSuspended() {
         setState(State.CLOSING)
-        notificationManager?.cancelNotification()
+        notificationManager.cancelNotification()
         timer?.stop()
-        _loadedTask = null
-        _loadedTaskId.update { null }
+        loadedTask = null
+        loadedTaskId.update { null }
     }
 
     private fun setPreparing(taskId: Long) {
-        _loadedTaskId.update { taskId }
+        loadedTaskId.update { taskId }
         setState(State.PREPARING)
     }
 
 
     private fun start(taskId: Long) {
-        when (_internalState.value) {
+        when (internalState.value) {
             State.DORMANT -> prepareAndStart(taskId)
             State.INIT,
             State.PREPARING,
             State.CLOSING -> error(
                 "timer.start() must not be called in ${_state.value}"
             )
-            State.PAUSED,
-            State.RUNNING -> suspend(taskId)
+            State.ACTIVE -> suspend(taskId)
         }
     }
 
 
     private fun resume() {
-        when (_internalState.value) {
-            State.INIT,
-            State.DORMANT,
-            State.PREPARING,
-            State.RUNNING,
-            State.CLOSING -> error("timer.resume() must not be called in ${_state.value}")
-            State.PAUSED -> {}
-        }
+        if (timer?.state?.value != SessionTimer.State.BREAK) return
 
-        setRunning()
+        timer!!.setWork()
 
         coroutineScope.launch {
             endLastSegmentAndStartNewUseCase(
-                _loadedTask!!.value,
+                loadedTask!!.value,
                 Segment.Type.WORK
             )
         }
@@ -433,20 +344,13 @@ class TimerService() : Service() {
 
 
     private fun pause() {
-        when (_internalState.value) {
-            State.INIT,
-            State.DORMANT,
-            State.PREPARING,
-            State.PAUSED,
-            State.CLOSING -> error("timer.pause() must not be called in ${_state.value}")
-            State.RUNNING -> {}
-        }
+        if (timer?.state?.value != SessionTimer.State.WORK) return
 
-        setPaused()
+        timer!!.setBreak()
 
         coroutineScope.launch {
             endLastSegmentAndStartNewUseCase(
-                _loadedTask!!.value,
+                loadedTask!!.value,
                 Segment.Type.BREAK
             )
         }
@@ -454,37 +358,21 @@ class TimerService() : Service() {
 
 
     private fun addMarker() {
-        when (_internalState.value) {
-            State.INIT,
-            State.DORMANT,
-            State.PREPARING,
-            State.PAUSED,
-            State.CLOSING -> error("timer.pause() must not be called in ${_state.value}")
-            State.RUNNING -> {}
-        }
+        if (timer?.state?.value != SessionTimer.State.WORK) return
 
         coroutineScope.launch {
             addMarkerUseCase(
                 sessionRepository = taskRepository,
-                session = _loadedTask?.value ?: error ("loaded task is null")
+                session = loadedTask?.value ?: error ("loaded task is null")
             )
         }
     }
 
 
     private fun suspend(replaceWith: Long? = null) {
-        when (_internalState.value) {
-            State.INIT,
-            State.DORMANT,
-            State.PREPARING,
-            State.CLOSING -> error(
-                "timer.suspend() must not be called in ${_state.value}"
-            )
-            State.RUNNING,
-            State.PAUSED -> { }
-        }
+        if (internalState.value != State.ACTIVE) return
 
-        val session = _loadedTask?.value ?: error ("loaded task must not be null")
+        val session = loadedTask?.value ?: error ("loaded task must not be null")
         setSuspended()
 
         coroutineScope.launch {
@@ -500,18 +388,9 @@ class TimerService() : Service() {
     }
 
     private fun finish() {
-        when (_internalState.value) {
-            State.INIT,
-            State.DORMANT,
-            State.PREPARING,
-            State.CLOSING -> error(
-                "timer.finish() must not be called in ${_state.value}"
-            )
-            State.RUNNING,
-            State.PAUSED -> { }
-        }
+        if (internalState.value != State.ACTIVE) return
 
-        val session = _loadedTask?.value ?: error ("loaded task must not be null")
+        val session = loadedTask?.value ?: error ("loaded task must not be null")
         setSuspended()
 
         coroutineScope.launch {
