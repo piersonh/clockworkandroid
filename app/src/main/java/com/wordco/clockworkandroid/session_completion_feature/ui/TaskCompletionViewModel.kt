@@ -10,7 +10,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -60,7 +59,8 @@ class TaskCompletionViewModel (
         val Factory: ViewModelProvider.Factory = viewModelFactory {
 
             initializer {
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
                 val taskId = this[TASK_ID_KEY] as Long
 
                 TaskCompletionViewModel(

@@ -4,12 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,26 +26,25 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimeDisplay
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimerControls
-import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
-import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
 import kotlinx.coroutines.launch
-import java.util.Locale
+import java.time.Duration
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +58,24 @@ fun TimerPage(
 ) {
     val uiState by timerViewModel.uiState.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        timerViewModel.events.collect { event ->
+            when (event) {
+                is TimerUiEvent.ShowSnackbar -> {
+                    launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.showSnackbar(event.message)
+                    }
+                }
+            }
+        }
+    }
+
     TimerPage(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
         onEditClick = onEditClick,
         onInitClick = timerViewModel::initTimer,
@@ -75,17 +94,16 @@ fun TimerPage(
 @Composable
 private fun TimerPage(
     uiState: TimerUiState,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onInitClick: () -> Unit,
     onBreakClick: () -> Unit,
     onSuspendClick: () -> Unit,
     onResumeClick: () -> Unit,
-    onMarkClick: () -> String,
+    onMarkClick: () -> Unit,
     onFinishClick: () -> Unit,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -143,7 +161,6 @@ private fun TimerPage(
     ) { innerPadding ->
         Box(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.TopEnd
@@ -152,20 +169,40 @@ private fun TimerPage(
             when (uiState) {
                 is TimerUiState.Retrieved -> {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(30.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .background(color = MaterialTheme.colorScheme.primaryContainer)
-                            .padding(top = 50.dp)
+                            .padding(horizontal = 10.dp)
                     ) {
-                        Text(
-                            text = uiState.taskName,
-                            style = TextStyle(fontSize = 48.sp),
-                            modifier = Modifier,
-                            fontFamily = LATO,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        Spacer(
+                            modifier = Modifier.height(10.dp)
                         )
+
+                        BasicText(
+                            text = uiState.taskName,
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 24.sp,
+                                maxFontSize = 48.sp
+                            ),
+                            style = TextStyle(
+                                fontFamily = LATO,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontSize = 48.sp
+                            ),
+                            modifier = Modifier.heightIn(max=60.dp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+//                        Text(
+//                            text = uiState.taskName,
+//                            style = TextStyle(fontSize = 48.sp),
+//                            modifier = Modifier,
+//                            fontFamily = LATO,
+//                            textAlign = TextAlign.Center,
+//                            color = MaterialTheme.colorScheme.onPrimaryContainer
+//                        )
 
                         //Text(text = "${uiState.elapsedSeconds}")
                         TimeDisplay(uiState)
@@ -175,29 +212,13 @@ private fun TimerPage(
                         TimerControls(
                             modifier = Modifier
                                 .aspectRatio(2f)
-                                .padding(10.dp)
                                 .defaultMinSize(minHeight = 200.dp),
                             uiState,
                             onInitClick,
                             onBreakClick,
                             onSuspendClick,
                             onResumeClick,
-                            onMarkClick = {
-                                val name = onMarkClick()
-
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(
-                                        uiState.elapsedSeconds.let {
-                                            String.format(
-                                                Locale.getDefault(),
-                                                "Added %s at %02d:%02d",
-                                                name, it.toHours(), it.toMinutesInHour()
-                                            )
-                                        }
-                                    )
-                                }
-                            },
+                            onMarkClick = onMarkClick,
                             onFinishClick,
                         )
                     }
@@ -209,23 +230,26 @@ private fun TimerPage(
     }
 }
 
-@Preview
+@AspectRatioPreviews
 @Composable
 private fun SuspendedTimerPagePreview() {
     ClockworkTheme {
         TimerPage(
             uiState = TimerUiState.Suspended(
                 taskName = "Ooga Booga",
-                elapsedSeconds = 1000,
+                elapsedSeconds = Duration.ofHours(1)
+                    .plusMinutes(21)
+                    .seconds.toInt(),
                 false
             ),
+            snackbarHostState = remember { SnackbarHostState() },
             onBackClick = {},
             onEditClick = {},
             onInitClick = {},
             onBreakClick = {},
             onSuspendClick = {},
             onResumeClick = {},
-            onMarkClick = {""},
+            onMarkClick = {},
             onFinishClick = {}
         )
     }

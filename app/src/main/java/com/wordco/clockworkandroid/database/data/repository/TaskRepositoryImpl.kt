@@ -60,22 +60,30 @@ class TaskRepositoryImpl (
             }
     }
 
+    override fun getTodoTasks(): Flow<List<Task.Todo>> {
+        return taskDao
+            .getTodoTasksWithExecutionData()
+            .map { todoSessions ->
+                todoSessions.map { it.toTask() as Task.Todo }
+            }
+    }
+
+    override fun getCompletedTasks(): Flow<List<CompletedTask>> {
+        return taskDao
+            .getCompletedTasksWithExecutionData()
+            .map { todoSessions ->
+                todoSessions.map { it.toTask() as CompletedTask }
+            }
+    }
+
     override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
         return taskDao.getSessionsForProfile(profileId).map { taskList ->
             taskList.map { it.toTask() }
         }
     }
 
-    override suspend fun hasActiveTask(): Boolean {
-        return taskDao.hasActiveTask()
-    }
-
-    override suspend fun getActiveTask(): Flow<StartedTask>? {
-        return taskDao.getActiveTaskId()?.let { id ->
-            return taskDao.getTaskWithExecutionData(id).map {
-                it.toTask() as StartedTask
-            }
-        }
+    override suspend fun getActiveTaskId(): Long? {
+        return taskDao.getActiveTaskId()
     }
 
     override suspend fun insertSegment(segment: Segment) {

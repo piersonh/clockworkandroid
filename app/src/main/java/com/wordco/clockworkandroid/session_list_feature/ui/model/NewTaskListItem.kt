@@ -11,5 +11,5 @@ data class NewTaskListItem(
     val difficulty: Int,
     val color: Color,
     val userEstimate: Duration?,
-    val appEstimate: Duration
+    val appEstimate: AppEstimateUiItem?
 )

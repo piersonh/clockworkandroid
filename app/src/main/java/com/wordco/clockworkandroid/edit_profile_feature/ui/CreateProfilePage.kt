@@ -1,5 +1,7 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,12 +28,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
+import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.launch
 
@@ -48,7 +52,9 @@ fun CreateProfilePage(
         onNameChange = viewModel::onNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
-        onCreateProfileClick = viewModel::onCreateProfileClick,
+        onShowDiscardAlert = viewModel::onShowDiscardAlert,
+        onDismissModal = viewModel::onDismissModal,
+        onCreateProfileClick = viewModel::onSaveClick
     )
 }
 
@@ -60,12 +66,26 @@ private fun CreateProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
+    onShowDiscardAlert: () -> Unit,
+    onDismissModal: () -> Unit,
     onCreateProfileClick: () -> Fallible<SaveProfileError>,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val onBackClickCheckChanges = {
+        if (uiState.hasFieldChanges) {
+            onShowDiscardAlert()
+        } else {
+            onBackClick()
+        }
+    }
+
+    BackHandler(enabled = uiState.hasFieldChanges) {
+        Log.i("BackHandler", "triggered")
+        onShowDiscardAlert()
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -79,7 +99,7 @@ private fun CreateProfilePage(
 
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = onBackClickCheckChanges) {
                         BackImage()
                     }
                 },
@@ -114,7 +134,7 @@ private fun CreateProfilePage(
                         aspectRatio = 1.8f
                     ) {
                         Text(
-                            "Add",
+                            "Save",
                             fontFamily = LATO,
                             fontWeight = FontWeight.Bold,
                             fontSize = 25.sp,
@@ -143,6 +163,13 @@ private fun CreateProfilePage(
                 confirmButton = { }
             )
         }
+
+        if (uiState.currentModal == Modal.Discard) {
+            DiscardAlert(
+                onDismiss = onDismissModal,
+                onConfirm = onBackClick
+            )
+        }
     }
 }
 
@@ -155,12 +182,16 @@ private fun CreateProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
+                currentModal = null,
+                hasFieldChanges = false,
             ),
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onCreateProfileClick = { Fallible.Success },
+            onShowDiscardAlert = {},
+            onDismissModal = {},
+            onCreateProfileClick = { Fallible.Success }
         )
     }
 }

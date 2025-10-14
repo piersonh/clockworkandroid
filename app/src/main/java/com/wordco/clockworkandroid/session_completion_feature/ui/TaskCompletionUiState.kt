@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
-import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import java.time.Duration
 
 

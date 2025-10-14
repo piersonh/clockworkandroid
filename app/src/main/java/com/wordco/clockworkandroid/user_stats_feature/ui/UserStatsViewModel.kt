@@ -1,28 +1,44 @@
 package com.wordco.clockworkandroid.user_stats_feature.ui
 
-import androidx.lifecycle.ViewModel
+import android.Manifest
+import android.content.ContentValues
+import android.content.Context
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
+import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
+import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
 
 
 class UserStatsViewModel(
+    application: MainApplication,
     private val taskRepository: TaskRepository,
-) : ViewModel() {
+    private val profileRepository: ProfileRepository,
+    private val permissionRequestSignaller: PermissionRequestSignaller
+) : AndroidViewModel(application) {
 
 
     private val _uiState = MutableStateFlow<UserStatsUiState>(UserStatsUiState.Retrieving)
@@ -31,7 +47,7 @@ class UserStatsViewModel(
 
 
     // TODO: make a getCompletedTasks (?)
-    private val _tasks = taskRepository.getTasks()
+    private val _tasks = taskRepository.getCompletedTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -42,8 +58,7 @@ class UserStatsViewModel(
                 } else {
                     UserStatsUiState.Retrieved(
                         completedTasks = tasks
-                            .filter { it is CompletedTask }
-                            .map { (it as CompletedTask).toCompletedSessionListItem() }
+                            .map { it.toCompletedSessionListItem() }
                             .sortedBy { it.completedAt }
                             .reversed()
                     )
@@ -54,6 +69,90 @@ class UserStatsViewModel(
         }
     }
 
+    suspend fun onExportUserData() : Result<String, ExportDataError> {
+        val content = buildString {
+            appendLine("Task Profiles:")
+            profileRepository.getProfiles().first().forEach { profile ->
+                appendLine("$profile")
+            }
+            appendLine()
+            appendLine("Task Sessions:")
+            taskRepository.getTasks().first().forEach { session ->
+                appendLine("$session")
+            }
+        }
+
+        return writeTextToNewFileInDownloads(
+            context = getApplication<MainApplication>().applicationContext,
+            fileName = "clockwork_export.txt",
+            content = content
+        )
+    }
+
+
+    private suspend fun writeTextToNewFileInDownloads(
+        context: Context,
+        fileName: String,
+        content: String
+    ): Result<String, ExportDataError> {
+        return try {
+            // Android 10 (API 29) and higher: Use MediaStore API
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+
+                val resolver = context.contentResolver
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                    ?: return Result.Error(ExportDataError.NO_URI)
+
+                resolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(content.toByteArray())
+                }
+
+                // After writing, query the URI to get the final display name
+                lateinit var finalName: String
+                resolver.query(uri, arrayOf(MediaStore.MediaColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+                        if (nameIndex != -1) {
+                            finalName = cursor.getString(nameIndex)
+                        }
+                    }
+                }
+                return Result.Success(finalName)
+
+            } else {
+                // Android versions below 10 (API < 29): Require WRITE_EXTERNAL_STORAGE permission
+                if (!permissionRequestSignaller.request(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    Result.Error(ExportDataError.NO_PERMISSION)
+                }
+
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                // Ensure the directory exists
+                if (!downloadsDir.exists()) {
+                    downloadsDir.mkdirs()
+                }
+                val file = File(downloadsDir, fileName)
+                file.writeText(content)
+                Result.Success(fileName) // filename does not change on legacy
+            }
+        } catch (_: FileNotFoundException) {
+            // Occurs if the path is invalid or file cannot be created/opened for writing
+            return Result.Error(ExportDataError.NO_FILE)
+        } catch (_: SecurityException) {
+            // Can occur if a permission is implicitly denied or security policy prevents access
+            return Result.Error(ExportDataError.SECURITY)
+        } catch (_: IOException) {
+            // Generic I/O errors (e.g., disk full, unmounted storage, stream closed)
+            return Result.Error(ExportDataError.IO)
+        } catch (_: Exception) {
+            // Catch any other unexpected exceptions
+            return Result.Error(ExportDataError.OTHER)
+        }
+    }
 
 
     companion object {
@@ -63,10 +162,16 @@ class UserStatsViewModel(
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
+                val application = (this[APPLICATION_KEY] as MainApplication)
+                val taskRepository = application.appContainer.sessionRepository
+                val profileRepository = application.appContainer.profileRepository
+                val permissionRequestSignaller = application.appContainer.permissionRequestSignal
 
-                UserStatsViewModel (
+                UserStatsViewModel(
+                    application = application,
                     taskRepository = taskRepository,
+                    profileRepository = profileRepository,
+                    permissionRequestSignaller = permissionRequestSignaller,
                     //savedStateHandle = savedStateHandle
                 )
             }

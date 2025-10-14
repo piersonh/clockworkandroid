@@ -12,7 +12,10 @@ sealed interface Task {
     val difficulty: Int
     val color: Color
     val userEstimate: Duration?
-    //val appEstimate: Duration
+
+    val appEstimate: AppEstimate?
+
+    sealed interface Todo : Task
 
     sealed interface HasExecutionData : Task {
         val segments: List<Segment>

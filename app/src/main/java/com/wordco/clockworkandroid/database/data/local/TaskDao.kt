@@ -45,51 +45,18 @@ interface TaskDao {
         insertSegment(new)
     }
 
-
-    @Query("""
-        SELECT EXISTS (
-            WITH LastSegment AS (
-                SELECT
-                    taskId,
-                    type,
-                    ROW_NUMBER() OVER(PARTITION BY taskId ORDER BY segmentId DESC) as rn
-                FROM
-                    SegmentEntity
-            )
-            SELECT
-                T.*
-            FROM
-                TaskEntity T
-            JOIN
-                LastSegment LS ON T.taskId = LS.taskID
-            WHERE
-                T.status = 1
-                AND LS.rn = 1
-                AND LS.type IN (0,1)
-        )
-    """)
-    suspend fun hasActiveTask() : Boolean
-
     @Transaction
     @Query("""
-        WITH LastSegment AS (
-            SELECT
-                taskId,
-                type,
-                ROW_NUMBER() OVER(PARTITION BY taskId ORDER BY segmentId DESC) as rn
-            FROM
-                SegmentEntity
-        )
-        SELECT
-            T.taskId
-        FROM
-            TaskEntity T
-        JOIN
-            LastSegment LS ON T.taskId = LS.taskID
-        WHERE
-            T.status = 1
-            AND LS.rn = 1
-            AND LS.type IN (0,1)
+        SELECT T.taskId
+        FROM TaskEntity T
+        JOIN SegmentEntity S ON T.taskId = S.taskId
+        WHERE T.status = 1
+          AND S.type IN (0, 1)
+          AND S.startTime = (
+              SELECT MAX(startTime)
+              FROM SegmentEntity
+              WHERE taskId = T.taskId
+          )
         LIMIT 1
     """)
     suspend fun getActiveTaskId() : Long?
@@ -103,6 +70,14 @@ interface TaskDao {
     @Transaction
     @Query("SELECT * FROM TaskEntity")
     fun getTasksWithExecutionData() : Flow<List<TaskWithExecutionDataObject>>
+
+    @Transaction
+    @Query("SELECT * FROM TaskEntity WHERE status IN (0,1)")
+    fun getTodoTasksWithExecutionData() : Flow<List<TaskWithExecutionDataObject>>
+
+    @Transaction
+    @Query("SELECT * FROM TaskEntity WHERE status = 2")
+    fun getCompletedTasksWithExecutionData() : Flow<List<TaskWithExecutionDataObject>>
 
     @Transaction
     @Query("SELECT * FROM TaskEntity WHERE profileId = :profileId")

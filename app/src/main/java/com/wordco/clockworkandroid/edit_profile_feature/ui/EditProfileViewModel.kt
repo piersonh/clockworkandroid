@@ -15,6 +15,7 @@ import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.DeleteSessionError
@@ -47,7 +48,9 @@ class EditProfileViewModel (
                     EditProfileUiState.Retrieved(
                         name = name,
                         colorSliderPos = color.hue() / 360,
-                        difficulty = defaultDifficulty.toFloat()
+                        difficulty = defaultDifficulty.toFloat(),
+                        currentModal = null,
+                        hasFieldChanges = false,
                     )
                 }
             }
@@ -56,19 +59,33 @@ class EditProfileViewModel (
 
 
     fun onNameChange(newName: String) {
-        _uiState.updateIfRetrieved {
-            it.copy(name = newName)
-        }
+        _uiState.updateIfRetrieved { it.copy(
+            name = newName,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
+        _uiState.updateIfRetrieved { it.copy(
+            colorSliderPos = newPos,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
+        _uiState.updateIfRetrieved { it.copy(
+            difficulty = newDifficulty,
+            hasFieldChanges = true,
+        ) }
     }
 
+    fun onShowDiscardAlert()  {
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
+    }
+
+    fun onDismissModal()  {
+        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
+    }
 
     fun onSaveClick() : Fallible<SaveProfileError> {
         return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
@@ -87,6 +104,8 @@ class EditProfileViewModel (
                     )
                 )
             }
+            _uiState.updateIfRetrieved { it.copy(hasFieldChanges = true) }
+
             Fallible.Success
         } ?: error("Can only save if retrieved")
     }
@@ -101,7 +120,8 @@ class EditProfileViewModel (
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val profileId = this[PROFILE_ID_KEY] as Long
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val profileRepository = appContainer.profileRepository
 
                 EditProfileViewModel (
                     profileRepository = profileRepository,

@@ -5,14 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,8 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -205,7 +204,7 @@ private fun ProfileSessionListPageRetrieved(
                         modifier = Modifier
                             .padding(horizontal = 5.dp)
                     )
-                }
+                },
             )
             Column(
                 modifier = Modifier
@@ -385,7 +384,7 @@ private fun TodoList(
                         .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(10.dp))
                         .background(color = MaterialTheme.colorScheme.primaryContainer)
-                        .height(100.dp)
+                        .height(IntrinsicSize.Min)
                         .clickable(onClick = { onSessionClick(session.id) })
                 )
             }
@@ -402,79 +401,79 @@ private fun EmptyTodoList(
     Box (
         modifier = modifier
     ) {
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 25.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+                .fillMaxWidth()
         ) {
-            //Spacer(modifier = Modifier.weight(0.03f))
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(horizontal = 25.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // This check to see if the image is less than a 1/4 of the screen's height
-            val density = LocalDensity.current
-            if (LocalWindowInfo.current.containerSize.height > density.run { 170.dp.toPx() } * 4) {
-                Box (
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
+                // Only show the image if the available height is larger than our minimum
+                if (this@BoxWithConstraints.maxHeight > 400.dp) {
                     Image(
                         painter = painterResource(id = R.drawable.pencil_writing),
                         contentDescription = "Pencil Writing",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.height(170.dp),
+                        modifier = Modifier.fillMaxWidth()
+                            .weight(1f, fill = false),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                 }
+
+
+                //Spacer(modifier = Modifier.height(20.dp))
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "You Haven't Made Any Tasks for this Profile",
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 34.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+
+                //Spacer(modifier = Modifier.height(20.dp))
+
+                TextButton(
+                    onClick = onCreateNewSessionClick,
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = uiState.profileColor,
+                        contentColor = listOf(
+                            Color.White,
+                            Color.Black
+                        ).maxBy {
+                            uiState.profileColor.contrastRatioWith(it)
+                        }
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .height(70.dp)
+                        .aspectRatio(4f,true)
+
+                ) {
+                    Text(
+                        text = "Create New Session",
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 25.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(60.dp))
             }
-
-
-            //Spacer(modifier = Modifier.height(20.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "You Haven't Made Any Tasks for this Profile",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 34.sp,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-            }
-
-            //Spacer(modifier = Modifier.height(20.dp))
-
-            TextButton(
-                onClick = onCreateNewSessionClick,
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = uiState.profileColor,
-                    contentColor = listOf(
-                        Color.White,
-                        Color.Black
-                    ).maxBy {
-                        uiState.profileColor.contrastRatioWith(it)
-                    }
-                ),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .heightIn(25.dp, 70.dp)
-                    .aspectRatio(4f,true)
-
-            ) {
-                Text(
-                    text = "Create New Session",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -512,7 +511,7 @@ private fun CompletedList(
                         .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(10.dp))
                         .background(color = MaterialTheme.colorScheme.primaryContainer)
-                        .height(100.dp)
+                        .height(IntrinsicSize.Min)
                         .clickable(onClick = { onSessionClick(session.id) })
                 )
             }
@@ -526,27 +525,30 @@ private fun CompletedList(
 private fun EmptyCompletedList (
     modifier: Modifier = Modifier
 ) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .padding(horizontal = 25.dp).then(modifier),
         verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
     ) {
+        Spacer(modifier = Modifier.height(20.dp))
 
-        val density = LocalDensity.current
-        if (LocalWindowInfo.current.containerSize.height > density.run { 170.dp.toPx() } * 4) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.trophy),
-                    contentDescription = "Trophy",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.height(170.dp),
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                )
-            }
+        // Only show the image if the available height is larger than our minimum
+        if (this@BoxWithConstraints.maxHeight > 300.dp) {
+            Image(
+                painter = painterResource(id = R.drawable.trophy),
+                contentDescription = "Trophy",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth()
+                    .weight(1f, fill = false)
+                    //.heightIn(max=10000.dp),
+                        ,
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+            )
         }
 
         Box(
@@ -564,7 +566,8 @@ private fun EmptyCompletedList (
             )
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(60.dp))
+        }
     }
 }
 
@@ -645,7 +648,7 @@ private fun ProfileSessionListPageRetrievingPreview() {
     }
 }
 
-@Preview
+@Preview(heightDp = 900)
 @Composable
 private fun ProfileSessionListPageEmptyTodoPreview() {
     ClockworkTheme {

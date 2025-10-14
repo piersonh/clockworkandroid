@@ -21,6 +21,8 @@ data class TaskEntity(
     val dueDate: Long?,
     val difficulty: Int,
     val color: Int,
-    val status: Int,
-    val userEstimate: Long?
+    val status: Int, // 0 = NewTask, 1 = StartedTask, 2 = CompletedTask
+    val userEstimate: Long?,
+    val lowAppEstimate: Long?,
+    val highAppEstimate: Long?
 )

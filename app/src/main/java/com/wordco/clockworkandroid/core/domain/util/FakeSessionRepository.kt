@@ -110,26 +110,31 @@ class FakeSessionRepository(
         return _sessions.asStateFlow()
     }
 
+    override fun getTodoTasks(): Flow<List<Task.Todo>> {
+        return _sessions.map { sessions ->
+            sessions.filter { it is Task.Todo }
+                .map { it as Task.Todo }
+        }
+    }
+
+    override fun getCompletedTasks(): Flow<List<CompletedTask>> {
+        return _sessions.map { sessions ->
+            sessions.filter { it is CompletedTask }
+                .map { it as CompletedTask }
+        }
+    }
+
     override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
         return _sessions.map { sessions ->
             sessions.filter{ it.profileId == profileId }
         }
     }
 
-    override suspend fun hasActiveTask(): Boolean {
-        return _sessions.value.firstOrNull {
-            it is StartedTask && it.segments.last().type == Segment.Type.WORK
-        } != null
-    }
 
-    override suspend fun getActiveTask(): Flow<StartedTask>? {
+    override suspend fun getActiveTaskId(): Long? {
         return _sessions.value.firstOrNull {
             it is StartedTask && it.segments.last().type == Segment.Type.WORK
-        }?.let { activeSession ->
-            _sessions.map { sessions ->
-                sessions.first { it.taskId == activeSession.taskId } as StartedTask
-            }
-        }
+        }?.taskId
     }
 
     override suspend fun insertSegment(segment: Segment) {
@@ -157,6 +162,7 @@ class FakeSessionRepository(
                             segments = listOf(segment.copy(segmentId = newId)),
                             markers = emptyList(),
                             profileId = session.profileId,
+                            appEstimate = session.appEstimate,
                         )
 
                         is CompletedTask -> session.copy(

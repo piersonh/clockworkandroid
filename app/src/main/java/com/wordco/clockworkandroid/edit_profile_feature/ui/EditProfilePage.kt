@@ -1,8 +1,7 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -30,10 +29,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.launch
 
@@ -50,6 +51,8 @@ fun EditProfilePage(
         onNameChange = viewModel::onNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
+        onShowDiscardAlert = viewModel::onShowDiscardAlert,
+        onDismissModal = viewModel::onDismissModal,
         onSaveClick = viewModel::onSaveClick,
     )
 }
@@ -62,12 +65,21 @@ private fun EditProfilePage(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
+    onShowDiscardAlert: () -> Unit,
+    onDismissModal: () -> Unit,
     onSaveClick: () -> Fallible<SaveProfileError>,
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    val onBackClickCheckChanges = {
+        if (uiState is EditProfileUiState.Retrieved && uiState.hasFieldChanges) {
+            onShowDiscardAlert()
+        } else {
+            onBackClick()
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -81,7 +93,7 @@ private fun EditProfilePage(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = onBackClickCheckChanges) {
                         BackImage()
                     }
                 },
@@ -95,35 +107,10 @@ private fun EditProfilePage(
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
             ) {
-                Row (
+                Box(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        20.dp, Alignment.CenterHorizontally)
+                    contentAlignment = Alignment.Center,
                 ) {
-                    AccentRectangleTextButton(
-                        onClick = {
-                            when (onSaveClick().takeIfError()) {
-                                SaveProfileError.MISSING_NAME -> {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            "Failed to save profile: Missing Name"
-                                        )
-                                    }
-                                }
-                                null -> onBackClick()
-                            }
-                        },
-                        maxHeight = 56.dp,
-                        aspectRatio = 1.8f
-                    ) {
-                        Text(
-                            "Delete",
-                            fontFamily = LATO,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 25.sp,
-                        )
-                    }
-
                     AccentRectangleTextButton(
                         onClick = {
                             when (onSaveClick().takeIfError()) {
@@ -155,7 +142,6 @@ private fun EditProfilePage(
         Box(
             modifier = Modifier.padding(paddingValues)
         ) {
-
             when (uiState) {
                 is EditProfileUiState.Retrieved -> {
                     EditProfileForm(
@@ -171,11 +157,21 @@ private fun EditProfilePage(
                         onDifficultyChange = onDifficultyChange,
                         confirmButton = { }
                     )
+
+                    BackHandler(enabled = uiState.hasFieldChanges) {
+                        onShowDiscardAlert()
+                    }
+
+                    when {
+                        uiState.currentModal == Modal.Discard -> DiscardAlert(
+                            onDismiss = onDismissModal,
+                            onConfirm = onBackClick,
+                        )
+                        uiState.currentModal == Modal.Delete -> TODO()
+                    }
                 }
                 EditProfileUiState.Retrieving -> Text("Loading...")
             }
-
-
         }
     }
 }
@@ -189,12 +185,16 @@ private fun EditProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
+                currentModal = null,
+                hasFieldChanges = false,
             ),
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onSaveClick = { Fallible.Success },
+            onShowDiscardAlert = {},
+            onDismissModal = {},
+            onSaveClick = { Fallible.Success }
         )
     }
 }

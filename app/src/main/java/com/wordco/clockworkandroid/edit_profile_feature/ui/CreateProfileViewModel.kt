@@ -12,6 +12,7 @@ import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,29 +24,55 @@ class CreateProfileViewModel (
     private val profileRepository: ProfileRepository,
 ) : ViewModel() {
 
+    private val _fieldDefaults = object : ProfileFormUiState {
+        override val name: String = ""
+        override val colorSliderPos: Float = Random.nextFloat()
+        override val difficulty: Float = 0f
+
+    }
+
     private val _uiState = MutableStateFlow(CreateProfileUiState(
-        name = "",
-        colorSliderPos = Random.nextFloat(),
-        difficulty = 0f,
+        name = _fieldDefaults.name,
+        colorSliderPos = _fieldDefaults.colorSliderPos,
+        difficulty = _fieldDefaults.difficulty,
+        currentModal = null,
+        hasFieldChanges = false,
     ))
 
     val uiState = _uiState.asStateFlow()
 
 
     fun onNameChange(newName: String) {
-        _uiState.update { it.copy(name = newName) }
+        _uiState.update { it.copy(
+            name = newName,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.update { it.copy(colorSliderPos = newPos) }
+        _uiState.update { it.copy(
+            colorSliderPos = newPos,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.update { it.copy(difficulty = newDifficulty) }
+        _uiState.update { it.copy(
+            difficulty = newDifficulty,
+            hasFieldChanges = true,
+        ) }
+    }
+
+    fun onShowDiscardAlert() {
+        _uiState.update { it.copy(currentModal = Modal.Discard) }
+    }
+
+    fun onDismissModal() {
+        _uiState.update { it.copy(currentModal = null) }
     }
 
 
-    fun onCreateProfileClick() : Fallible<SaveProfileError> {
+    fun onSaveClick() : Fallible<SaveProfileError> {
         with(_uiState.value) {
 
             if (name.isBlank()) {
@@ -65,6 +92,8 @@ class CreateProfileViewModel (
             }
         }
 
+        _uiState.update { it.copy(hasFieldChanges = false) }
+
         return Fallible.Success
     }
 
@@ -74,7 +103,8 @@ class CreateProfileViewModel (
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val profileRepository = appContainer.profileRepository
 
                 CreateProfileViewModel (
                     profileRepository = profileRepository

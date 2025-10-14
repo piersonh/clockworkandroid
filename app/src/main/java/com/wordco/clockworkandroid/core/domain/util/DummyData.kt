@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.core.domain.util
 
 import androidx.compose.ui.graphics.Color
+import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
@@ -17,7 +18,11 @@ object DummyData {
             dueDate = null,
             difficulty = 1,
             color = Color.hsv(0f, 1f, 1f),
-            userEstimate = null,
+            userEstimate = Duration.ofHours(1).plusMinutes(21),
+            appEstimate = AppEstimate(
+                low = Duration.ofHours(0).plusMinutes(21),
+                high = Duration.ofHours(2).plusMinutes(21),
+            ),
         ),
         NewTask(
             taskId = 2,
@@ -27,6 +32,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(0f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 3,
@@ -36,6 +42,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(0f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 4,
@@ -45,6 +52,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(120f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 5,
@@ -54,6 +62,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(120f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         NewTask(
             taskId = 6,
@@ -63,6 +72,7 @@ object DummyData {
             difficulty = 1,
             color = Color.hsv(240f, 1f, 1f),
             userEstimate = null,
+            appEstimate = null,
         ),
         CompletedTask(
             taskId = 7,
@@ -81,7 +91,8 @@ object DummyData {
                 )
             ),
             markers = emptyList(),
-            profileId = null
+            profileId = null,
+            appEstimate = null,
         )
     )
 

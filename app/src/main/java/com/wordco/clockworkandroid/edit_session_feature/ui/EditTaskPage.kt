@@ -1,31 +1,22 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,24 +26,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
-import com.wordco.clockworkandroid.core.ui.composables.BackImage
-import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
+import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
+import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.Fallible
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SlideAwayBottomBar
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.tweenToPage
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -73,50 +66,46 @@ fun EditTaskPage (
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
         onShowDatePicker = viewModel::onShowDatePicker,
-        onDismissDatePicker = viewModel::onDismissDatePicker,
+        onDismissModal = viewModel::onDismissModal,
         onDueDateChange = viewModel::onDueDateChange,
         onShowTimePicker = viewModel::onShowTimePicker,
-        onDismissTimePicker = viewModel::onDismissTimePicker,
         onDueTimeChange = viewModel::onDueTimeChange,
         onEstimateChange = viewModel::onEstimateChange,
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
-        onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
         onCreateNewProfileClick = onCreateProfileClick,
-        onSaveClick = viewModel::onEditTaskClick,
+        onShowDiscardAlert = viewModel::onShowDiscardAlert,
+        onSaveClick = viewModel::onSaveClick,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EditTaskPage(
+private fun EditTaskPage(
     uiState: EditTaskUiState,
     onBackClick: () -> Unit,
-    title: String = "Edit Session",
-    initialPage: Int = 1,
     onTaskNameChange: (String) -> Unit,
     onProfileChange: (Long?) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
     onShowDatePicker: () -> Unit,
-    onDismissDatePicker: () -> Unit,
+    onDismissModal: () -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onShowTimePicker: () -> Unit,
-    onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
-    onDismissEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
+    onShowDiscardAlert: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     when (uiState) {
         EditTaskUiState.Retrieving -> EditPageScaffold(
-            title = title,
+            title = "Edit Session",
             onBackClick = onBackClick,
             snackbarHostState = snackbarHostState,
             content = { paddingValues ->
-                Box (
+                Box(
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     Text("Loading...")
@@ -126,93 +115,49 @@ internal fun EditTaskPage(
 
         is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
             uiState = uiState,
-            title = title,
             snackbarHostState = snackbarHostState,
             onBackClick = onBackClick,
             onProfileChange = onProfileChange,
-            initialPage = initialPage,
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,
             onShowDatePicker = onShowDatePicker,
-            onDismissDatePicker = onDismissDatePicker,
+            onDismissModal = onDismissModal,
             onDueDateChange = onDueDateChange,
             onShowTimePicker = onShowTimePicker,
-            onDismissTimePicker = onDismissTimePicker,
             onDueTimeChange = onDueTimeChange,
             onEstimateChange = onEstimateChange,
             onShowEstimatePicker = onShowEstimatePicker,
-            onDismissEstimatePicker = onDismissEstimatePicker,
             onCreateNewProfileClick = onCreateNewProfileClick,
+            onShowDiscardAlert = onShowDiscardAlert,
             onSaveClick = onSaveClick,
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun EditPageScaffold(
-    title: String,
-    onBackClick: () -> Unit,
-    topBarActions: @Composable (RowScope.() -> Unit) = {},
-    bottomBar: @Composable (() -> Unit) = {},
-    snackbarHostState: SnackbarHostState,
-    content: @Composable ((PaddingValues) -> Unit),
-) {
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.primary,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        title,
-                        fontFamily = LATO
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        BackImage()
-                    }
-                },
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                ),
-                actions = topBarActions
-            )
-        },
-        bottomBar = bottomBar,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        content = content
-    )
-}
-
 @Composable
 private fun EditSessionPageRetrieved(
     uiState: EditTaskUiState.Retrieved,
-    title: String,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onProfileChange: (Long?) -> Unit,
-    initialPage: Int,
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
     onShowDatePicker: () -> Unit,
-    onDismissDatePicker: () -> Unit,
+    onDismissModal: () -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onShowTimePicker: () -> Unit,
-    onDismissTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
-    onDismissEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
+    onShowDiscardAlert: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
 ) {
     val scrollState = rememberScrollState()
     val pagerState = rememberPagerState(
-        initialPage = if (uiState.profiles.isEmpty()) 1 else initialPage,
+        initialPage = 1,
         pageCount = { 2 }
     )
     val coroutineScope = rememberCoroutineScope()
@@ -220,9 +165,21 @@ private fun EditSessionPageRetrieved(
         mutableStateOf(pagerState.targetPage == 1)
     }
 
-    EditPageScaffold (
-        title = title,
-        onBackClick = onBackClick,
+    val onBackClickCheckChanges = {
+        if (uiState.hasFieldChanges) {
+            onShowDiscardAlert()
+        } else {
+            onBackClick()
+        }
+    }
+
+    BackHandler(enabled = uiState.hasFieldChanges) {
+        onShowDiscardAlert()
+    }
+
+    EditPageScaffold(
+        title = "Edit Session",
+        onBackClick = onBackClickCheckChanges,
         topBarActions = {
             if (pagerState.currentPage == 0) {
                 IconButton(
@@ -237,126 +194,107 @@ private fun EditSessionPageRetrieved(
             }
         },
         bottomBar = {
-            // Mimic Horizontal Pager transition
-            AnimatedVisibility(
-                visible = isBottomBarVisible,
-                enter = slideInHorizontally(
-                    initialOffsetX = { it }, animationSpec = tween(280)
-                ),
-                exit = slideOutHorizontally(
-                    targetOffsetX = { it }, animationSpec = tween(280)
-                )
+            SlideAwayBottomBar(
+                isBottomBarVisible = isBottomBarVisible
             ) {
-                BottomBar(
-                    onSaveClick = onSaveClick,
-                    onBackClick = onBackClick,
-                    coroutineScope = coroutineScope,
-                    snackbarHostState = snackbarHostState
-                )
-            }
-        },
-        snackbarHostState = snackbarHostState,
-        { paddingValues ->
-            HorizontalPager(
-                state = pagerState,
-                userScrollEnabled = false,
-                verticalAlignment = Alignment.Top,
-            ) { page ->
-                when (page) {
-                    1 -> Column {
-                        Box(
-                            modifier = Modifier.padding(paddingValues),
-                        ) {
-                            EditTaskForm(
-                                uiState = uiState,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 30.dp, vertical = 20.dp)
-                                    .verticalScroll(scrollState),
-                                onShowProfilePicker = {
-                                    isBottomBarVisible = false
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AccentRectangleTextButton(
+                        onClick = {
+                            when (onSaveClick().takeIfError()) {
+                                SaveSessionError.MISSING_NAME -> {
                                     coroutineScope.launch {
-                                        pagerState.tweenToPage(0)
+                                        snackbarHostState.showSnackbar(
+                                            "Failed to save session: Missing Name"
+                                        )
                                     }
-                                },
-                                onTaskNameChange = onTaskNameChange,
-                                onColorSliderChange = onColorSliderChange,
-                                onDifficultyChange = onDifficultyChange,
-                                onShowDatePicker = onShowDatePicker,
-                                onDismissDatePicker = onDismissDatePicker,
-                                onDueDateChange = onDueDateChange,
-                                onShowTimePicker = onShowTimePicker,
-                                onDismissTimePicker = onDismissTimePicker,
-                                onDueTimeChange = onDueTimeChange,
-                                onShowEstimatePicker = onShowEstimatePicker,
-                                onDismissEstimatePicker = onDismissEstimatePicker,
-                                onEstimateChange = onEstimateChange,
-                            )
-                        }
-                    }
+                                }
 
-                    0 -> ProfilePicker(
-                        profiles = uiState.profiles,
-                        modifier = Modifier.padding(paddingValues),
-                        onProfileClick = { profileId ->
-                            onProfileChange(profileId)
-                            coroutineScope.launch {
-                                pagerState.tweenToPage(1)
+                                null -> onBackClick()
                             }
-                            isBottomBarVisible = true
                         },
-                        onCreateProfileClick = onCreateNewProfileClick,
-                    )
+                        maxHeight = 56.dp,
+                        aspectRatio = 1.8f
+                    ) {
+                        Text(
+                            "Save",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 25.sp,
+                        )
+                    }
                 }
             }
         },
-    )
-}
-
-
-@Composable
-private fun BottomBar(
-    onSaveClick: () -> Fallible<SaveSessionError>,
-    onBackClick: () -> Unit,
-    coroutineScope: CoroutineScope,
-    snackbarHostState: SnackbarHostState
-) {
-    BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-    ) {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center,
-        ) {
-            AccentRectangleTextButton(
-                onClick = {
-                    when (onSaveClick().takeIfError()) {
-                        SaveSessionError.MISSING_NAME -> {
+        snackbarHostState = snackbarHostState,
+    ) { paddingValues ->
+        HorizontalPager(
+            state = pagerState,
+            userScrollEnabled = false,
+            verticalAlignment = Alignment.Top,
+        ) { page ->
+            when (page) {
+                1 -> Column(
+                    modifier = Modifier.padding(paddingValues)
+                        .verticalScroll(scrollState),
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SessionForm(
+                        uiState = uiState.toFormUiState(),
+                        modifier = Modifier
+                            .padding(horizontal = 30.dp),
+                        onShowProfilePicker = {
+                            isBottomBarVisible = false
                             coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    "Failed to save session: Missing Name"
-                                )
+                                pagerState.tweenToPage(0)
                             }
+                        },
+                        onTaskNameChange = onTaskNameChange,
+                        onColorSliderChange = onColorSliderChange,
+                        onDifficultyChange = onDifficultyChange,
+                        onShowDatePicker = onShowDatePicker,
+                        onDismissDatePicker = onDismissModal,
+                        onDueDateChange = onDueDateChange,
+                        onShowTimePicker = onShowTimePicker,
+                        onDismissTimePicker = onDismissModal,
+                        onDueTimeChange = onDueTimeChange,
+                        onShowEstimatePicker = onShowEstimatePicker,
+                        onDismissEstimatePicker = onDismissModal,
+                        onEstimateChange = onEstimateChange,
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+
+                0 -> ProfilePicker(
+                    profiles = uiState.profiles,
+                    modifier = Modifier.padding(paddingValues),
+                    onProfileClick = { profileId ->
+                        onProfileChange(profileId)
+                        coroutineScope.launch {
+                            pagerState.tweenToPage(1)
                         }
-                        null -> onBackClick()
-                    }
-                },
-                maxHeight = 56.dp,
-                aspectRatio = 1.8f
-            ) {
-                Text(
-                    "Save",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp,
+                        isBottomBarVisible = true
+                    },
+                    onCreateProfileClick = onCreateNewProfileClick,
                 )
             }
+        }
+
+        when (uiState.currentModal) {
+            Modal.Discard -> DiscardAlert(
+                onDismiss = onDismissModal,
+                onConfirm = onBackClick
+            )
+            Modal.Delete -> TODO()
+            else -> {}
         }
     }
 }
 
 
-@PreviewScreenSizes
+@AspectRatioPreviews
 @Composable
 private fun EditTaskPagePreview() {
     ClockworkTheme {
@@ -370,7 +308,8 @@ private fun EditTaskPagePreview() {
                 dueTime = LocalTime.parse("10:15"),
                 currentModal = null,
                 estimate = UserEstimate(15, 2),
-                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() }
+                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
+                hasFieldChanges = false
             ),
             onBackClick = { },
             onTaskNameChange = { },
@@ -378,15 +317,14 @@ private fun EditTaskPagePreview() {
             onColorSliderChange = { },
             onDifficultyChange = { },
             onShowDatePicker = { },
-            onDismissDatePicker = { },
+            onDismissModal = { },
             onDueDateChange = { },
             onShowTimePicker = { },
-            onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
             onShowEstimatePicker = { },
-            onDismissEstimatePicker = { },
             onCreateNewProfileClick = {},
+            onShowDiscardAlert = {false},
             onSaveClick = { Fallible.Success },
         )
     }

@@ -9,8 +9,7 @@ import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.database.data.local.entities.ProfileEntity
 import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
-import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
-import com.wordco.clockworkandroid.database.data.util.DummyData
+import com.wordco.clockworkandroid.database.data.util.UserDataPackage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +21,7 @@ import kotlinx.coroutines.launch
         MarkerEntity::class,
         ProfileEntity::class,
                ],
-    version = 11)
+    version = 12)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 
@@ -42,32 +41,37 @@ abstract class AppDatabase : RoomDatabase() {
                     .addCallback(object: Callback() {
 
 
-                        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
-                            super.onDestructiveMigration(db)
-
-                            val taskDao = getDatabase(context).taskDao()
-                            val taskRepo = TaskRepositoryImpl(taskDao)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                DummyData.TASKS.forEach {
-                                    task ->
-                                    taskRepo.insertTask(task)
-                                }
-                            }
-                        }
+//                        override fun onDestructiveMigration(db: SupportSQLiteDatabase) {
+//                            super.onDestructiveMigration(db)
+//
+//                            val taskDao = getDatabase(context).taskDao()
+//                            val taskRepo = TaskRepositoryImpl(taskDao)
+//                            CoroutineScope(Dispatchers.IO).launch {
+//                                DummyData.TASKS.forEach {
+//                                    task ->
+//                                    taskRepo.insertTask(task)
+//                                }
+//                            }
+//                        }
 
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)
 
-                            val resetOnStart = true
-                            val taskDao = getDatabase(context).taskDao()
-                            val taskRepo = TaskRepositoryImpl(taskDao)
-                            if (resetOnStart) {
+                            val loadPackage =
+                                null
+                                //DummyData.package0_empty
+                                //DummyData.package1
+                                //DummyData.package3_csStudentHistory
+                                //DummyData.package4_laundry
+                            if (loadPackage != null) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     getDatabase(context).clearAllTables()
-                                    DummyData.TASKS.forEach {
-                                            task ->
-                                        taskRepo.insertTask(task)
-                                    }
+
+                                    insertPackage(
+                                        loadPackage,
+                                        taskDao = getDatabase(context).taskDao(),
+                                        profileDao = getDatabase((context)).profileDao()
+                                    )
                                 }
                             }
                         }
@@ -75,6 +79,21 @@ abstract class AppDatabase : RoomDatabase() {
                     .build()
                 INSTANCE = instance
                 return instance
+            }
+        }
+
+        private suspend fun insertPackage(
+            dataPackage: UserDataPackage,
+            taskDao: TaskDao,
+            profileDao: ProfileDao,
+        ) {
+            dataPackage.run {
+                profiles.forEach {
+                    profileDao.insertProfile(it)
+                }
+                taskDao.insertTasks(sessions)
+                taskDao.insertSegments(segments)
+                taskDao.insertMarkers(markers)
             }
         }
     }

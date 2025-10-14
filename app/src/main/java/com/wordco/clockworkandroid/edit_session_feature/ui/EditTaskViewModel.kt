@@ -9,7 +9,6 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -19,8 +18,8 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.DeleteSessionError
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.PickerModal
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -45,21 +44,23 @@ import java.time.ZoneOffset
 class EditTaskViewModel (
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
-    private val taskId: Long
+    private val taskId: Long,
+    private var getAppEstimateUseCase: GetAppEstimateUseCase = GetAppEstimateUseCase(),
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
-    private lateinit var _loadedTask: Task
+    private lateinit var _loadedTask: Task.Todo
     private var _profileId: Long? = null
 
     private lateinit var _profiles: StateFlow<List<Profile>>
 
-    private lateinit var _fieldDefaults: EditTaskFormUiState
+    private lateinit var _fieldDefaults: SessionFormUiState
 
 
     init {
         viewModelScope.launch {
-            _loadedTask = taskRepository.getTask(taskId).first()
+            _loadedTask = taskRepository.getTask(taskId).first() as? Task.Todo
+                ?: error("Only Todo tasks can be edited here")
 
             // Set defaults when done loading
             _profiles = profileRepository.getProfiles().run {
@@ -87,8 +88,9 @@ class EditTaskViewModel (
                                 dueTime = _loadedTask.dueDate?.run {
                                     atZone(ZoneId.systemDefault())?.toLocalTime()
                                 } ?: _fieldDefaults.dueTime,
-                                currentModal = _fieldDefaults.currentModal,
+                                currentModal = null,
                                 estimate = _loadedTask.userEstimate?.toEstimate(),
+                                hasFieldChanges = false,
                             )
                         }
                     }
@@ -106,7 +108,10 @@ class EditTaskViewModel (
 
 
     fun onTaskNameChange(newName: String) {
-        _uiState.updateIfRetrieved { it.copy(taskName = newName) }
+        _uiState.updateIfRetrieved { it.copy(
+            taskName = newName,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onProfileChange(newProfileId: Long?) {
@@ -123,24 +128,31 @@ class EditTaskViewModel (
 
             uiState.copy(
                 profileName = profileName,
+                hasFieldChanges = true,
             )
         }
     }
 
 
     fun onColorSliderChange(newPos: Float) {
-        _uiState.updateIfRetrieved { it.copy(colorSliderPos = newPos) }
+        _uiState.updateIfRetrieved { it.copy(
+            colorSliderPos = newPos,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateIfRetrieved { it.copy(difficulty = newDifficulty) }
+        _uiState.updateIfRetrieved { it.copy(
+            difficulty = newDifficulty,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onShowDatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.DATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
     }
 
-    fun onDismissDatePicker() {
+    fun onDismissModal() {
         _uiState.updateIfRetrieved { it.copy(currentModal = null) }
     }
 
@@ -149,34 +161,42 @@ class EditTaskViewModel (
             Instant.ofEpochMilli(newDate)
                 .atZone(ZoneOffset.UTC)
                 .toLocalDate()
-        }) }
+        },
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onShowTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.TIME) }
-    }
-
-    fun onDismissTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
     }
 
     fun onDueTimeChange(newTime: LocalTime) {
-        _uiState.updateIfRetrieved { it.copy(dueTime = newTime) }
+        _uiState.updateIfRetrieved { it.copy(
+            dueTime = newTime,
+            hasFieldChanges = true,
+            ) }
     }
 
     fun onEstimateChange(newEstimate: UserEstimate?) {
-        _uiState.updateIfRetrieved { it.copy(estimate = newEstimate) }
+        _uiState.updateIfRetrieved { it.copy(
+            estimate = newEstimate,
+            hasFieldChanges = true,
+        ) }
     }
 
     fun onShowEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = PickerModal.ESTIMATE) }
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
     }
 
-    fun onDismissEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
+    fun onShowDiscardAlert() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
     }
 
-    fun onEditTaskClick() : Fallible<SaveSessionError> {
+    fun onShowDeleteAlert() {
+        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Delete) }
+    }
+
+    fun onSaveClick() : Fallible<SaveSessionError> {
         return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
                 return Fallible.Error(SaveSessionError.MISSING_NAME)
@@ -200,59 +220,61 @@ class EditTaskViewModel (
 
             val userEstimate = estimate?.toDuration()
 
-            viewModelScope.launch {
-                taskRepository.updateTask(
-                    when (_loadedTask) {
-                        is CompletedTask -> CompletedTask(
-                            taskId,
-                            name,
-                            dueDate,
-                            difficulty,
-                            color,
-                            userEstimate,
-                            segments = (_loadedTask as CompletedTask).segments,
-                            markers = (_loadedTask as CompletedTask).markers,
-                            profileId = _profileId,
-                        )
-                        is NewTask -> NewTask(
-                            taskId,
-                            name,
-                            dueDate,
-                            difficulty,
-                            color,
-                            userEstimate,
-                            profileId = _profileId,
-                        )
-                        is StartedTask -> StartedTask(
-                            taskId,
-                            name,
-                            dueDate,
-                            difficulty,
-                            color,
-                            userEstimate,
-                            segments = (_loadedTask as StartedTask).segments,
-                            markers = (_loadedTask as StartedTask).markers,
-                            profileId = _profileId,
-                        )
-                    }
+            val task = when (_loadedTask) {
+                is NewTask -> NewTask(
+                    taskId,
+                    name,
+                    dueDate,
+                    difficulty,
+                    color,
+                    userEstimate,
+                    profileId = _profileId,
+                    appEstimate = _loadedTask.appEstimate,
+                )
 
+                is StartedTask -> StartedTask(
+                    taskId,
+                    name,
+                    dueDate,
+                    difficulty,
+                    color,
+                    userEstimate,
+                    segments = (_loadedTask as StartedTask).segments,
+                    markers = (_loadedTask as StartedTask).markers,
+                    profileId = _profileId,
+                    appEstimate = _loadedTask.appEstimate,
                 )
             }
+
+            val shouldRecalculateEstimate = (_profileId != _loadedTask.profileId)
+                .or(difficulty != _loadedTask.difficulty)
+                .or(userEstimate?.equals(_loadedTask.userEstimate)?.not() ?: false)
+
+            viewModelScope.launch {
+                if (shouldRecalculateEstimate && userEstimate != null) {
+                    val sessionHistory = taskRepository.getCompletedTasks().first()
+                        .filter { it.userEstimate != null }
+
+                    val appEstimate = getAppEstimateUseCase(
+                        todoSession = task,
+                        sessionHistory = sessionHistory
+                    )
+                    taskRepository.updateTask(
+                        when(task) {
+                            is NewTask -> task.copy(appEstimate = appEstimate)
+                            is StartedTask -> task.copy(appEstimate = appEstimate)
+                        }
+                    )
+                } else {
+                    taskRepository.updateTask(task)
+                }
+
+            }
+            _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
             Fallible.Success
         } ?: error("Can only save if retrieved")
     }
-    fun onDeleteClick() : Fallible<DeleteSessionError> {
-        return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
-            if (taskName.isBlank()) {
-                return Fallible.Error(DeleteSessionError.MISSING_NAME)
-            }
 
-            viewModelScope.launch {
-                taskRepository.deleteTask(_loadedTask)
-            }
-            Fallible.Success
-        } ?: error("Can only delete if retrieved")
-    }
 
     companion object {
 
@@ -260,11 +282,12 @@ class EditTaskViewModel (
         val Factory: ViewModelProvider.Factory = viewModelFactory {
 
             initializer {
-                val taskRepository = (this[APPLICATION_KEY] as MainApplication).taskRepository
-                val profileRepository = (this[APPLICATION_KEY] as MainApplication).profileRepository
+                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val taskRepository = appContainer.sessionRepository
+                val profileRepository = appContainer.profileRepository
                 val taskId = this[TASK_ID_KEY] as Long
 
-                EditTaskViewModel (
+                EditTaskViewModel(
                     taskRepository = taskRepository,
                     profileRepository = profileRepository,
                     taskId = taskId,
