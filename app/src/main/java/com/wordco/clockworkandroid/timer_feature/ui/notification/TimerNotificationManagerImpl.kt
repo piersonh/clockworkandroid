@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.timer_feature.data
+package com.wordco.clockworkandroid.timer_feature.ui.notification
 
 import android.Manifest
 import android.app.Notification
@@ -15,21 +15,35 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.wordco.clockworkandroid.MainActivity
-import com.wordco.clockworkandroid.PermissionRequestSignaller
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.model.TimerState
+import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.timer_feature.domain.repository.TimerNotificationActionProvider
+import com.wordco.clockworkandroid.timer_feature.domain.repository.TimerNotificationManager
 import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
 import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class TimerNotificationManager(
+class TimerNotificationManagerImpl(
     private val context: Context,
-    private val permissionSignal:  PermissionRequestSignaller,
+    private val permissionSignal: PermissionRequestSignaller,
     private val coroutineScope: CoroutineScope,
-) {
+    private val sessionRepository: TaskRepository,
+    private val timerNotificationActionProvider: TimerNotificationActionProvider,
+) : TimerNotificationManager {
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -40,6 +54,8 @@ class TimerNotificationManager(
     }
 
     private val notificationManager = NotificationManagerCompat.from(context)
+
+    private var permissionJob: Job? = null
 
     init {
         val channel = NotificationChannel(
@@ -57,6 +73,49 @@ class TimerNotificationManager(
         notificationManager.createNotificationChannel(channel)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeState(stateFlow: Flow<TimerState>) {
+        // This flow efficiently provides the details of the currently active task.
+        // It only re-queries the database when the active taskId actually changes.
+        val taskFlow = stateFlow
+            .map { state ->
+                when (state) {
+                    is TimerState.Active -> state.taskId
+                    else -> null // Emit null for inactive states
+                }
+            }
+            .distinctUntilChanged() // Only proceed if the taskId changes (or goes to/from null)
+            .flatMapLatest { taskId ->
+                if (taskId != null) {
+                    // If we have a taskId, subscribe to the task details from the repository.
+                    sessionRepository.getTask(taskId)
+                } else {
+                    // Otherwise, emit a null Task to signal inactivity.
+                    flowOf(null)
+                }
+            }
+
+        coroutineScope.launch {
+            // Combine the latest values from both the state flow and the task flow.
+            // This block will execute whenever the timer ticks or the active task changes.
+            combine(stateFlow, taskFlow) { state, task ->
+                // Use the most recent state to decide the action.
+                when (state) {
+                    is TimerState.Active -> {
+                        // We expect a task to be present in active states.
+                        if (task != null) {
+                            showNotification(state, task)
+                        }
+                    }
+
+                    else -> {
+                        cancelNotification()
+                    }
+                }
+            }.collect() // The flow must be collected for the logic to execute.
+        }
+    }
+
     fun showNotification(
         timerState: TimerState.Active,
         session: Task,
@@ -68,13 +127,15 @@ class TimerNotificationManager(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            coroutineScope.launch {
-                val hasPermission = permissionSignal.request(
-                    Manifest.permission.POST_NOTIFICATIONS
-                )
+            if (permissionJob == null) {
+                permissionJob = coroutineScope.launch {
+                    val hasPermission = permissionSignal.request(
+                        Manifest.permission.POST_NOTIFICATIONS
+                    )
 
-                if (hasPermission) {
-                    notificationManager.notify(NOTIFICATION_ID, notification)
+                    if (hasPermission) {
+                        notificationManager.notify(NOTIFICATION_ID, notification)
+                    }
                 }
             }
         } else {
@@ -86,7 +147,7 @@ class TimerNotificationManager(
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
-    fun buildPreparingNotification() : Notification {
+    override fun getForegroundNotification(): Notification {
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Preparing...")
             .build()
@@ -96,9 +157,7 @@ class TimerNotificationManager(
         timerState: TimerState.Active,
         session: Task,
     ): Notification {
-        val markerIntent = createServiceIntent(
-            "ACTION_MARKER",
-        )
+        val markerIntent = timerNotificationActionProvider.getMarkerIntent()
         val markerAction = NotificationCompat.Action(
             null,
             "Add Marker",
@@ -106,9 +165,7 @@ class TimerNotificationManager(
         )
         val resumePauseAction = when (timerState) {
             is TimerState.Running -> {
-                val pauseIntent = createServiceIntent(
-                    "ACTION_PAUSE",
-                )
+                val pauseIntent = timerNotificationActionProvider.getPauseIntent()
 
 
                 NotificationCompat.Action(
@@ -119,9 +176,7 @@ class TimerNotificationManager(
 
             }
             is TimerState.Paused -> {
-                val resumeIntent = createServiceIntent(
-                    "ACTION_RESUME",
-                )
+                val resumeIntent = timerNotificationActionProvider.getResumeIntent()
                 NotificationCompat.Action(
                     null,
                     "Resume",
@@ -170,19 +225,6 @@ class TimerNotificationManager(
                 }
             }
             .build()
-    }
-
-    private fun createServiceIntent(action: String?): PendingIntent {
-        val intent = Intent(context, TimerService::class.java).apply {
-            this.action = action
-        }
-
-        return PendingIntent.getService(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
     }
 
     private fun createDeepLinkIntent(id: Long): PendingIntent {

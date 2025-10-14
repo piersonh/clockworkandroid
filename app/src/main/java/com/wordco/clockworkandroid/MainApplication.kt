@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid
 
 import android.app.Application
+import androidx.lifecycle.ProcessLifecycleOwner
 
 class MainApplication : Application() {
 
@@ -9,5 +10,8 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         appContainer = ProductionContainer(this)
+
+        ProcessLifecycleOwner.get().lifecycle
+            .addObserver(appContainer.restoreTimerObserver)
     }
 }

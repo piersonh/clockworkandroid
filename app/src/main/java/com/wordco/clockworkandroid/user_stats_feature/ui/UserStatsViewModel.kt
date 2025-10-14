@@ -13,7 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.PermissionRequestSignaller
+import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError

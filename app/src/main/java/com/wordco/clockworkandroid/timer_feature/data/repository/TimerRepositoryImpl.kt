@@ -7,120 +7,78 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.core.content.ContextCompat
 import com.wordco.clockworkandroid.core.domain.model.TimerState
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
-import com.wordco.clockworkandroid.timer_feature.data.TimerService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.wordco.clockworkandroid.timer_feature.data.factory.TimerServiceIntentFactory
+import com.wordco.clockworkandroid.timer_feature.data.service.TimerService
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 
 class TimerRepositoryImpl(
     private val context: Context,
-    private val taskRepository: TaskRepository,
+    private val intentFactory: TimerServiceIntentFactory,
 ) : TimerRepository {
-    private val scope = CoroutineScope(Dispatchers.Main)
-    private var serviceCollectorJob: Job? = null
+    override val state: Flow<TimerState> = callbackFlow {
+        var collectorJob: Job? = null
 
-    private var timerService: TimerService? = null
-    private var isBound = false
+        val connection = object : ServiceConnection {
+            override fun onServiceConnected(className: ComponentName, service: IBinder) {
+                val binder = service as TimerService.TimerBinder
+                val timerService = binder.getService()
 
-    private val _state = MutableStateFlow<TimerState>(TimerState.Dormant)
-    override val state = _state.asStateFlow()
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(
-            className: ComponentName,
-            service: IBinder
-        ) {
-            val binder = service as TimerService.TimerBinder
-            timerService = binder.getService()
-            isBound = true
-
-            serviceCollectorJob?.cancel()
-            serviceCollectorJob = scope.launch {
-                timerService?.state?.collect { serviceState ->
-                    _state.update { serviceState }
+                collectorJob?.cancel()
+                collectorJob = launch {
+                    timerService.state.collect { serviceState ->
+                        send(serviceState)
+                    }
                 }
             }
 
-            restoreAfterExit()
-        }
-
-        override fun onServiceDisconnected(p0: ComponentName?) {
-            isBound = false
-            timerService = null
-            serviceCollectorJob?.cancel()
-        }
-
-    }
-
-    init {
-        Intent(
-            context,
-            TimerService::class.java
-        ).also { intent ->
-            context.bindService(
-                intent,
-                connection,
-                Context.BIND_AUTO_CREATE,
-            )
-        }
-    }
-
-    private fun restoreAfterExit() {
-        scope.launch {
-            taskRepository.getActiveTaskId()?.let { taskId ->
-                val restoreIntent = Intent(context, TimerService::class.java).apply {
-                    action = TimerService.ACTION_START
-                    putExtra(TimerService.EXTRA_TASK_ID, taskId)
-                }
-
-                // Start the service with this explicit command
-                ContextCompat.startForegroundService(context, restoreIntent)
+            override fun onServiceDisconnected(p0: ComponentName?) {
+                collectorJob?.cancel()
             }
         }
+
+        // bind to the service when the flow is first collected
+        val intent = Intent(context, TimerService::class.java)
+        context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+
+        // when the collector of this flow cancels its coroutine, cancel the connection
+        //  between the ui and the service.  this should not stop the service (or the notification)
+        awaitClose {
+            context.unbindService(connection)
+        }
     }
+
 
     override fun start(taskId: Long) {
-        val startIntent = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_START
-            putExtra(TimerService.EXTRA_TASK_ID, taskId)
-        }
+        val startIntent = intentFactory.createStartIntent(taskId)
 
         // Start the service with this explicit command
         ContextCompat.startForegroundService(context, startIntent)
     }
     override fun resume() {
-        val intent = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_RESUME
-        }
+        val intent = intentFactory.createResumeIntent()
+
         // You can use startService here, as the service is already in the foreground
         context.startService(intent)
     }
     override fun pause() {
-        val intent = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_PAUSE
-        }
+        val intent = intentFactory.createPauseIntent()
+
         context.startService(intent)
     }
     override fun suspend(replaceWith: Long?) {
-        val intent = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_SUSPEND
-            replaceWith?.let {
-                putExtra(TimerService.EXTRA_TASK_ID, it)
-            }
-        }
+        val intent = intentFactory.createSuspendIntent(replaceWith)
+
         // Use startService because we are potentially stopping the foreground session
         context.startService(intent)
     }
     override fun finish() {
-        val intent = Intent(context, TimerService::class.java).apply {
-            action = TimerService.ACTION_FINISH
-        }
+        val intent = intentFactory.createFinishIntent()
+
         context.startService(intent)
     }
 }

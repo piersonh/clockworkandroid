@@ -15,17 +15,23 @@ class SessionTimer(
     private val coroutineScope: CoroutineScope,
     private val session: StateFlow<StartedTask>,
 ) {
-    enum class State {
-        WORK,BREAK
+    sealed interface State {
+        val elapsedWorkSeconds: Second
+        val elapsedBreakSeconds: Second
+
+        data class Work(
+            override val elapsedWorkSeconds: Second,
+            override val elapsedBreakSeconds: Second
+        ) : State
+
+        data class Break(
+            override val elapsedWorkSeconds: Second,
+            override val elapsedBreakSeconds: Second
+        ) : State
     }
 
     private val _state: MutableStateFlow<State>
     val state: StateFlow<State>
-
-    private val _elapsedWorkSeconds: MutableStateFlow<Second>
-    val elapsedWorkSeconds: StateFlow<Second>
-    private val _elapsedBreakSeconds: MutableStateFlow<Second>
-    val elapsedBreakSeconds: StateFlow<Second>
 
     private val timer: SegmentTimer
     private var timerCollectJob: Job
@@ -42,57 +48,61 @@ class SessionTimer(
 
          when (lastSegment.type) {
             Segment.Type.WORK -> {
-                _elapsedWorkSeconds = MutableStateFlow(
-                    session.value.workTime.plusMillis(missedTime).seconds.toInt()
-                )
-                _elapsedBreakSeconds = MutableStateFlow(session.value.breakTime.seconds.toInt())
-
-                _state = MutableStateFlow(State.WORK)
+                _state = MutableStateFlow(State.Work(
+                    elapsedWorkSeconds = session.value.workTime
+                        .plusMillis(missedTime).seconds.toInt(),
+                    elapsedBreakSeconds = session.value.breakTime.seconds.toInt()
+                ))
             }
             Segment.Type.BREAK -> {
-                _elapsedWorkSeconds = MutableStateFlow(session.value.workTime.seconds.toInt())
-                _elapsedBreakSeconds = MutableStateFlow(
-                    session.value.breakTime.plusMillis(missedTime).seconds.toInt()
-                )
-
-                _state = MutableStateFlow(State.BREAK)
+                _state = MutableStateFlow(State.Break(
+                    elapsedWorkSeconds = session.value.workTime.seconds.toInt(),
+                    elapsedBreakSeconds = session.value.breakTime
+                        .plusMillis(missedTime).seconds.toInt()
+                ))
             }
             Segment.Type.SUSPEND -> error("cannot load suspended sessions")
         }
 
         timerCollectJob = coroutineScope.launch {
             timer.elapsedSeconds.collect { seconds ->
-                when (_state.value) {
-                    State.WORK -> _elapsedWorkSeconds.update {
-                        session.value.workTime.seconds.plus(seconds).toInt()
-                    }
-                    State.BREAK -> _elapsedBreakSeconds.update {
-                        session.value.breakTime.seconds.plus(seconds).toInt()
+                _state.update { currentState ->
+                    when(currentState) {
+                        is State.Break -> currentState.copy(
+                            elapsedBreakSeconds = session.value.breakTime.seconds
+                                .plus(seconds).toInt()
+                        )
+                        is State.Work -> currentState.copy(
+                            elapsedWorkSeconds = session.value.workTime.seconds
+                                .plus(seconds).toInt()
+                        )
                     }
                 }
             }
         }
 
         state = _state.asStateFlow()
-        elapsedWorkSeconds = _elapsedWorkSeconds.asStateFlow()
-        elapsedBreakSeconds = _elapsedBreakSeconds.asStateFlow()
     }
 
 
     fun setWork() {
-        if (_state.value == State.WORK) return
-
-        timer.reset(System.currentTimeMillis())
-
-        _state.update { State.WORK }
+        _state.update { currentState ->
+            timer.reset(System.currentTimeMillis())
+            State.Work(
+                elapsedWorkSeconds = currentState.elapsedWorkSeconds,
+                elapsedBreakSeconds = currentState.elapsedBreakSeconds
+            )
+        }
     }
 
     fun setBreak() {
-        if (_state.value == State.BREAK) return
-
-        timer.reset(System.currentTimeMillis())
-
-        _state.update { State.BREAK }
+        _state.update { currentState ->
+            timer.reset(System.currentTimeMillis())
+            State.Break(
+                elapsedWorkSeconds = currentState.elapsedWorkSeconds,
+                elapsedBreakSeconds = currentState.elapsedBreakSeconds
+            )
+        }
     }
 
     fun stop() {

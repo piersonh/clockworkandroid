@@ -35,7 +35,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".timer_feature.data.TimerService"
+            android:name=".timer_feature.data.service.TimerService"
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
     </application>
