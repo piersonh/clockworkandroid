@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.session_list_feature.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -13,17 +12,15 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
-import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toActiveTaskItem
+import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.util.NewTaskListItemComparator
+import com.wordco.clockworkandroid.session_list_feature.ui.util.toActiveSessionStatus
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -38,21 +35,16 @@ class TaskListViewModel(
 
     val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
 
-    private val _timerState = timerRepository.state
+    private val timerState = timerRepository.state
 
-    private val _tasks = taskRepository.getTodoTasks()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
+    private val tasks = taskRepository.getTodoTasks()
 
     init {
         viewModelScope.launch {
             combine(
-                _timerState,
-                _tasks,
+                timerState,
+                tasks,
             ) { timerState, tasks ->
-
-                if (tasks == null) {
-                    return@combine TaskListUiState.Retrieving
-                }
 
                 val newTasks = tasks
                     .filter { it is NewTask }
@@ -74,35 +66,27 @@ class TaskListViewModel(
                         )
                     }
 
-                    is TimerState.Paused,
-                    is TimerState.Running -> {
+                    is TimerState.Active -> {
                         val activeTask = tasks.first { it.taskId == timerState.taskId }
-                            .let { it as? StartedTask }
-                            ?: run {
-                                Log.w("TodoListVM", "todo list session list flow is behind")
-                                return@combine null
+                            .let {
+                                ActiveTaskListItem(
+                                    name = it.name,
+                                    elapsedWorkSeconds = timerState.elapsedWorkSeconds,
+                                    elapsedBreakMinutes = timerState.elapsedBreakMinutes,
+                                    taskId = timerState.taskId,
+                                    status = timerState.toActiveSessionStatus(),
+                                    color = it.color,
+                                )
                             }
-
-
-                        // The session list flow might not update with the activated session
-                        //  before the timerstate flow does.  If, so skip the emission
-                        if (activeTask.status() == StartedTask.Status.SUSPENDED) {
-                            Log.w("TodoListVM", "todo list session list flow is behind")
-                            return@combine null
-                        }
 
                         TaskListUiState.TimerActive(
                             newTasks = newTasks,
                             suspendedTasks = suspendedTasks,
-                            activeTask = activeTask.toActiveTaskItem(
-                                elapsedWorkSeconds = timerState.elapsedWorkSeconds,
-                                elapsedBreakMinutes = timerState.elapsedBreakMinutes,
-                            ),
+                            activeTask = activeTask,
                         )
                     }
                 }
             }
-            .filterNotNull()
             .collect { uiState ->
                 _uiState.update { uiState }
             }

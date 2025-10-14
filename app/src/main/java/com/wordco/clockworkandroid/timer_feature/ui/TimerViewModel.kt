@@ -43,22 +43,22 @@ class TimerViewModel (
     private val _events = MutableSharedFlow<TimerUiEvent>()
     val events = _events.asSharedFlow()
 
-    private val _loadedTask = taskRepository.getTask(taskId)
+    private val loadedTask = taskRepository.getTask(taskId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
-    private val _timerState = timerRepository.state
-        //.stateIn(viewModelScope, SharingStarted.WhileSubscribed(),timer.timerState.value)
+    private val timerState = timerRepository.state
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
         viewModelScope.launch {
 
             combine(
-                _loadedTask,
-                _timerState
+                loadedTask,
+                timerState
             ) {
                 task, timerState ->
 
-                if (task == null) {
+                if (task == null || timerState == null) {
                     return@combine TimerUiState.Retrieving
                 }
 
@@ -138,7 +138,7 @@ class TimerViewModel (
 
     fun addMark() {
         viewModelScope.launch {
-            val session = _loadedTask.value as? StartedTask
+            val session = loadedTask.value as? StartedTask
                 ?: error ("addMark can only be called when timer is running")
             val markerName = addMarkerUseCase(
                 sessionRepository = taskRepository,
@@ -152,12 +152,15 @@ class TimerViewModel (
     }
 
     fun finish() {
-        if (timerRepository.state.value is TimerState.Empty) {
-            viewModelScope.launch {
-                completeStartedSessionUseCase(_loadedTask.value as StartedTask)
-            }
-        } else {
+        val currentTimerState = timerState.value
+
+        if (currentTimerState is TimerState.Active && currentTimerState.taskId == taskId) {
             timerRepository.finish()
+        } else {
+            val currentTask = loadedTask.value as StartedTask
+            viewModelScope.launch {
+                completeStartedSessionUseCase(currentTask)
+            }
         }
     }
 
