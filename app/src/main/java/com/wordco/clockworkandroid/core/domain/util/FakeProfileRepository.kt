@@ -62,4 +62,10 @@ class FakeProfileRepository(
             }
         }
     }
+
+    override suspend fun deleteProfile(id: Long) {
+        _profiles.update { list ->
+            list.filter { it.id != id }
+        }
+    }
 }

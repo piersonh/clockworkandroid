@@ -4,20 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -37,19 +35,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.PlusImage
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditTaskForm
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.DeleteSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -62,7 +60,7 @@ import java.time.LocalTime
 @Composable
 fun EditTaskPage (
     onBackClick: () -> Unit,
-    onDeleteBack: () -> Unit,
+    onCreateProfileClick: () -> Unit,
     viewModel: EditTaskViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -83,9 +81,8 @@ fun EditTaskPage (
         onEstimateChange = viewModel::onEstimateChange,
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
         onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
+        onCreateNewProfileClick = onCreateProfileClick,
         onSaveClick = viewModel::onEditTaskClick,
-        onDeleteClick = viewModel::onDeleteClick,
-        onDeleteBack = onDeleteBack
     )
 }
 
@@ -109,23 +106,23 @@ internal fun EditTaskPage(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onDismissEstimatePicker: () -> Unit,
+    onCreateNewProfileClick: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
-    onDeleteClick: () -> Fallible<DeleteSessionError>,
-    onDeleteBack: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     when (uiState) {
-        EditTaskUiState.Retrieving -> Scaffold(
+        EditTaskUiState.Retrieving -> EditPageScaffold(
             title = title,
             onBackClick = onBackClick,
             snackbarHostState = snackbarHostState,
-        ) { paddingValues ->
-            Box (
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                Text("Loading...")
-            }
-        }
+            content = { paddingValues ->
+                Box (
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    Text("Loading...")
+                }
+            },
+        )
 
         is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
             uiState = uiState,
@@ -146,20 +143,20 @@ internal fun EditTaskPage(
             onEstimateChange = onEstimateChange,
             onShowEstimatePicker = onShowEstimatePicker,
             onDismissEstimatePicker = onDismissEstimatePicker,
+            onCreateNewProfileClick = onCreateNewProfileClick,
             onSaveClick = onSaveClick,
-            onDeleteClick = onDeleteClick,
-            onDeleteBack = onDeleteBack
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Scaffold(
+private fun EditPageScaffold(
     title: String,
     onBackClick: () -> Unit,
-    snackbarHostState: SnackbarHostState,
+    topBarActions: @Composable (RowScope.() -> Unit) = {},
     bottomBar: @Composable (() -> Unit) = {},
+    snackbarHostState: SnackbarHostState,
     content: @Composable ((PaddingValues) -> Unit),
 ) {
     Scaffold(
@@ -181,6 +178,7 @@ private fun Scaffold(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
+                actions = topBarActions
             )
         },
         bottomBar = bottomBar,
@@ -209,9 +207,8 @@ private fun EditSessionPageRetrieved(
     onEstimateChange: (UserEstimate?) -> Unit,
     onShowEstimatePicker: () -> Unit,
     onDismissEstimatePicker: () -> Unit,
+    onCreateNewProfileClick: () -> Unit,
     onSaveClick: () -> Fallible<SaveSessionError>,
-    onDeleteClick: () -> Fallible<DeleteSessionError>,
-    onDeleteBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val pagerState = rememberPagerState(
@@ -223,10 +220,22 @@ private fun EditSessionPageRetrieved(
         mutableStateOf(pagerState.targetPage == 1)
     }
 
-    Scaffold(
+    EditPageScaffold (
         title = title,
         onBackClick = onBackClick,
-        snackbarHostState = snackbarHostState,
+        topBarActions = {
+            if (pagerState.currentPage == 0) {
+                IconButton(
+                    onClick = onCreateNewProfileClick
+                ) {
+                    PlusImage(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .fillMaxSize()
+                    )
+                }
+            }
+        },
         bottomBar = {
             // Mimic Horizontal Pager transition
             AnimatedVisibility(
@@ -241,65 +250,67 @@ private fun EditSessionPageRetrieved(
                 BottomBar(
                     onSaveClick = onSaveClick,
                     onBackClick = onBackClick,
-                    onDeleteBack = onDeleteBack,
-                    onDeleteClick = onDeleteClick,
                     coroutineScope = coroutineScope,
                     snackbarHostState = snackbarHostState
                 )
             }
-        }
-    ) { paddingValues ->
-        HorizontalPager(
-            state = pagerState,
-            userScrollEnabled = false,
-            verticalAlignment = Alignment.Top,
-        ) { page ->
-            when (page) {
-                1 -> Column {
-                    Box(
-                        modifier = Modifier.padding(paddingValues),
-                    ) {
-                        EditTaskForm(
-                            uiState = uiState,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 30.dp, vertical = 20.dp)
-                                .verticalScroll(scrollState),
-                            onShowProfilePicker = {
-                                isBottomBarVisible = false
-                                coroutineScope.launch {
-                                    pagerState.tweenToPage(0)
-                                }
-                            },
-                            onTaskNameChange = onTaskNameChange,
-                            onColorSliderChange = onColorSliderChange,
-                            onDifficultyChange = onDifficultyChange,
-                            onShowDatePicker = onShowDatePicker,
-                            onDismissDatePicker = onDismissDatePicker,
-                            onDueDateChange = onDueDateChange,
-                            onShowTimePicker = onShowTimePicker,
-                            onDismissTimePicker = onDismissTimePicker,
-                            onDueTimeChange = onDueTimeChange,
-                            onShowEstimatePicker = onShowEstimatePicker,
-                            onDismissEstimatePicker = onDismissEstimatePicker,
-                            onEstimateChange = onEstimateChange,
-                        )
-                    }
-                }
-                0 -> ProfilePicker(
-                    profiles = uiState.profiles,
-                    modifier = Modifier.padding(paddingValues),
-                    onProfileClick = { profileId ->
-                        onProfileChange(profileId)
-                        coroutineScope.launch {
-                            pagerState.tweenToPage(1)
+        },
+        snackbarHostState = snackbarHostState,
+        { paddingValues ->
+            HorizontalPager(
+                state = pagerState,
+                userScrollEnabled = false,
+                verticalAlignment = Alignment.Top,
+            ) { page ->
+                when (page) {
+                    1 -> Column {
+                        Box(
+                            modifier = Modifier.padding(paddingValues),
+                        ) {
+                            EditTaskForm(
+                                uiState = uiState,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 30.dp, vertical = 20.dp)
+                                    .verticalScroll(scrollState),
+                                onShowProfilePicker = {
+                                    isBottomBarVisible = false
+                                    coroutineScope.launch {
+                                        pagerState.tweenToPage(0)
+                                    }
+                                },
+                                onTaskNameChange = onTaskNameChange,
+                                onColorSliderChange = onColorSliderChange,
+                                onDifficultyChange = onDifficultyChange,
+                                onShowDatePicker = onShowDatePicker,
+                                onDismissDatePicker = onDismissDatePicker,
+                                onDueDateChange = onDueDateChange,
+                                onShowTimePicker = onShowTimePicker,
+                                onDismissTimePicker = onDismissTimePicker,
+                                onDueTimeChange = onDueTimeChange,
+                                onShowEstimatePicker = onShowEstimatePicker,
+                                onDismissEstimatePicker = onDismissEstimatePicker,
+                                onEstimateChange = onEstimateChange,
+                            )
                         }
-                        isBottomBarVisible = true
                     }
-                )
+
+                    0 -> ProfilePicker(
+                        profiles = uiState.profiles,
+                        modifier = Modifier.padding(paddingValues),
+                        onProfileClick = { profileId ->
+                            onProfileChange(profileId)
+                            coroutineScope.launch {
+                                pagerState.tweenToPage(1)
+                            }
+                            isBottomBarVisible = true
+                        },
+                        onCreateProfileClick = onCreateNewProfileClick,
+                    )
+                }
             }
-        }
-    }
+        },
+    )
 }
 
 
@@ -307,54 +318,17 @@ private fun EditSessionPageRetrieved(
 private fun BottomBar(
     onSaveClick: () -> Fallible<SaveSessionError>,
     onBackClick: () -> Unit,
-    onDeleteBack: () -> Unit,
-    onDeleteClick: () -> Fallible<DeleteSessionError>,
     coroutineScope: CoroutineScope,
     snackbarHostState: SnackbarHostState
 ) {
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.surfaceVariant,
     ) {
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(20.dp, alignment = Alignment.CenterHorizontally)
+            contentAlignment = Alignment.Center,
         ) {
-            TextButton(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-                onClick = {
-                    onDeleteBack()
-                    when (onDeleteClick().takeIfError()) {
-                        DeleteSessionError.MISSING_NAME -> {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    "Failed to delete session: Missing Name"
-                                )
-                            }
-                        }
-                        null -> {}
-                    }
-                },
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text(
-                    "Delete",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp,
-                    modifier = Modifier.padding(
-                        horizontal = 10.dp,
-                        vertical = 5.dp,
-                    )
-                )
-            }
-            TextButton(
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
+            AccentRectangleTextButton(
                 onClick = {
                     when (onSaveClick().takeIfError()) {
                         SaveSessionError.MISSING_NAME -> {
@@ -367,18 +341,14 @@ private fun BottomBar(
                         null -> onBackClick()
                     }
                 },
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier
+                maxHeight = 56.dp,
+                aspectRatio = 1.8f
             ) {
                 Text(
                     "Save",
                     fontFamily = LATO,
                     fontWeight = FontWeight.Bold,
                     fontSize = 25.sp,
-                    modifier = Modifier.padding(
-                        horizontal = 10.dp,
-                        vertical = 5.dp,
-                    )
                 )
             }
         }
@@ -414,11 +384,10 @@ private fun EditTaskPagePreview() {
             onDismissTimePicker = { },
             onDueTimeChange = { },
             onEstimateChange = { },
-            onSaveClick = { Fallible.Success },
             onShowEstimatePicker = { },
             onDismissEstimatePicker = { },
-            onDeleteClick = { Fallible.Success },
-            onDeleteBack = { }
+            onCreateNewProfileClick = {},
+            onSaveClick = { Fallible.Success },
         )
     }
 }

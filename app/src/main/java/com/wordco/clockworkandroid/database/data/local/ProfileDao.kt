@@ -25,4 +25,8 @@ interface ProfileDao {
 
     @Update
     suspend fun updateProfile(toProfileEntity: ProfileEntity)
+
+    @Transaction
+    @Query("DELETE FROM ProfileEntity WHERE id = :id")
+    suspend fun deleteProfile(id: Long)
 }

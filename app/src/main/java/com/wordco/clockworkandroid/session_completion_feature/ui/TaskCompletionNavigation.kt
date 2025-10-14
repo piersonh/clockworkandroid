@@ -1,5 +1,8 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.navigation.NavController
@@ -25,8 +28,28 @@ fun NavGraphBuilder.taskCompletionPage(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
-    composable<CompletionRoute> {
-        entry ->
+    composable<CompletionRoute> (
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it }, animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it }, animationSpec = tween(300)
+            )
+        }
+    ) { entry ->
         val taskId = entry.toRoute<CompletionRoute>().id
 
         val taskCompletionViewModel = ViewModelProvider.create(

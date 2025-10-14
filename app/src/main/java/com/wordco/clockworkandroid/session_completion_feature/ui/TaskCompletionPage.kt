@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,12 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.Duration
-import kotlin.math.max
-import kotlin.math.pow
 import kotlin.math.roundToInt
 
 @Composable
@@ -173,7 +169,7 @@ private fun SessionReport(
             uiState.totalTimeAccuracy?.let {
                 Spacer(modifier = Modifier.weight(0.03f))
                 Text (
-                    text = "Your accuracy: ${uiState.totalTimeAccuracy!!.roundToInt()}%",
+                    text = "Your accuracy: ${uiState.totalTimeAccuracy.roundToInt()}%",
                     style = TextStyle(fontSize = 26.sp),
                     textAlign = TextAlign.Center,
                     modifier = Modifier,
@@ -183,37 +179,28 @@ private fun SessionReport(
 
             Spacer(modifier = Modifier.weight(0.03f))
 
-
-            Button(
+            AccentRectangleTextButton(
                 onClick = { /* TODO: Handle View Details */ },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                )
+                maxHeight = 58.dp,
             ) {
                 Text(
                     text = "View Details",
-                    style = TextStyle(fontSize = 24.sp),
                     fontFamily = LATO,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp
                 )
             }
 
-            Spacer(modifier = Modifier.weight(0.03f))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
+            AccentRectangleTextButton(
                 onClick = onContinueClick,
-                modifier = Modifier.fillMaxWidth(0.5f),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                )
             ) {
                 Text(
                     text = "Continue",
-                    style = TextStyle(fontSize = 30.sp),
                     fontFamily = LATO,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 36.sp
                 )
             }
 

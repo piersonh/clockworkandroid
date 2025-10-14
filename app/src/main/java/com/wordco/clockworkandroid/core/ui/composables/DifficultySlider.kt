@@ -10,9 +10,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 
 @Composable
 fun DifficultySlider(
@@ -38,13 +40,25 @@ fun DifficultySlider(
         steps = 3,
         valueRange = 0f..4f,
         colors = SliderDefaults.colors(
+            thumbColor = MaterialTheme.colorScheme.secondary,
             activeTrackColor = MaterialTheme.colorScheme.secondary,
             inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
-            activeTickColor = MaterialTheme.colorScheme.primaryContainer,
-            inactiveTickColor = MaterialTheme.colorScheme.primary,
-            thumbColor = MaterialTheme.colorScheme.secondary
+            activeTickColor = MaterialTheme.colorScheme.primary,
+            inactiveTickColor = MaterialTheme.colorScheme.primary
         ),
         onValueChange = onValueChange,
-        //modifier = Modifier.padding(horizontal = 24.dp) // to patch the color picker track length
+        //modifier = Modifier.padding(horizontal = 24.dp) // to match the color picker track length
     )
+}
+
+@Preview
+@Composable
+private fun DifficultySliderPreview() {
+    ClockworkTheme {
+        DifficultySlider(
+            label = "",
+            value = 1f,
+            onValueChange = {}
+        )
+    }
 }

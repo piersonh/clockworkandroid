@@ -7,6 +7,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun CreateNewTaskPage (
     onBackClick: () -> Unit,
+    onCreateNewProfileClick: () -> Unit,
     viewModel: CreateNewTaskViewModel,
     skipProfilePicker: Boolean = false,
 ) {
@@ -30,6 +31,7 @@ fun CreateNewTaskPage (
         onEstimateChange = viewModel::onEstimateChange,
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
         onDismissEstimatePicker = viewModel::onDismissEstimatePicker,
+        onCreateNewProfileClick = onCreateNewProfileClick,
         onSaveClick = viewModel::onSaveClick,
         onDeleteClick = viewModel::onDeleteClick,
         onDeleteBack = viewModel::onDeleteClick

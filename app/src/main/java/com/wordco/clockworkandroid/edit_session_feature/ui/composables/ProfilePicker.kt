@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.util.DummyData
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
@@ -41,13 +42,15 @@ fun ProfilePicker(
     profiles: List<ProfilePickerItem>,
     modifier: Modifier = Modifier,
     onProfileClick: (Long?) -> Unit,
+    onCreateProfileClick: () -> Unit,
 ) {
     Box(
         modifier = modifier
     ) {
         if (profiles.isEmpty()) {
             return ProfilePickerNoProfiles (
-                onProfileClick = onProfileClick
+                onProfileClick = onProfileClick,
+                onCreateProfileClick = onCreateProfileClick
             )
         }
 
@@ -75,9 +78,11 @@ fun ProfilePicker(
             item {
                 HorizontalDivider(
                     thickness = 5.dp,
-                    modifier = Modifier.clip(
-                        RoundedCornerShape(100.dp)
-                    ).padding(vertical = 5.dp)
+                    modifier = Modifier
+                        .clip(
+                            RoundedCornerShape(100.dp)
+                        )
+                        .padding(vertical = 5.dp)
                 )
             }
 
@@ -100,6 +105,7 @@ fun ProfilePicker(
 @Composable
 private fun ProfilePickerNoProfiles(
     onProfileClick: (Long?) -> Unit,
+    onCreateProfileClick: () -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -120,9 +126,11 @@ private fun ProfilePickerNoProfiles(
 
         HorizontalDivider(
             thickness = 5.dp,
-            modifier = Modifier.clip(
-                RoundedCornerShape(100.dp)
-            ).padding(vertical = 5.dp)
+            modifier = Modifier
+                .clip(
+                    RoundedCornerShape(100.dp)
+                )
+                .padding(vertical = 5.dp)
         )
 
 
@@ -141,7 +149,7 @@ private fun ProfilePickerNoProfiles(
             )
         }
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -156,6 +164,19 @@ private fun ProfilePickerNoProfiles(
                 lineHeight = 40.sp,
             )
         }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        AccentRectangleTextButton(
+            onClick = onCreateProfileClick,
+        ) {
+            Text(
+                text = "Create Profile",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp
+            )
+        }
     }
 }
 
@@ -166,7 +187,8 @@ private fun ProfilePickerPreview() {
     ClockworkTheme {
         ProfilePicker(
             profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
-            onProfileClick = { }
+            onProfileClick = {},
+            onCreateProfileClick = {},
         )
     }
 }
@@ -177,7 +199,8 @@ private fun ProfilePickerNoProfilesPreview() {
     ClockworkTheme {
         ProfilePicker(
             profiles = emptyList(),
-            onProfileClick = { }
+            onProfileClick = {},
+            onCreateProfileClick = {},
         )
     }
 }

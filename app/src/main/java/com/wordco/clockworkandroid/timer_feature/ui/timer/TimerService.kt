@@ -71,7 +71,7 @@ class TimerService() : Service() {
             onRequestNotificationPermission = {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     coroutineScope.launch {
-                        permissionRequestSignaller.post(
+                        permissionRequestSignaller.request(
                             Manifest.permission.POST_NOTIFICATIONS
                         )
                     }

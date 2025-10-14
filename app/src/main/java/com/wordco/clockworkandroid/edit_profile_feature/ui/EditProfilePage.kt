@@ -1,13 +1,13 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -15,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
@@ -95,15 +95,12 @@ private fun EditProfilePage(
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
             ) {
-                Box(
+                Row (
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        20.dp, Alignment.CenterHorizontally)
                 ) {
-                    TextButton(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary,
-                            contentColor = MaterialTheme.colorScheme.onSecondary
-                        ),
+                    AccentRectangleTextButton(
                         onClick = {
                             when (onSaveClick().takeIfError()) {
                                 SaveProfileError.MISSING_NAME -> {
@@ -116,17 +113,38 @@ private fun EditProfilePage(
                                 null -> onBackClick()
                             }
                         },
-                        shape = RoundedCornerShape(10.dp)
+                        maxHeight = 56.dp,
+                        aspectRatio = 1.8f
+                    ) {
+                        Text(
+                            "Delete",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 25.sp,
+                        )
+                    }
+
+                    AccentRectangleTextButton(
+                        onClick = {
+                            when (onSaveClick().takeIfError()) {
+                                SaveProfileError.MISSING_NAME -> {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Failed to save profile: Missing Name"
+                                        )
+                                    }
+                                }
+                                null -> onBackClick()
+                            }
+                        },
+                        maxHeight = 56.dp,
+                        aspectRatio = 1.8f
                     ) {
                         Text(
                             "Save",
                             fontFamily = LATO,
                             fontWeight = FontWeight.Bold,
                             fontSize = 25.sp,
-                            modifier = Modifier.padding(
-                                horizontal = 10.dp,
-                                vertical = 5.dp,
-                            )
                         )
                     }
                 }

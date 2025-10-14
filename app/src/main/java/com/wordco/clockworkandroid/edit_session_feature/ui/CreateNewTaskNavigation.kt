@@ -32,7 +32,8 @@ fun NavController.navigateToCreateNewTask(
 
 
 fun NavGraphBuilder.createNewTaskPage(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCreateNewProfileClick: () -> Unit
 ) {
     composable<CreateNewTaskRoute>(
         enterTransition = {
@@ -72,6 +73,7 @@ fun NavGraphBuilder.createNewTaskPage(
 
         CreateNewTaskPage(
             onBackClick = onBackClick,
+            onCreateNewProfileClick = onCreateNewProfileClick,
             viewModel = createNewTaskViewModel,
             skipProfilePicker = profileId != null,
         )
