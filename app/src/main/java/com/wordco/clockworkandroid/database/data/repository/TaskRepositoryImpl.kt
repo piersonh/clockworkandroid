@@ -13,6 +13,7 @@ import com.wordco.clockworkandroid.database.data.local.entities.mapper.toSegment
 import com.wordco.clockworkandroid.database.data.local.entities.mapper.toTask
 import com.wordco.clockworkandroid.database.data.local.entities.mapper.toTaskEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 class TaskRepositoryImpl (
@@ -43,14 +44,17 @@ class TaskRepositoryImpl (
     override suspend fun updateTask(task: Task) {
         taskDao.updateTask(task.toTaskEntity())
     }
-    override suspend fun deleteTask(task: Task) {
-        taskDao.deleteTask(task.toTaskEntity())
+
+    override suspend fun deleteTask(id: Long) {
+        taskDao.deleteTaskWithExecutionData(id)
     }
 
     override fun getTask(taskId: Long): Flow<Task> {
-        return taskDao.getTaskWithExecutionData(taskId).map {
-            it.toTask()
-        }
+        return taskDao.getTaskWithExecutionData(taskId)
+            .filterNotNull()
+            .map {
+                it.toTask()
+            }
     }
 
     override fun getTasks(): Flow<List<Task>> {

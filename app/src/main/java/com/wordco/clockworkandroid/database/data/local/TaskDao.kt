@@ -1,7 +1,6 @@
 package com.wordco.clockworkandroid.database.data.local
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -26,8 +25,16 @@ interface TaskDao {
     @Update
     suspend fun updateTask(task: TaskEntity)
 
-    @Delete
-    suspend fun deleteTask(task: TaskEntity)
+    @Transaction
+    @Query("DELETE FROM TaskEntity WHERE taskId = :id")
+    suspend fun deleteTask(id: Long)
+
+    @Transaction
+    suspend fun deleteTaskWithExecutionData(id: Long) {
+        deleteTask(id)
+        deleteSegmentsForTask(id)
+        deleteMarkersForTask(id)
+    }
 
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -44,6 +51,10 @@ interface TaskDao {
         updateSegment(existing)
         insertSegment(new)
     }
+
+    @Transaction
+    @Query("DELETE FROM SegmentEntity WHERE taskId = :taskId")
+    suspend fun deleteSegmentsForTask(taskId: Long)
 
     @Transaction
     @Query("""
@@ -64,7 +75,7 @@ interface TaskDao {
 
     @Transaction
     @Query("SELECT * FROM TaskEntity WHERE taskId == :taskId")
-    fun getTaskWithExecutionData(taskId: Long) : Flow<TaskWithExecutionDataObject>
+    fun getTaskWithExecutionData(taskId: Long) : Flow<TaskWithExecutionDataObject?>
 
 
     @Transaction
@@ -89,4 +100,8 @@ interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertMarkers(markers: List<MarkerEntity>)
+
+    @Transaction
+    @Query("DELETE FROM MarkerEntity WHERE taskId = :taskId")
+    suspend fun deleteMarkersForTask(taskId: Long)
 }

@@ -18,7 +18,6 @@ import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.DeleteSessionError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first

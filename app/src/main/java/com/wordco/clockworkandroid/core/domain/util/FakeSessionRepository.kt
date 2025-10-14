@@ -84,19 +84,9 @@ class FakeSessionRepository(
         }
     }
 
-    override suspend fun deleteTask(task: Task) {
-        if (task.taskId != 0L) {
-            error("new database entries must have an id of 0")
-        }
-
+    override suspend fun deleteTask(id: Long) {
         _sessions.update { sessions ->
-            sessions.map { it ->
-                if (it.taskId == task.taskId) {
-                    return
-                } else {
-                    it
-                }
-            }
+            sessions.filter { it.taskId != id }
         }
     }
 

@@ -119,6 +119,13 @@ class TimerViewModel (
 
     }
 
+    fun onDeleteClick() {
+        viewModelScope.launch {
+            taskRepository.deleteTask(taskId)
+            _events.emit(TimerUiEvent.NavigateBack)
+        }
+    }
+
     fun initTimer() {
         timerRepository.start(taskId)
     }
@@ -154,13 +161,16 @@ class TimerViewModel (
     fun finish() {
         val currentTimerState = timerState.value
 
-        if (currentTimerState is TimerState.Active && currentTimerState.taskId == taskId) {
-            timerRepository.finish()
-        } else {
-            val currentTask = loadedTask.value as StartedTask
-            viewModelScope.launch {
+        viewModelScope.launch {
+            if (currentTimerState is TimerState.Active && currentTimerState.taskId == taskId) {
+                timerRepository.finish()
+            } else {
+                val currentTask = loadedTask.value as StartedTask
+
                 completeStartedSessionUseCase(currentTask)
             }
+
+            _events.emit(TimerUiEvent.FinishSession)
         }
     }
 

@@ -4,4 +4,8 @@ sealed interface TimerUiEvent {
     data class ShowSnackbar(
         val message: String
     ) : TimerUiEvent
+
+    data object NavigateBack : TimerUiEvent
+
+    data object FinishSession : TimerUiEvent
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
@@ -14,13 +15,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -28,7 +36,9 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -36,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
@@ -69,6 +80,12 @@ fun TimerPage(
                         snackbarHostState.showSnackbar(event.message)
                     }
                 }
+                is TimerUiEvent.NavigateBack -> {
+                    onBackClick()
+                }
+                is TimerUiEvent.FinishSession -> {
+                    onFinishClick()
+                }
             }
         }
     }
@@ -78,15 +95,13 @@ fun TimerPage(
         snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
         onEditClick = onEditClick,
+        onDeleteClick = timerViewModel::onDeleteClick,
         onInitClick = timerViewModel::initTimer,
         onBreakClick = timerViewModel::takeBreak,
         onSuspendClick = timerViewModel::suspendTimer,
         onResumeClick = timerViewModel::resumeTimer,
         onMarkClick = timerViewModel::addMark,
-        onFinishClick = {
-            timerViewModel.finish()
-            onFinishClick()
-        },
+        onFinishClick = timerViewModel::finish,
     )
 }
 
@@ -97,6 +112,7 @@ private fun TimerPage(
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onInitClick: () -> Unit,
     onBreakClick: () -> Unit,
     onSuspendClick: () -> Unit,
@@ -104,6 +120,9 @@ private fun TimerPage(
     onMarkClick: () -> Unit,
     onFinishClick: () -> Unit,
 ) {
+    var isMenuExpanded by remember { mutableStateOf(false) }
+
+    var showDeleteDialog by remember {mutableStateOf(false)}
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -122,16 +141,48 @@ private fun TimerPage(
                 },
                 actions = {
                     if (uiState is TimerUiState.Shelved) {
-                        TextButton(
-                            onClick = onEditClick
-                        ) {
-                            Text(
-                                text = "Edit",
-                                style = TextStyle(fontSize = 25.sp),
-                                textAlign = TextAlign.Right,
-                                fontFamily = LATO,
-                                color = MaterialTheme.colorScheme.onSecondary
-                            )
+                        Box {
+                            IconButton(onClick = { isMenuExpanded = true }) {
+                                Icon(
+                                    Icons.Default.MoreVert,
+                                    contentDescription = "More options",
+                                    tint = MaterialTheme.colorScheme.onSecondary,
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = isMenuExpanded,
+                                onDismissRequest = { isMenuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "Edit",
+                                            fontSize = 25.sp,
+                                            textAlign = TextAlign.Right,
+                                            fontFamily = LATO,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        onEditClick()
+                                    }
+                                )
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "Delete",
+                                            fontSize = 25.sp,
+                                            textAlign = TextAlign.Right,
+                                            fontFamily = LATO,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    },
+                                    onClick = { showDeleteDialog = true }
+                                )
+                            }
                         }
                     }
                 },
@@ -195,20 +246,11 @@ private fun TimerPage(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
-//                        Text(
-//                            text = uiState.taskName,
-//                            style = TextStyle(fontSize = 48.sp),
-//                            modifier = Modifier,
-//                            fontFamily = LATO,
-//                            textAlign = TextAlign.Center,
-//                            color = MaterialTheme.colorScheme.onPrimaryContainer
-//                        )
 
-                        //Text(text = "${uiState.elapsedSeconds}")
+
                         TimeDisplay(uiState)
 
 
-                        // TIMER CONTROLS
                         TimerControls(
                             modifier = Modifier
                                 .aspectRatio(2f)
@@ -221,6 +263,39 @@ private fun TimerPage(
                             onMarkClick = onMarkClick,
                             onFinishClick,
                         )
+                    }
+
+                    if (showDeleteDialog) {
+                        BasicAlertDialog(
+                            onDismissRequest = { showDeleteDialog = false },
+                            properties = DialogProperties(
+                                windowTitle = "Delete Session?",
+                                dismissOnBackPress = true,
+                                dismissOnClickOutside = true,
+                            )
+                        ) {
+                            Surface {
+                                Column {
+                                    Text("Are you sure about that?")
+                                    Row {
+                                        TextButton(
+                                            onClick = { showDeleteDialog = false },
+                                        ) {
+                                            Text("Cancel")
+                                        }
+
+                                        TextButton(
+                                            onClick = {
+                                                showDeleteDialog = false
+                                                onDeleteClick()
+                                            },
+                                        ) {
+                                            Text("Confirm")
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -245,6 +320,7 @@ private fun SuspendedTimerPagePreview() {
             snackbarHostState = remember { SnackbarHostState() },
             onBackClick = {},
             onEditClick = {},
+            onDeleteClick = {},
             onInitClick = {},
             onBreakClick = {},
             onSuspendClick = {},

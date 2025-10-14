@@ -71,9 +71,7 @@ fun CreateNewTaskPage (
         onShowEstimatePicker = viewModel::onShowEstimatePicker,
         onCreateNewProfileClick = onCreateNewProfileClick,
         onShowDiscardAlert = viewModel::onShowDiscardAlert,
-        onSaveClick = viewModel::onSaveClick,
-        onDeleteClick = viewModel::onDeleteClick,
-        onDeleteBack = viewModel::onDeleteClick
+        onSaveClick = viewModel::onSaveClick
     )
 }
 
