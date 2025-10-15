@@ -63,7 +63,7 @@ fun NavGraphBuilder.taskCompletionPage(
         )[TaskCompletionViewModel::class]
 
         TaskCompletionPage(
-            taskCompletionViewModel = taskCompletionViewModel,
+            viewModel = taskCompletionViewModel,
             onBackClick = onBackClick,
             onContinueClick = onContinueClick
         )

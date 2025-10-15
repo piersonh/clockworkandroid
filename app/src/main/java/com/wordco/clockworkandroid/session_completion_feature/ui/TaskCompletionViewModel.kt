@@ -11,8 +11,10 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -26,6 +28,9 @@ class TaskCompletionViewModel (
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<TaskCompletionUiState>(TaskCompletionUiState.Retrieving)
     val uiState: StateFlow<TaskCompletionUiState> = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<TaskCompletionUiEvent>()
+    val events = _events.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -51,6 +56,13 @@ class TaskCompletionViewModel (
                 }.let { state ->
                     _uiState.update { state }
                 }
+        }
+    }
+
+    fun onDeleteClick() {
+        viewModelScope.launch {
+            taskRepository.deleteTask(taskId)
+            _events.emit(TaskCompletionUiEvent.NavigateBack)
         }
     }
 

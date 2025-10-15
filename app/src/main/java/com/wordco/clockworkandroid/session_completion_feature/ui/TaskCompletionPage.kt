@@ -5,31 +5,45 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.session_completion_feature.ui.util.toHourMinuteString
 import java.time.Duration
 import kotlin.math.roundToInt
 
@@ -37,15 +51,27 @@ import kotlin.math.roundToInt
 fun TaskCompletionPage(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
-    taskCompletionViewModel: TaskCompletionViewModel
+    viewModel: TaskCompletionViewModel
 ) {
-    val uiState by taskCompletionViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     TaskCompletionPage(
         uiState = uiState,
         onBackClick = onBackClick,
-        onContinueClick = onContinueClick
+        onContinueClick = onContinueClick,
+        onEditClick = {},
+        onDeleteClick = viewModel::onDeleteClick,
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                TaskCompletionUiEvent.NavigateBack -> {
+                    onBackClick()
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +80,13 @@ private fun TaskCompletionPage(
     uiState: TaskCompletionUiState,
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
+
+    var isMenuExpanded by remember { mutableStateOf(false) }
+
+    var showDeleteDialog by remember {mutableStateOf(false)}
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -76,19 +108,123 @@ private fun TaskCompletionPage(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
+                actions = {
+                    if (uiState is TaskCompletionUiState.Retrieved) {
+                        Box {
+                            IconButton(onClick = { isMenuExpanded = true }) {
+                                Icon(
+                                    painterResource(R.drawable.three_dots_vertical),
+                                    contentDescription = "More options",
+                                    tint = MaterialTheme.colorScheme.onSecondary,
+                                    modifier = Modifier.padding(vertical = 7.dp)
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = isMenuExpanded,
+                                onDismissRequest = { isMenuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "Edit",
+                                            fontSize = 25.sp,
+                                            textAlign = TextAlign.Right,
+                                            fontFamily = LATO,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        onEditClick()
+                                    }
+                                )
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "Delete",
+                                            fontSize = 25.sp,
+                                            textAlign = TextAlign.Right,
+                                            fontFamily = LATO,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    },
+                                    onClick = {
+                                        isMenuExpanded = false
+                                        showDeleteDialog = true
+                                    }
+                                )
+                            }
+                        }
+                    }
+                },
             )
         },
     ) { innerPadding ->
         when (uiState) {
             TaskCompletionUiState.Retrieving -> Text("Retrieving...")
-            is TaskCompletionUiState.Retrieved -> SessionReport(
-                uiState = uiState,
+            is TaskCompletionUiState.Retrieved -> Box(
                 modifier = Modifier
-                    .fillMaxSize()
                     .padding(innerPadding)
-                    .background(color = MaterialTheme.colorScheme.primary),
-                onContinueClick = onContinueClick
-            )
+                    .background(color = MaterialTheme.colorScheme.primary)
+            ) {
+                SessionReport(
+                    uiState = uiState,
+                    modifier = Modifier.fillMaxWidth(),
+                    onContinueClick = onContinueClick
+                )
+
+                if (showDeleteDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteDialog = false },
+                        title = {
+                            Text(
+                                "Delete Session?",
+                                fontFamily = LATO,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        },
+                        text = {
+                            Text(
+                                "Are you sure about that?",
+                                fontFamily = LATO,
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showDeleteDialog = false
+                                    onDeleteClick()
+                                },
+                            ) {
+                                Text(
+                                    "Confirm",
+                                    fontFamily = LATO,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showDeleteDialog = false },
+                            ) {
+                                Text(
+                                    "Cancel",
+                                    fontFamily = LATO,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        },
+                        properties = DialogProperties(
+                            dismissOnBackPress = true,
+                            dismissOnClickOutside = true,
+                        )
+                    )
+                }
+            }
         }
     }
 }
@@ -108,6 +244,7 @@ private fun SessionReport(
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(all = 10.dp)
+                .fillMaxHeight()
         ) {
 
             Text(
@@ -120,8 +257,7 @@ private fun SessionReport(
             Spacer(modifier = Modifier.weight(0.004f))
 
             Text(
-                text = "${uiState.totalTime.toHours()}h " +
-                        "${uiState.totalTime.toMinutes().mod(60)}m",
+                text = uiState.totalTime.toHourMinuteString(),
                 style = TextStyle(fontSize = 90.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier,
@@ -130,7 +266,7 @@ private fun SessionReport(
             Spacer(modifier = Modifier.weight(0.03f))
 
             val estimateText = if (uiState.estimate != null) {
-                "${uiState.estimate.toHours()}h ${uiState.estimate.toMinutes().mod(60)}m"
+                uiState.estimate.toHourMinuteString()
             } else {
                 "No estimate provided"
             }
@@ -145,8 +281,7 @@ private fun SessionReport(
             Spacer(modifier = Modifier.weight(0.03f))
 
             Text(
-                text = "Work time: ${uiState.workTime.toHours()}h " +
-                        "${uiState.workTime.toMinutes().mod(60)}m",
+                text = "Work time: ${uiState.workTime.toHourMinuteString()}",
                 style = TextStyle(fontSize = 26.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier,
@@ -156,8 +291,7 @@ private fun SessionReport(
             Spacer(modifier = Modifier.weight(0.03f))
 
             Text (
-                text = "Break time: ${uiState.breakTime.toHours()}h " +
-                        "${uiState.breakTime.toMinutes().mod(60)}m",
+                text = "Break time: ${uiState.breakTime.toHourMinuteString()}",
                 style = TextStyle(fontSize = 26.sp),
                 textAlign = TextAlign.Center,
                 modifier = Modifier,
@@ -224,7 +358,9 @@ private fun TaskCompletionPagePreview() {
                 totalTimeAccuracy = 80.0,
             ),
             onBackClick = {},
-            onContinueClick = {}
+            onContinueClick = {},
+            onEditClick = {},
+            onDeleteClick = {},
         )
     }
 }
