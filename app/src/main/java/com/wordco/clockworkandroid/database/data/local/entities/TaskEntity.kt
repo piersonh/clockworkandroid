@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
         entity = ProfileEntity::class,
         parentColumns = ["id"],
         childColumns = ["profileId"],
-        onDelete = ForeignKey.CASCADE
+        onDelete = ForeignKey.SET_NULL
     )],
     indices = [Index(value = ["profileId"])]
 )

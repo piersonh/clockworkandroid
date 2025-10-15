@@ -20,8 +20,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,8 +38,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.util.DummyData
@@ -80,11 +89,22 @@ fun ProfileSessionListPage(
         uiState = uiState,
         onBackClick = onBackClick,
         onEditClick = onEditClick,
+        onDeleteClick = viewModel::onDeleteClick,
         onTodoSessionClick = onTodoSessionClick,
         onCreateNewSessionClick = onCreateNewSessionClick,
         onCompletedSessionClick = onCompletedSessionClick,
         navBar = navBar,
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                ProfileSessionListUiEvent.NavigateBack -> {
+                    onBackClick()
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -92,6 +112,7 @@ private fun ProfileSessionListPage(
     uiState: ProfileSessionListUiState,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
     onCompletedSessionClick: (Long) -> Unit,
@@ -102,6 +123,7 @@ private fun ProfileSessionListPage(
             uiState = uiState,
             onBackClick = onBackClick,
             onEditClick = onEditClick,
+            onDeleteClick = onDeleteClick,
             onTodoSessionClick = onTodoSessionClick,
             onCreateNewSessionClick = onCreateNewSessionClick,
             onCompletedSessionClick = onCompletedSessionClick,
@@ -121,11 +143,16 @@ private fun ProfileSessionListPageRetrieved(
     uiState: ProfileSessionListUiState.Retrieved,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onTodoSessionClick: (Long) -> Unit,
     onCreateNewSessionClick: () -> Unit,
     onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
+    var isMenuExpanded by remember { mutableStateOf(false) }
+
+    var showDeleteDialog by remember {mutableStateOf(false)}
+
     Scaffold (
         topBar = {
             val contentColor = listOf(
@@ -161,16 +188,52 @@ private fun ProfileSessionListPageRetrieved(
                     )
                 },
                 actions = {
-                    TextButton(
-                        onClick = onEditClick
-                    ) {
-                        Text(
-                            text = "Edit",
-                            style = TextStyle(fontSize = 25.sp),
-                            textAlign = TextAlign.Right,
-                            fontFamily = LATO,
-                            color = contentColor
-                        )
+                    Box {
+                        IconButton(onClick = { isMenuExpanded = true }) {
+                            Icon(
+                                painterResource(R.drawable.three_dots_vertical),
+                                contentDescription = "More options",
+                                tint = contentColor,
+                                modifier = Modifier.padding(vertical = 7.dp)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = isMenuExpanded,
+                            onDismissRequest = { isMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Edit",
+                                        fontSize = 25.sp,
+                                        textAlign = TextAlign.Right,
+                                        fontFamily = LATO,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                },
+                                onClick = {
+                                    isMenuExpanded = false
+                                    onEditClick()
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = "Delete",
+                                        fontSize = 25.sp,
+                                        textAlign = TextAlign.Right,
+                                        fontFamily = LATO,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                },
+                                onClick = {
+                                    isMenuExpanded = false
+                                    showDeleteDialog = true
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -260,6 +323,56 @@ private fun ProfileSessionListPageRetrieved(
                         tabIndicatorColor = uiState.profileColor
                     )
                 }
+            }
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = {
+                        Text(
+                            "Delete Session?",
+                            fontFamily = LATO,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    },
+                    text = {
+                        Text(
+                            "Are you sure about that?",
+                            fontFamily = LATO,
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDeleteDialog = false
+                                onDeleteClick()
+                            },
+                        ) {
+                            Text(
+                                "Confirm",
+                                fontFamily = LATO,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showDeleteDialog = false },
+                        ) {
+                            Text(
+                                "Cancel",
+                                fontFamily = LATO,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    },
+                    properties = DialogProperties(
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true,
+                    )
+                )
             }
         }
     }
@@ -620,6 +733,7 @@ private fun ProfileSessionListPageRetrievedPreview() {
             ),
             onBackClick = {},
             onEditClick = {},
+            onDeleteClick = {},
             onTodoSessionClick = {},
             onCreateNewSessionClick = {},
             onCompletedSessionClick = {},
@@ -661,6 +775,7 @@ private fun ProfileSessionListPageEmptyTodoPreview() {
             ),
             onBackClick = {},
             onEditClick = {},
+            onDeleteClick = {},
             onTodoSessionClick = {},
             onCreateNewSessionClick = {},
             onCompletedSessionClick = { },

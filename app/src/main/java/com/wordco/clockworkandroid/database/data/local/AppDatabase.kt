@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
         MarkerEntity::class,
         ProfileEntity::class,
                ],
-    version = 12)
+    version = 13)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 
@@ -36,8 +36,8 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context, AppDatabase::class.java, "clockwork_db"
                 )
-                    .fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
-                    // .addMigrations(MIGRATION_1_2) // Add your migration strategies here
+                    //.fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
+                    .addMigrations(MIGRATION_12_13) // Add your migration strategies here
                     .addCallback(object: Callback() {
 
 

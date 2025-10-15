@@ -13,8 +13,10 @@ import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -32,6 +34,9 @@ class ProfileSessionListViewModel(
     )
 
     val uiState = _uiState.asStateFlow()
+
+    private val _events = MutableSharedFlow<ProfileSessionListUiEvent>()
+    val events = _events.asSharedFlow()
 
     private val _profile = profileRepository.getProfile(profileId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
@@ -66,6 +71,13 @@ class ProfileSessionListViewModel(
             }.collect { state ->
                 _uiState.update { state }
             }
+        }
+    }
+
+    fun onDeleteClick() {
+        viewModelScope.launch {
+            profileRepository.deleteProfile(profileId)
+            _events.emit(ProfileSessionListUiEvent.NavigateBack)
         }
     }
 
