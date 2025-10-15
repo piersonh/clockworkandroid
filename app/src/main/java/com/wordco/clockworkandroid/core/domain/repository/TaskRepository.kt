@@ -7,12 +7,6 @@ import com.wordco.clockworkandroid.core.domain.model.Task
 import kotlinx.coroutines.flow.Flow
 
 interface TaskRepository {
-
-    /**
-     * Inserts all components of a task object.
-     * */
-    suspend fun insertTask(task: Task)
-
     /**
      * Inserts only the properties associated with the task, not the Segments or Markers.
      * */

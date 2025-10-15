@@ -32,26 +32,6 @@ class FakeSessionRepository(
         }
     }
 
-    override suspend fun insertTask(task: Task) {
-        if (task.taskId != 0L) {
-            error("new database entries must have an id of 0")
-        }
-
-        _sessions.update { sessions ->
-            val newId = sessions.maxOfOrNull {
-                it.taskId
-            }?.plus(1) ?: 1
-
-            sessions.plus(
-                when (task) {
-                    is NewTask -> task.copy(taskId = newId)
-                    is CompletedTask -> task.copy(taskId = newId)
-                    is StartedTask -> task.copy(taskId = newId)
-                }
-            )
-        }
-    }
-
     override suspend fun insertNewTask(task: Task) {
         if (task.taskId != 0L) {
             error("new database entries must have an id of 0")

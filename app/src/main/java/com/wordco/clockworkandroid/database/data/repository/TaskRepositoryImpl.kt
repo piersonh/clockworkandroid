@@ -19,24 +19,6 @@ import kotlinx.coroutines.flow.map
 class TaskRepositoryImpl (
     private val taskDao: TaskDao,
 ) : TaskRepository {
-    override suspend fun insertTask(task: Task) {
-        taskDao.insertTask(task.toTaskEntity())
-
-        when (task) {
-            is NewTask -> {}
-            is CompletedTask -> {
-                taskDao.insertSegments(task.segments.map { segment -> segment.toSegmentEntity() })
-                taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
-
-            }
-            is StartedTask -> {
-                taskDao.insertSegments(task.segments.map { segment -> segment.toSegmentEntity() })
-                taskDao.insertMarkers(task.markers.map { marker -> marker.toMarkerEntity() })
-            }
-        }
-
-    }
-
     override suspend fun insertNewTask(task: Task) {
         taskDao.insertTask(task.toTaskEntity())
     }
