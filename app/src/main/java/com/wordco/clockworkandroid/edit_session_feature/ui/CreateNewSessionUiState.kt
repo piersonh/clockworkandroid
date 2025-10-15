@@ -27,7 +27,8 @@ sealed interface CreateNewSessionUiState {
                 difficulty = difficulty,
                 dueDate = dueDate,
                 dueTime = dueTime,
-                estimate = estimate
+                estimate = estimate,
+                isEstimateEditable = true,
             )
         }
     }

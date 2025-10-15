@@ -318,6 +318,7 @@ private fun EditTaskPagePreview() {
                 dueDate = LocalDate.parse("2025-12-05"),
                 dueTime = LocalTime.parse("10:15"),
                 estimate = UserEstimate(15, 2),
+                isEstimateEditable = false,
                 profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
                 hasFieldChanges = false
             ),

@@ -2,9 +2,7 @@ package com.wordco.clockworkandroid.database.data.repository
 
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.Marker
-import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
-import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.database.data.local.TaskDao

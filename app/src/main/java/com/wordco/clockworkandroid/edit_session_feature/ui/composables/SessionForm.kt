@@ -177,7 +177,7 @@ fun SessionForm(
             } ?: "No Estimate",
             label = "Estimated Duration",
             onClick = onShowEstimatePicker,
-            trailingIcon = uiState.estimate?.let {
+            trailingIcon = if(uiState.estimate != null && uiState.isEstimateEditable) {
                 {
                     IconButton(
                         onClick = { onEstimateChange(null) }
@@ -190,8 +190,11 @@ fun SessionForm(
                         )
                     }
                 }
+            } else {
+                null
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isEnabled = uiState.isEstimateEditable
         )
     }
 }
@@ -209,6 +212,7 @@ private fun EditTaskFormPreview() {
                 dueDate = null,
                 dueTime = null,
                 estimate = null,
+                isEstimateEditable = false,
             ),
             onShowProfilePicker = {},
             onTaskNameChange = {},

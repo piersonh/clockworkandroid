@@ -12,6 +12,7 @@ data class SessionFormUiState (
     val dueDate: LocalDate?,
     val dueTime: LocalTime?,
     val estimate: UserEstimate?,
+    val isEstimateEditable: Boolean,
 )
 
 

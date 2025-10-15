@@ -1,58 +1,61 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui.composables
 
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.em
 
 @Composable
-fun OutlinedTextFieldButton (
+fun OutlinedTextFieldButton(
     value: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     label: String? = null,
-    onClick: () -> Unit,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    isEnabled: Boolean = true,
 ) {
-    OutlinedTextField(
-        // override the disabled colors
-        colors = OutlinedTextFieldDefaults.colors(
-            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-            disabledContainerColor = Color.Transparent,
-            disabledBorderColor = MaterialTheme.colorScheme.outline,
-            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
-            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        value = value,
-        enabled = false,
-        modifier = Modifier
-            .combinedClickable(
-                onClick = onClick
-            ).then(modifier),
-        label = label?.let {
-            {
-                Text(
-                    it,
-                    style = TextStyle(
-                        letterSpacing = 0.02.em, // or use TextUnit(value, TextUnitType.Sp)
-                    ),
-                    maxLines = 1
+    Box(
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            modifier = Modifier.fillMaxWidth(),
+            label = label?.let {
+                {
+                    Text(
+                        it,
+                        style = TextStyle(
+                            letterSpacing = 0.02.em, // or use TextUnit(value, TextUnitType.Sp)
+                        ),
+                        maxLines = 1
+                    )
+                }
+            },
+            trailingIcon = trailingIcon,
+            enabled = isEnabled,
+            readOnly = true,
+            singleLine = true,
+            interactionSource = remember { MutableInteractionSource() },
+        )
+
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable(
+                    enabled = isEnabled,
+                    onClick = onClick,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = LocalIndication.current
                 )
-            }
-        },
-        onValueChange = { },
-        singleLine = true,
-        readOnly = true,
-        trailingIcon = trailingIcon
-    )
+        )
+    }
 }

@@ -53,46 +53,47 @@ class EditTaskViewModel (
     val snackbarEvent = _snackbarEvent.asSharedFlow()
 
 
-    private lateinit var _loadedTask: Task.Todo
-    private var _profileId: Long? = null
+    private lateinit var loadedTask: Task.Todo
+    private var profileId: Long? = null
 
-    private lateinit var _profiles: StateFlow<List<Profile>>
+    private lateinit var profiles: StateFlow<List<Profile>>
 
-    private lateinit var _fieldDefaults: SessionFormUiState
+    private lateinit var fieldDefaults: SessionFormUiState
 
 
     init {
         viewModelScope.launch {
-            _loadedTask = taskRepository.getTask(taskId).first() as? Task.Todo
+            loadedTask = taskRepository.getTask(taskId).first() as? Task.Todo
                 ?: error("Only Todo tasks can be edited here")
 
             // Set defaults when done loading
-            _profiles = profileRepository.getProfiles().run {
+            profiles = profileRepository.getProfiles().run {
                 stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
                     first().also { profiles ->
-                        _fieldDefaults = getFieldDefaults(
-                            _loadedTask.profileId?.let {
+                        fieldDefaults = getFieldDefaults(
+                            loadedTask.profileId?.let {
                                 id -> profiles.first { it.id == id }
                             }
                         )
 
-                        _profileId = _loadedTask.profileId
+                        profileId = loadedTask.profileId
 
                         _uiState.update {
                             EditTaskUiState.Retrieved(
                                 profiles = profiles.map { it.toProfilePickerItem() },
-                                taskName = _loadedTask.name,
-                                profileName = _fieldDefaults.profileName,
-                                colorSliderPos = _loadedTask.color.hue() / 360,
-                                difficulty = _loadedTask.difficulty.toFloat(),
-                                dueDate = _loadedTask.dueDate?.atZone(ZoneId.systemDefault())
+                                taskName = loadedTask.name,
+                                profileName = fieldDefaults.profileName,
+                                colorSliderPos = loadedTask.color.hue() / 360,
+                                difficulty = loadedTask.difficulty.toFloat(),
+                                dueDate = loadedTask.dueDate?.atZone(ZoneId.systemDefault())
                                     ?.toLocalDate(),
-                                dueTime = _loadedTask.dueDate?.run {
+                                dueTime = loadedTask.dueDate?.run {
                                     atZone(ZoneId.systemDefault())?.toLocalTime()
-                                } ?: _fieldDefaults.dueTime,
-                                estimate = _loadedTask.userEstimate?.toEstimate(),
+                                } ?: fieldDefaults.dueTime,
+                                estimate = loadedTask.userEstimate?.toEstimate(),
+                                isEstimateEditable = loadedTask is NewTask,
                                 hasFieldChanges = false,
                             )
                         }
@@ -101,7 +102,7 @@ class EditTaskViewModel (
             }
 
             // Watch for updates to profiles (probably won't happen)
-            _profiles.collect { profiles ->
+            profiles.collect { profiles ->
                 _uiState.updateIfRetrieved { uiState ->
                     uiState.copy(profiles = profiles.map { it.toProfilePickerItem() })
                 }
@@ -118,15 +119,15 @@ class EditTaskViewModel (
     }
 
     fun onProfileChange(newProfileId: Long?) {
-        if (newProfileId == _profileId) {
+        if (newProfileId == profileId) {
             return
         }
 
         _uiState.updateIfRetrieved { uiState ->
-            _profileId = newProfileId
+            profileId = newProfileId
 
             val profileName = getFieldDefaults(
-               newProfileId?.let{ _profiles.value.first { it.id == newProfileId } }
+               newProfileId?.let{ profiles.value.first { it.id == newProfileId } }
             ).profileName
 
             uiState.copy(
@@ -203,7 +204,7 @@ class EditTaskViewModel (
 
             val userEstimate = estimate?.toDuration()
 
-            val task = when (_loadedTask) {
+            val task = when (loadedTask) {
                 is NewTask -> NewTask(
                     taskId,
                     name,
@@ -211,8 +212,8 @@ class EditTaskViewModel (
                     difficulty,
                     color,
                     userEstimate,
-                    profileId = _profileId,
-                    appEstimate = _loadedTask.appEstimate,
+                    profileId = profileId,
+                    appEstimate = loadedTask.appEstimate,
                 )
 
                 is StartedTask -> StartedTask(
@@ -222,16 +223,16 @@ class EditTaskViewModel (
                     difficulty,
                     color,
                     userEstimate,
-                    segments = (_loadedTask as StartedTask).segments,
-                    markers = (_loadedTask as StartedTask).markers,
-                    profileId = _profileId,
-                    appEstimate = _loadedTask.appEstimate,
+                    segments = (loadedTask as StartedTask).segments,
+                    markers = (loadedTask as StartedTask).markers,
+                    profileId = profileId,
+                    appEstimate = loadedTask.appEstimate,
                 )
             }
 
-            val shouldRecalculateEstimate = (_profileId != _loadedTask.profileId)
-                .or(difficulty != _loadedTask.difficulty)
-                .or(userEstimate?.equals(_loadedTask.userEstimate)?.not() ?: false)
+            val shouldRecalculateEstimate = (profileId != loadedTask.profileId)
+                .or(difficulty != loadedTask.difficulty)
+                .or(userEstimate?.equals(loadedTask.userEstimate)?.not() ?: false)
 
             viewModelScope.launch {
                 if (shouldRecalculateEstimate && userEstimate != null) {

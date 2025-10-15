@@ -3,7 +3,6 @@ package com.wordco.clockworkandroid.edit_session_feature.ui.composables
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,11 +13,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Density
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
+import kotlinx.coroutines.flow.drop
 import kotlin.math.abs
 
 
@@ -41,16 +42,26 @@ fun <T> CircularWheelPicker(
     itemContent: @Composable (item: T, isSelected: Boolean) -> Unit,
 ) {
     val totalHeight = state.itemHeight * state.numberOfDisplayedItems
+    val haptics = LocalHapticFeedback.current
 
     // scroll to the initial designated item on first frame
     LaunchedEffect(state.initialItem) {
         state.scrollToItem(state.initialItem)
     }
 
+    // Trigger haptic feedback when the centered item changes
+    LaunchedEffect(state.centeredItemIndex) {
+        snapshotFlow { state.centeredItemIndex }
+            .drop(1) // ignore the initial composition
+            .collect {
+                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            }
+    }
+
+
     LazyColumn(
         modifier = modifier.height(totalHeight),
         state = state.listState,
-        contentPadding = PaddingValues(vertical = state.verticalPadding),
         flingBehavior = rememberSnapFlingBehavior(lazyListState = state.listState)
     ) {
         items(count = Int.MAX_VALUE, key = { it }) { index ->
@@ -79,13 +90,10 @@ fun <T> CircularWheelPicker(
 class WheelPickerState<T>(
     val items: List<T>,
     val initialItem: T,
-    val listState: LazyListState,
+    internal val listState: LazyListState,
     val itemHeight: Dp,
     val numberOfDisplayedItems: Int,
-    private val density: Density
 ) {
-    internal val verticalPadding = (itemHeight * numberOfDisplayedItems - itemHeight) / 2
-
     /** The index of the item currently in the center of the picker. */
     val centeredItemIndex by derivedStateOf {
         val layoutInfo = listState.layoutInfo
@@ -93,7 +101,10 @@ class WheelPickerState<T>(
         if (visibleItemsInfo.isEmpty()) {
             -1
         } else {
-            val viewportCenter = layoutInfo.viewportStartOffset + layoutInfo.viewportSize.height / 2
+            // Calculate the center relative to the viewport's own coordinate system.
+            val viewportCenter = layoutInfo.viewportSize.height / 2
+
+            // Now we are comparing two relative positions, which is correct.
             visibleItemsInfo.minByOrNull { abs((it.offset + it.size / 2) - viewportCenter) }?.index ?: -1
         }
     }
@@ -108,15 +119,18 @@ class WheelPickerState<T>(
 
     /**
      * Animate scrolls to the specified item.
-     *
-     * @param item The item to scroll to.
      */
     suspend fun scrollToItem(item: T) {
         if (items.isNotEmpty()) {
             val initialIndex = items.indexOf(item).coerceAtLeast(0)
             val centralIndex = (Int.MAX_VALUE / 2) - ((Int.MAX_VALUE / 2) % items.size)
-            val offset = with(density) { -verticalPadding.roundToPx() }
-            listState.scrollToItem(centralIndex + initialIndex, offset)
+
+            // FIX: Calculate how many items should be above the centered item.
+            val paddingItems = (numberOfDisplayedItems - 1) / 2
+
+            // Scroll to the index that places the target item in the middle.
+            val targetIndex = centralIndex + initialIndex - paddingItems
+            listState.scrollToItem(targetIndex, 0) // The offset is now always 0.
         }
     }
 }
@@ -133,16 +147,14 @@ fun <T> rememberWheelPickerState(
 ): WheelPickerState<T> {
     require(numberOfDisplayedItems % 2 != 0) { "numberOfDisplayedItems must be an odd number." }
     val listState = rememberLazyListState(0)
-    val density = LocalDensity.current
 
-    return remember(items, initialItem, itemHeight, numberOfDisplayedItems, listState, density) {
+    return remember(items, initialItem, itemHeight, numberOfDisplayedItems) {
         WheelPickerState(
             items = items,
             initialItem = initialItem,
             listState = listState,
             itemHeight = itemHeight,
             numberOfDisplayedItems = numberOfDisplayedItems,
-            density = density,
         )
     }
 }

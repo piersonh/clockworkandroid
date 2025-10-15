@@ -25,4 +25,5 @@ fun getFieldDefaults(
         minutes = 15,
         hours = 0
     ),
+    isEstimateEditable = true
 )

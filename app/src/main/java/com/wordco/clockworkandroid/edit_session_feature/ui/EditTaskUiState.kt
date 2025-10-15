@@ -16,6 +16,7 @@ sealed interface EditTaskUiState {
         val dueDate: LocalDate?,
         val dueTime: LocalTime?,
         val estimate: UserEstimate?,
+        val isEstimateEditable: Boolean,
         val profiles: List<ProfilePickerItem>,
         val hasFieldChanges: Boolean,
     ) : EditTaskUiState {
@@ -27,7 +28,8 @@ sealed interface EditTaskUiState {
                 difficulty = difficulty,
                 dueDate = dueDate,
                 dueTime = dueTime,
-                estimate = estimate
+                estimate = estimate,
+                isEstimateEditable = isEstimateEditable,
             )
         }
     }

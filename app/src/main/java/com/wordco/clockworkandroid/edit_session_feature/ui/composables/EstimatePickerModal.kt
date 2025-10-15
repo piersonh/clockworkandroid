@@ -83,14 +83,15 @@ fun EstimatePickerModal(
                             state = estimatePickerState.hoursState,
                             modifier = Modifier.width(60.dp),
                             itemContent = { item, isSelected ->
-                                val scale by animateFloatAsState(targetValue = if (isSelected) 1.25f else 1f)
+                                val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
                                 val color by animateColorAsState(
-                                    targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                    targetValue = if (isSelected) MaterialTheme.colorScheme.secondary
+                                    else MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "%02d".format(item),
-                                    style = MaterialTheme.typography.bodyLarge,
                                     color = color,
+                                    fontFamily = LATO,
                                     modifier = Modifier.graphicsLayer {
                                         scaleX = scale
                                         scaleY = scale
@@ -127,15 +128,15 @@ fun EstimatePickerModal(
                             state = estimatePickerState.minutesState,
                             modifier = Modifier.width(60.dp),
                             itemContent = { item, isSelected ->
-                                val scale by animateFloatAsState(targetValue = if (isSelected) 1.25f else 1f)
+                                val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
                                 val color by animateColorAsState(
-                                    targetValue = if (isSelected) MaterialTheme.colorScheme.primary
+                                    targetValue = if (isSelected) MaterialTheme.colorScheme.secondary
                                     else MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "%02d".format(item),
-                                    style = MaterialTheme.typography.bodyLarge,
                                     color = color,
+                                    fontFamily = LATO,
                                     modifier = Modifier.graphicsLayer {
                                         scaleX = scale
                                         scaleY = scale
