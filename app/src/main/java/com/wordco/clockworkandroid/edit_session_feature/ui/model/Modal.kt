@@ -2,21 +2,9 @@ package com.wordco.clockworkandroid.edit_session_feature.ui.model
 
 
 sealed interface Modal {
-    data object Date : SessionFormModal, CreatePageModal, EditPageModal
-    data object Time : SessionFormModal, CreatePageModal, EditPageModal
-    data object Estimate : SessionFormModal, CreatePageModal, EditPageModal
+    data object Date : Modal
+    data object Time : Modal
+    data object Estimate : Modal
 
-    data object Discard : CreatePageModal, EditPageModal
-    data object Delete : EditPageModal
+    data object Discard : Modal
 }
-
-sealed interface CreatePageModal
-fun CreatePageModal.toOptionalSessionFormModal() : SessionFormModal? {
-    return this as? SessionFormModal
-}
-
-sealed interface EditPageModal
-fun EditPageModal.toOptionalSessionFormModal() : SessionFormModal? {
-    return this as? SessionFormModal
-}
-sealed interface SessionFormModal

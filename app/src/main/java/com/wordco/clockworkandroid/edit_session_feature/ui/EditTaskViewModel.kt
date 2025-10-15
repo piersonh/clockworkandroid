@@ -15,20 +15,19 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.getFieldDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -49,6 +48,11 @@ class EditTaskViewModel (
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<EditTaskUiState>(EditTaskUiState.Retrieving)
     val uiState: StateFlow<EditTaskUiState> = _uiState.asStateFlow()
+
+    private val _snackbarEvent = MutableSharedFlow<String>()
+    val snackbarEvent = _snackbarEvent.asSharedFlow()
+
+
     private lateinit var _loadedTask: Task.Todo
     private var _profileId: Long? = null
 
@@ -88,7 +92,6 @@ class EditTaskViewModel (
                                 dueTime = _loadedTask.dueDate?.run {
                                     atZone(ZoneId.systemDefault())?.toLocalTime()
                                 } ?: _fieldDefaults.dueTime,
-                                currentModal = null,
                                 estimate = _loadedTask.userEstimate?.toEstimate(),
                                 hasFieldChanges = false,
                             )
@@ -148,14 +151,6 @@ class EditTaskViewModel (
         ) }
     }
 
-    fun onShowDatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
-    }
-
-    fun onDismissModal() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
-    }
-
     fun onDueDateChange(newDate: Long?) {
         _uiState.updateIfRetrieved { it.copy(dueDate = newDate?.let {
             Instant.ofEpochMilli(newDate)
@@ -164,10 +159,6 @@ class EditTaskViewModel (
         },
             hasFieldChanges = true,
         ) }
-    }
-
-    fun onShowTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
     }
 
     fun onDueTimeChange(newTime: LocalTime) {
@@ -184,22 +175,14 @@ class EditTaskViewModel (
         ) }
     }
 
-    fun onShowEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
-    }
 
-    fun onShowDiscardAlert() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
-    }
-
-    fun onShowDeleteAlert() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Delete) }
-    }
-
-    fun onSaveClick() : Fallible<SaveSessionError> {
+    fun onSaveClick() : Boolean {
         return _uiState.getIfType<EditTaskUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
-                return Fallible.Error(SaveSessionError.MISSING_NAME)
+                viewModelScope.launch {
+                    _snackbarEvent.emit("Failed to save session: Missing Name")
+                }
+                return@run false
             }
 
             val name = taskName
@@ -271,7 +254,8 @@ class EditTaskViewModel (
 
             }
             _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
-            Fallible.Success
+
+            true
         } ?: error("Can only save if retrieved")
     }
 

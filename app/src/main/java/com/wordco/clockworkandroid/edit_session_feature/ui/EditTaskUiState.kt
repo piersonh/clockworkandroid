@@ -1,9 +1,7 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.EditPageModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.toOptionalSessionFormModal
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -17,7 +15,6 @@ sealed interface EditTaskUiState {
         val difficulty: Float,
         val dueDate: LocalDate?,
         val dueTime: LocalTime?,
-        val currentModal: EditPageModal?,
         val estimate: UserEstimate?,
         val profiles: List<ProfilePickerItem>,
         val hasFieldChanges: Boolean,
@@ -30,7 +27,6 @@ sealed interface EditTaskUiState {
                 difficulty = difficulty,
                 dueDate = dueDate,
                 dueTime = dueTime,
-                currentModal = currentModal?.toOptionalSessionFormModal(),
                 estimate = estimate
             )
         }

@@ -11,14 +11,13 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -35,6 +34,9 @@ class EditProfileViewModel (
 
     val uiState = _uiState.asStateFlow()
 
+    private val _snackbarEvent = MutableSharedFlow<String>()
+    val snackbarEvent = _snackbarEvent.asSharedFlow()
+
     private lateinit var _loadedProfile: Profile
 
 
@@ -48,7 +50,6 @@ class EditProfileViewModel (
                         name = name,
                         colorSliderPos = color.hue() / 360,
                         difficulty = defaultDifficulty.toFloat(),
-                        currentModal = null,
                         hasFieldChanges = false,
                     )
                 }
@@ -78,18 +79,13 @@ class EditProfileViewModel (
         ) }
     }
 
-    fun onShowDiscardAlert()  {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
-    }
-
-    fun onDismissModal()  {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
-    }
-
-    fun onSaveClick() : Fallible<SaveProfileError> {
+    fun onSaveClick() : Boolean {
         return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
             if (name.isBlank()) {
-                return Fallible.Error(SaveProfileError.MISSING_NAME)
+                viewModelScope.launch {
+                    _snackbarEvent.emit("Failed to save profile: Missing Name")
+                }
+                return@run false
             }
 
             viewModelScope.launch {
@@ -105,7 +101,7 @@ class EditProfileViewModel (
             }
             _uiState.updateIfRetrieved { it.copy(hasFieldChanges = true) }
 
-            Fallible.Success
+            true
         } ?: error("Can only save if retrieved")
     }
 

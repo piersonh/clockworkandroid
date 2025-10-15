@@ -18,7 +18,7 @@ interface ProfileDao {
 
     @Transaction
     @Query("SELECT * FROM ProfileEntity WHERE id = :id")
-    fun getProfile(id: Long): Flow<ProfileWithSessionsDataObject>
+    fun getProfile(id: Long): Flow<ProfileWithSessionsDataObject?>
 
     @Insert
     suspend fun insertProfile(toProfileEntity: ProfileEntity)

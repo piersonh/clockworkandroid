@@ -17,7 +17,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,15 +36,16 @@ import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.util.Fallible
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DatePickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EstimatePickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.PagerAwareSlideAwayBottomBar
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionForm
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SlideAwayBottomBar
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.TimerPickerModal
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.rememberEstimatePickerState
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.util.tweenToPage
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 
@@ -54,25 +58,29 @@ fun CreateNewTaskPage (
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     CreateTaskPage(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
         initialPage = if (skipProfilePicker) 1 else 0,
         onTaskNameChange = viewModel::onTaskNameChange,
         onProfileChange = viewModel::onProfileChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
-        onShowDatePicker = viewModel::onShowDatePicker,
-        onDismissModal = viewModel::onDismissModal,
         onDueDateChange = viewModel::onDueDateChange,
-        onShowTimePicker = viewModel::onShowTimePicker,
         onDueTimeChange = viewModel::onDueTimeChange,
         onEstimateChange = viewModel::onEstimateChange,
-        onShowEstimatePicker = viewModel::onShowEstimatePicker,
         onCreateNewProfileClick = onCreateNewProfileClick,
-        onShowDiscardAlert = viewModel::onShowDiscardAlert,
         onSaveClick = viewModel::onSaveClick
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 }
 
 
@@ -80,24 +88,19 @@ fun CreateNewTaskPage (
 @Composable
 private fun CreateTaskPage(
     uiState: CreateNewSessionUiState,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     initialPage: Int = 1,
     onTaskNameChange: (String) -> Unit,
     onProfileChange: (Long?) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onShowDatePicker: () -> Unit,
-    onDismissModal: () -> Unit,
     onDueDateChange: (Long?) -> Unit,
-    onShowTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate?) -> Unit,
-    onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onShowDiscardAlert: () -> Unit,
-    onSaveClick: () -> Fallible<SaveSessionError>,
+    onSaveClick: () -> Boolean,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
     when (uiState) {
         CreateNewSessionUiState.Retrieving -> EditPageScaffold(
             title = "Create New Session",
@@ -121,20 +124,16 @@ private fun CreateTaskPage(
             onTaskNameChange = onTaskNameChange,
             onColorSliderChange = onColorSliderChange,
             onDifficultyChange = onDifficultyChange,
-            onShowDatePicker = onShowDatePicker,
-            onDismissModal = onDismissModal,
             onDueDateChange = onDueDateChange,
-            onShowTimePicker = onShowTimePicker,
             onDueTimeChange = onDueTimeChange,
             onEstimateChange = onEstimateChange,
-            onShowEstimatePicker = onShowEstimatePicker,
             onCreateNewProfileClick = onCreateNewProfileClick,
-            onShowDiscardAlert = onShowDiscardAlert,
             onSaveClick = onSaveClick,
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateSessionPageRetrieved(
     uiState: CreateNewSessionUiState.Retrieved,
@@ -145,16 +144,11 @@ private fun CreateSessionPageRetrieved(
     onTaskNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onShowDatePicker: () -> Unit,
-    onDismissModal: () -> Unit,
     onDueDateChange: (Long?) -> Unit,
-    onShowTimePicker: () -> Unit,
     onDueTimeChange: (LocalTime) -> Unit,
     onEstimateChange: (UserEstimate?) -> Unit,
-    onShowEstimatePicker: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onShowDiscardAlert: () -> Unit,
-    onSaveClick: () -> Fallible<SaveSessionError>,
+    onSaveClick: () -> Boolean,
 ) {
     val scrollState = rememberScrollState()
     val pagerState = rememberPagerState(
@@ -162,20 +156,28 @@ private fun CreateSessionPageRetrieved(
         pageCount = { 2 }
     )
     val coroutineScope = rememberCoroutineScope()
-    var isBottomBarVisible by remember {
-        mutableStateOf(pagerState.targetPage == 1)
-    }
+
+    val dueDatePickerState = rememberDatePickerState()
+    val dueTimePickerState = rememberTimePickerState(
+        initialHour = uiState.dueTime?.hour ?: 0,
+        initialMinute = uiState.dueTime?.minute ?: 0
+    )
+    val estimatePickerState = rememberEstimatePickerState(
+        initialValue = uiState.estimate ?: UserEstimate(0,0)
+    )
+
+    var currentModal by remember { mutableStateOf<Modal?>(null) }
 
     val onBackClickCheckChanges = {
         if (uiState.hasFieldChanges) {
-            onShowDiscardAlert()
+            currentModal = Modal.Discard
         } else {
             onBackClick()
         }
     }
 
     BackHandler(enabled = uiState.hasFieldChanges) {
-        onShowDiscardAlert()
+        currentModal = Modal.Discard
     }
 
     EditPageScaffold(
@@ -195,8 +197,9 @@ private fun CreateSessionPageRetrieved(
             }
         },
         bottomBar = {
-            SlideAwayBottomBar(
-                isBottomBarVisible = isBottomBarVisible
+            PagerAwareSlideAwayBottomBar(
+                pagerState = pagerState,
+                visibleOnPage = 1
             ) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -204,16 +207,9 @@ private fun CreateSessionPageRetrieved(
                 ) {
                     AccentRectangleTextButton(
                         onClick = {
-                            when (onSaveClick().takeIfError()) {
-                                SaveSessionError.MISSING_NAME -> {
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            "Failed to save session: Missing Name"
-                                        )
-                                    }
-                                }
-
-                                null -> onBackClick()
+                            val saveSucceeded = onSaveClick()
+                            if (saveSucceeded) {
+                                onBackClick()
                             }
                         },
                         maxHeight = 56.dp,
@@ -237,37 +233,31 @@ private fun CreateSessionPageRetrieved(
             verticalAlignment = Alignment.Top,
         ) { page ->
             when (page) {
-                1 -> Column {
-                    Box(
-                        modifier = Modifier.padding(paddingValues)
-                            .verticalScroll(scrollState),
-                    ) {
-                        Spacer(modifier = Modifier.height(20.dp))
-                        SessionForm(
-                            uiState = uiState.toFormUiState(),
-                            modifier = Modifier
-                                .padding(horizontal = 30.dp),
-                            onShowProfilePicker = {
-                                isBottomBarVisible = false
-                                coroutineScope.launch {
-                                    pagerState.tweenToPage(0)
-                                }
-                            },
-                            onTaskNameChange = onTaskNameChange,
-                            onColorSliderChange = onColorSliderChange,
-                            onDifficultyChange = onDifficultyChange,
-                            onShowDatePicker = onShowDatePicker,
-                            onDismissDatePicker = onDismissModal,
-                            onDueDateChange = onDueDateChange,
-                            onShowTimePicker = onShowTimePicker,
-                            onDismissTimePicker = onDismissModal,
-                            onDueTimeChange = onDueTimeChange,
-                            onShowEstimatePicker = onShowEstimatePicker,
-                            onDismissEstimatePicker = onDismissModal,
-                            onEstimateChange = onEstimateChange,
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
+                1 -> Column(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .verticalScroll(scrollState)
+                ) {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SessionForm(
+                        uiState = uiState.toFormUiState(),
+                        modifier = Modifier
+                            .padding(horizontal = 30.dp),
+                        onShowProfilePicker = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        },
+                        onTaskNameChange = onTaskNameChange,
+                        onColorSliderChange = onColorSliderChange,
+                        onDifficultyChange = onDifficultyChange,
+                        onShowDatePicker = { currentModal = Modal.Date },
+                        onDueDateChange = onDueDateChange,
+                        onShowTimePicker = { currentModal = Modal.Time },
+                        onShowEstimatePicker = { currentModal = Modal.Estimate },
+                        onEstimateChange = onEstimateChange,
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 0 -> ProfilePicker(
@@ -276,20 +266,41 @@ private fun CreateSessionPageRetrieved(
                     onProfileClick = { profileId ->
                         onProfileChange(profileId)
                         coroutineScope.launch {
-                            pagerState.tweenToPage(1)
+                            pagerState.animateScrollToPage(1)
                         }
-                        isBottomBarVisible = true
                     },
                     onCreateProfileClick = onCreateNewProfileClick,
                 )
             }
         }
 
-        if (uiState.currentModal == Modal.Discard) {
-            DiscardAlert(
-                onDismiss = onDismissModal,
+        when (currentModal) {
+            Modal.Discard -> DiscardAlert(
+                onDismiss = { currentModal = null },
                 onConfirm = onBackClick
             )
+            Modal.Date -> {
+                DatePickerModal(
+                    datePickerState = dueDatePickerState,
+                    onValueChange = onDueDateChange,
+                    onDismissRequest = { currentModal = null },
+                )
+            }
+            Modal.Time -> {
+                TimerPickerModal(
+                    timePickerState = dueTimePickerState,
+                    onValueChange = onDueTimeChange,
+                    onDismissRequest = { currentModal = null },
+                )
+            }
+            Modal.Estimate -> {
+                EstimatePickerModal(
+                    estimatePickerState = estimatePickerState,
+                    onValueChange = onEstimateChange,
+                    onDismissRequest = { currentModal = null },
+                )
+            }
+            null -> {}
         }
     }
 }

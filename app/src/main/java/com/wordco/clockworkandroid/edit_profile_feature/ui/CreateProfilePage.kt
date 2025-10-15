@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,9 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -33,11 +34,8 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
-import kotlinx.coroutines.launch
 
 @Composable
 fun CreateProfilePage(
@@ -46,45 +44,51 @@ fun CreateProfilePage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     CreateProfilePage(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
         onNameChange = viewModel::onNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
-        onShowDiscardAlert = viewModel::onShowDiscardAlert,
-        onDismissModal = viewModel::onDismissModal,
-        onCreateProfileClick = viewModel::onSaveClick
+        onSaveClick = viewModel::onSaveClick,
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateProfilePage(
     uiState: CreateProfileUiState,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onShowDiscardAlert: () -> Unit,
-    onDismissModal: () -> Unit,
-    onCreateProfileClick: () -> Fallible<SaveProfileError>,
+    onSaveClick: () -> Boolean,
 ) {
     val scrollState = rememberScrollState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+
+
+    var currentModal by remember { mutableStateOf<Modal?>(null) }
 
     val onBackClickCheckChanges = {
         if (uiState.hasFieldChanges) {
-            onShowDiscardAlert()
+            currentModal = Modal.Discard
         } else {
             onBackClick()
         }
     }
 
     BackHandler(enabled = uiState.hasFieldChanges) {
-        Log.i("BackHandler", "triggered")
-        onShowDiscardAlert()
+        currentModal = Modal.Discard
     }
 
     Scaffold(
@@ -119,15 +123,9 @@ private fun CreateProfilePage(
                 ) {
                     AccentRectangleTextButton(
                         onClick = {
-                            when (onCreateProfileClick().takeIfError()) {
-                                SaveProfileError.MISSING_NAME -> {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            "Failed to save profile: Missing Name"
-                                        )
-                                    }
-                                }
-                                null -> onBackClick()
+                            val saveSucceeded = onSaveClick()
+                            if (saveSucceeded) {
+                                onBackClick()
                             }
                         },
                         maxHeight = 56.dp,
@@ -160,13 +158,12 @@ private fun CreateProfilePage(
                 onNameChange = onNameChange,
                 onColorSliderChange = onColorSliderChange,
                 onDifficultyChange = onDifficultyChange,
-                confirmButton = { }
             )
         }
 
-        if (uiState.currentModal == Modal.Discard) {
+        if (currentModal == Modal.Discard) {
             DiscardAlert(
-                onDismiss = onDismissModal,
+                onDismiss = { currentModal = null },
                 onConfirm = onBackClick
             )
         }
@@ -182,16 +179,14 @@ private fun CreateProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
-                currentModal = null,
                 hasFieldChanges = false,
             ),
+            snackbarHostState = remember { SnackbarHostState() },
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onShowDiscardAlert = {},
-            onDismissModal = {},
-            onCreateProfileClick = { Fallible.Success }
+            onSaveClick = { false }
         )
     }
 }

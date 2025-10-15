@@ -6,6 +6,7 @@ import com.wordco.clockworkandroid.database.data.local.ProfileDao
 import com.wordco.clockworkandroid.database.data.local.entities.mapper.toProfile
 import com.wordco.clockworkandroid.database.data.local.entities.mapper.toProfileEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 class ProfileRepositoryImpl(
@@ -18,7 +19,9 @@ class ProfileRepositoryImpl(
     }
 
     override fun getProfile(id: Long): Flow<Profile> {
-        return profileDao.getProfile(id).map { it.toProfile() }
+        return profileDao.getProfile(id)
+            .filterNotNull()
+            .map { it.toProfile() }
     }
 
     override suspend fun insertProfile(profile: Profile) {

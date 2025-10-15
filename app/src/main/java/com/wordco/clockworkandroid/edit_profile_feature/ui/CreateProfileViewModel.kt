@@ -10,11 +10,10 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,11 +34,13 @@ class CreateProfileViewModel (
         name = _fieldDefaults.name,
         colorSliderPos = _fieldDefaults.colorSliderPos,
         difficulty = _fieldDefaults.difficulty,
-        currentModal = null,
         hasFieldChanges = false,
     ))
 
     val uiState = _uiState.asStateFlow()
+
+    private val _snackbarEvent = MutableSharedFlow<String>()
+    val snackbarEvent = _snackbarEvent.asSharedFlow()
 
 
     fun onNameChange(newName: String) {
@@ -63,20 +64,15 @@ class CreateProfileViewModel (
         ) }
     }
 
-    fun onShowDiscardAlert() {
-        _uiState.update { it.copy(currentModal = Modal.Discard) }
-    }
 
-    fun onDismissModal() {
-        _uiState.update { it.copy(currentModal = null) }
-    }
-
-
-    fun onSaveClick() : Fallible<SaveProfileError> {
+    fun onSaveClick() : Boolean {
         with(_uiState.value) {
 
             if (name.isBlank()) {
-                return Fallible.Error(SaveProfileError.MISSING_NAME)
+                viewModelScope.launch {
+                    _snackbarEvent.emit("Failed to save profile: Missing Name")
+                }
+                return false
             }
 
             viewModelScope.launch {
@@ -94,7 +90,7 @@ class CreateProfileViewModel (
 
         _uiState.update { it.copy(hasFieldChanges = false) }
 
-        return Fallible.Success
+        return true
     }
 
 

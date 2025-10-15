@@ -21,7 +21,6 @@ fun getFieldDefaults(
     difficulty = profile?.defaultDifficulty?.toFloat() ?: 0f,
     dueDate = null,
     dueTime = LocalTime.of(23,59),
-    currentModal = null,
     estimate = UserEstimate(
         minutes = 15,
         hours = 0

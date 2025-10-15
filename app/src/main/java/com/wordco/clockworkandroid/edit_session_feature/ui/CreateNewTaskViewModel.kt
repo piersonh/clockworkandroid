@@ -13,19 +13,18 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
-import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.SaveSessionError
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.getFieldDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -48,6 +47,9 @@ class CreateNewTaskViewModel (
     private val _uiState = MutableStateFlow<CreateNewSessionUiState>(CreateNewSessionUiState.Retrieving)
 
     val uiState: StateFlow<CreateNewSessionUiState> = _uiState.asStateFlow()
+
+    private val _snackbarEvent = MutableSharedFlow<String>()
+    val snackbarEvent = _snackbarEvent.asSharedFlow()
 
     private var _profileId: Long? = profileId
 
@@ -76,7 +78,6 @@ class CreateNewTaskViewModel (
                                 difficulty = _fieldDefaults.difficulty,
                                 dueDate = _fieldDefaults.dueDate,
                                 dueTime = _fieldDefaults.dueTime,
-                                currentModal = null,
                                 estimate = _fieldDefaults.estimate,
                                 hasFieldChanges = false,
                             )
@@ -154,14 +155,6 @@ class CreateNewTaskViewModel (
         ) }
     }
 
-    fun onShowDatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Date) }
-    }
-
-    fun onDismissModal() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = null) }
-    }
-
     fun onDueDateChange(newDate: Long?) {
         _uiState.updateIfRetrieved { it.copy(dueDate = newDate?.let {
             Instant.ofEpochMilli(newDate)
@@ -171,11 +164,6 @@ class CreateNewTaskViewModel (
             hasFieldChanges = true,
         ) }
     }
-
-    fun onShowTimePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Time) }
-    }
-
 
     fun onDueTimeChange(newTime: LocalTime) {
         _uiState.updateIfRetrieved { it.copy(
@@ -191,18 +179,13 @@ class CreateNewTaskViewModel (
         ) }
     }
 
-    fun onShowEstimatePicker() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Estimate) }
-    }
-
-    fun onShowDiscardAlert() {
-        _uiState.updateIfRetrieved { it.copy(currentModal = Modal.Discard) }
-    }
-
-    fun onSaveClick() : Fallible<SaveSessionError> {
+    fun onSaveClick() : Boolean {
         return _uiState.getIfType<CreateNewSessionUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
-                return Fallible.Error(SaveSessionError.MISSING_NAME)
+                viewModelScope.launch {
+                    _snackbarEvent.emit("Failed to save session: Missing Name")
+                }
+                return@run false
             }
 
             viewModelScope.launch {
@@ -236,7 +219,8 @@ class CreateNewTaskViewModel (
                 }
             }
             _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
-            Fallible.Success
+
+            true
         } ?: error("Can only save if retrieved")
     }
 

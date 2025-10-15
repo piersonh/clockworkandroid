@@ -17,9 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -32,11 +34,8 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.util.Fallible
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.SaveProfileError
-import kotlinx.coroutines.launch
 
 @Composable
 fun EditProfilePage(
@@ -45,37 +44,43 @@ fun EditProfilePage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     EditProfilePage(
         uiState = uiState,
+        snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
         onNameChange = viewModel::onNameChange,
         onColorSliderChange = viewModel::onColorSliderChange,
         onDifficultyChange = viewModel::onDifficultyChange,
-        onShowDiscardAlert = viewModel::onShowDiscardAlert,
-        onDismissModal = viewModel::onDismissModal,
         onSaveClick = viewModel::onSaveClick,
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditProfilePage(
     uiState: EditProfileUiState,
+    snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    onShowDiscardAlert: () -> Unit,
-    onDismissModal: () -> Unit,
-    onSaveClick: () -> Fallible<SaveProfileError>,
+    onSaveClick: () -> Boolean,
 ) {
     val scrollState = rememberScrollState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+
+    var currentModal by remember { mutableStateOf<Modal?>(null) }
 
     val onBackClickCheckChanges = {
         if (uiState is EditProfileUiState.Retrieved && uiState.hasFieldChanges) {
-            onShowDiscardAlert()
+            currentModal = Modal.Discard
         } else {
             onBackClick()
         }
@@ -113,15 +118,9 @@ private fun EditProfilePage(
                 ) {
                     AccentRectangleTextButton(
                         onClick = {
-                            when (onSaveClick().takeIfError()) {
-                                SaveProfileError.MISSING_NAME -> {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            "Failed to save profile: Missing Name"
-                                        )
-                                    }
-                                }
-                                null -> onBackClick()
+                            val saveSucceeded = onSaveClick()
+                            if (saveSucceeded) {
+                                onBackClick()
                             }
                         },
                         maxHeight = 56.dp,
@@ -155,20 +154,19 @@ private fun EditProfilePage(
                         onNameChange = onNameChange,
                         onColorSliderChange = onColorSliderChange,
                         onDifficultyChange = onDifficultyChange,
-                        confirmButton = { }
                     )
 
                     BackHandler(enabled = uiState.hasFieldChanges) {
-                        onShowDiscardAlert()
+                        currentModal = Modal.Discard
                     }
 
-                    when {
-                        uiState.currentModal == Modal.Discard -> DiscardAlert(
-                            onDismiss = onDismissModal,
+                    if (currentModal == Modal.Discard) {
+                        DiscardAlert(
+                            onDismiss = { currentModal = null },
                             onConfirm = onBackClick,
                         )
-                        uiState.currentModal == Modal.Delete -> TODO()
                     }
+
                 }
                 EditProfileUiState.Retrieving -> Text("Loading...")
             }
@@ -185,16 +183,14 @@ private fun EditProfilePagePreview() {
                 name = "Preview",
                 colorSliderPos = 0.5f,
                 difficulty = 1f,
-                currentModal = null,
                 hasFieldChanges = false,
             ),
+            snackbarHostState = remember { SnackbarHostState() },
             onBackClick = {},
             onNameChange = {},
             onColorSliderChange = {},
             onDifficultyChange = {},
-            onShowDiscardAlert = {},
-            onDismissModal = {},
-            onSaveClick = { Fallible.Success }
+            onSaveClick = { false },
         )
     }
 }

@@ -24,7 +24,6 @@ fun EditProfileForm(
     onNameChange: (String) -> Unit,
     onColorSliderChange: (Float) -> Unit,
     onDifficultyChange: (Float) -> Unit,
-    confirmButton: @Composable (() -> Unit),
 ) {
     Column(
         modifier = modifier,
@@ -64,7 +63,5 @@ fun EditProfileForm(
             value = uiState.difficulty,
             onValueChange = onDifficultyChange
         )
-
-        confirmButton()
     }
 }
