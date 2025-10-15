@@ -46,7 +46,7 @@ class TaskRepositoryImpl (
     }
 
     override suspend fun deleteTask(id: Long) {
-        taskDao.deleteTaskWithExecutionData(id)
+        taskDao.deleteTask(id)
     }
 
     override fun getTask(taskId: Long): Flow<Task> {
@@ -68,7 +68,7 @@ class TaskRepositoryImpl (
         return taskDao
             .getTodoTasksWithExecutionData()
             .map { todoSessions ->
-                todoSessions.map { it.toTask() as Task.Todo }
+                todoSessions.mapNotNull { it.toTask() as? Task.Todo }
             }
     }
 
@@ -76,7 +76,7 @@ class TaskRepositoryImpl (
         return taskDao
             .getCompletedTasksWithExecutionData()
             .map { todoSessions ->
-                todoSessions.map { it.toTask() as CompletedTask }
+                todoSessions.mapNotNull { it.toTask() as? CompletedTask }
             }
     }
 

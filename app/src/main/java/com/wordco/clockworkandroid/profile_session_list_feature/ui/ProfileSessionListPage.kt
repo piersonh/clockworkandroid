@@ -330,7 +330,7 @@ private fun ProfileSessionListPageRetrieved(
                     onDismissRequest = { showDeleteDialog = false },
                     title = {
                         Text(
-                            "Delete Session?",
+                            "Delete Profile?",
                             fontFamily = LATO,
                             fontWeight = FontWeight.Bold,
                         )

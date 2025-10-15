@@ -29,13 +29,6 @@ interface TaskDao {
     @Query("DELETE FROM TaskEntity WHERE taskId = :id")
     suspend fun deleteTask(id: Long)
 
-    @Transaction
-    suspend fun deleteTaskWithExecutionData(id: Long) {
-        deleteTask(id)
-        deleteSegmentsForTask(id)
-        deleteMarkersForTask(id)
-    }
-
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSegment(segment: SegmentEntity)
@@ -51,10 +44,6 @@ interface TaskDao {
         updateSegment(existing)
         insertSegment(new)
     }
-
-    @Transaction
-    @Query("DELETE FROM SegmentEntity WHERE taskId = :taskId")
-    suspend fun deleteSegmentsForTask(taskId: Long)
 
     @Transaction
     @Query("""
@@ -100,8 +89,4 @@ interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertMarkers(markers: List<MarkerEntity>)
-
-    @Transaction
-    @Query("DELETE FROM MarkerEntity WHERE taskId = :taskId")
-    suspend fun deleteMarkersForTask(taskId: Long)
 }
