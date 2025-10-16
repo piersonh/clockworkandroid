@@ -26,6 +26,8 @@ import com.wordco.clockworkandroid.core.ui.composables.SessionListItemUiCard
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
+import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
+import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
 import java.util.Locale
 
 @Composable
@@ -67,7 +69,13 @@ fun ActiveTaskUiItem(
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
                         Text(
-                            "Running",
+                            task.currentSegmentElapsedSeconds.let { secs ->
+                                String.format(
+                                    Locale.getDefault(),
+                                    "Working — %02d:%02d",
+                                    secs.toHours(), secs.toMinutesInHour()
+                                )
+                            },
                             fontFamily = LATO,
                             fontSize = 23.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -85,7 +93,13 @@ fun ActiveTaskUiItem(
                             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                         )
                         Text(
-                            "Paused",
+                            task.currentSegmentElapsedSeconds.let { secs ->
+                                String.format(
+                                    Locale.getDefault(),
+                                    "On Break — %02d:%02d",
+                                    secs.toHours(), secs.toMinutesInHour()
+                                )
+                            },
                             fontFamily = LATO,
                             fontSize = 23.sp,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -105,17 +119,17 @@ fun ActiveTaskUiItem(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.clock),
-                        contentDescription = "Work Time",
+                        contentDescription = "Elapsed Time",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
-                        task.elapsedWorkSeconds.let { secs ->
+                        task.elapsedSeconds.let { secs ->
                             String.format(
                                 Locale.getDefault(),
                                 "%02d:%02d",
-                                secs / 3600, (secs % 3600) / 60
+                                secs.toHours(), secs.toMinutesInHour()
                             )
                         },
                         fontFamily = LATO,
@@ -129,20 +143,20 @@ fun ActiveTaskUiItem(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.mug),
-                        contentDescription = "Break Time",
+                        painter = painterResource(id = R.drawable.stopwatch),
+                        contentDescription = "Progress to Estimate",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
-                        task.elapsedBreakMinutes.let { mins ->
+                        task.progressToEstimate?.let{
                             String.format(
                                 Locale.getDefault(),
-                                "%02d:%02d",
-                                mins / 60, mins % 60
+                                "%d%% of Estimate",
+                                it.times(100).toInt()
                             )
-                        },
+                        } ?: "Not Available",
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,

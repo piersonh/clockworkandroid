@@ -23,9 +23,11 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.SessionListItemUiCard
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
+import com.wordco.clockworkandroid.timer_feature.ui.util.toHours
+import com.wordco.clockworkandroid.timer_feature.ui.util.toMinutesInHour
+import java.util.Locale
 
 @Composable
 fun StartedListItem(
@@ -81,13 +83,19 @@ fun StartedListItem(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.clock),
-                        contentDescription = "Work Time",
+                        contentDescription = "Elapsed Time",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
-                        task.workTime.asHHMM(),
+                        task.elapsedSeconds.let { secs ->
+                            String.format(
+                                Locale.getDefault(),
+                                "%02d:%02d",
+                                secs.toHours(), secs.toMinutesInHour()
+                            )
+                        },
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -99,14 +107,20 @@ fun StartedListItem(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.mug),
-                        contentDescription = "Break Time",
+                        painter = painterResource(id = R.drawable.stopwatch),
+                        contentDescription = "Progress to Estimate",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
-                        task.breakTime.asHHMM(),
+                        task.progressToEstimate?.let{
+                            String.format(
+                                Locale.getDefault(),
+                                "%d%% of Estimate",
+                                it.times(100).toInt()
+                            )
+                        } ?: "Not Available",
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,

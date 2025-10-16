@@ -182,22 +182,22 @@ class TimerNotificationManagerImpl(
 
         val deepLinkIntent = createDeepLinkIntent(timerState.taskId)
 
-        val content = when (timerState) {
-            is TimerState.Paused -> timerState.elapsedBreakMinutes.let {
-                String.Companion.format(
-                    Locale.getDefault(),
-                    "On Break: %02d:%02d",
-                    it / 60, it % 60
-                )
-            }
-            is TimerState.Running -> timerState.elapsedWorkSeconds.let {
-                String.Companion.format(
-                    Locale.getDefault(),
-                    "Working: %02d:%02d",
-                    it.toHours(), it.toMinutesInHour()
-                )
-            }
+        val titleContent = timerState.totalElapsedSeconds.let {
+            String.format(
+                Locale.getDefault(),
+                if (it % 2 == 1) "%02d:%02d" else "%02d %02d",
+                it.toHours(), it.toMinutesInHour()
+            )
         }
+
+        val content = String.format(
+            Locale.getDefault(),
+            when (timerState) {
+                is TimerState.Paused -> "%s — On Break"
+                is TimerState.Running -> "%s — Working"
+            },
+            session.name
+        )
 
         val icon = when (timerState) {
             is TimerState.Paused -> R.drawable.mug
@@ -205,14 +205,14 @@ class TimerNotificationManagerImpl(
         }
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(content)
+            .setContentTitle(titleContent)
             .setOngoing(true)
             .setSmallIcon(icon)
             .setAutoCancel(false)
             .setColor(session.color.toArgb())  //accent with task color?
             .addAction(resumePauseAction) // resume/pause
             .setContentIntent(deepLinkIntent)
-            .setContentText(session.name)
+            .setContentText(content)
             .setOnlyAlertOnce(true)
             .apply {
                 if (timerState is TimerState.Running) {

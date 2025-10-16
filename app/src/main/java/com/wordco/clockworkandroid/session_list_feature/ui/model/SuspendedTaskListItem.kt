@@ -1,12 +1,12 @@
 package com.wordco.clockworkandroid.session_list_feature.ui.model
 
 import androidx.compose.ui.graphics.Color
-import java.time.Duration
+import com.wordco.clockworkandroid.core.domain.model.Second
 
 data class SuspendedTaskListItem(
     val taskId: Long,
     val name: String,
     val color: Color,
-    val workTime: Duration,
-    val breakTime: Duration
+    val elapsedSeconds: Second,
+    val progressToEstimate: Float?,
 )

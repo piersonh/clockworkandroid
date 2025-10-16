@@ -94,13 +94,13 @@ fun CompletedTaskUIListItem(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.clock),
-                        contentDescription = "Work Time",
+                        contentDescription = "Session Time",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
-                        task.workTime.asHHMM(),
+                        task.totalTime.asHHMM(),
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -112,14 +112,18 @@ fun CompletedTaskUIListItem(
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.mug),
-                        contentDescription = "Break Time",
+                        painter = painterResource(id = R.drawable.bullseye),
+                        contentDescription = "Error",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.size(23.dpScaledWith(23.sp)),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                     Text(
-                        task.breakTime.asHHMM(),
+                        String.format(
+                            Locale.getDefault(),
+                            if (task.error.isNegative) "-%s" else "+%s",
+                            task.error.abs().asHHMM()
+                        ),
                         fontFamily = LATO,
                         fontSize = 23.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,

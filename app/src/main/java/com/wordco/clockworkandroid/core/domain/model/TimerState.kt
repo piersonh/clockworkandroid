@@ -14,19 +14,19 @@ sealed interface TimerState {
 
     sealed interface Active : TimerState {
         val taskId: Long
-        val elapsedWorkSeconds: Second
-        val elapsedBreakMinutes: Int
+        val totalElapsedSeconds: Second
+        val currentSegmentElapsedSeconds: Second
     }
 
     data class Running(
         override val taskId: Long,
-        override val elapsedWorkSeconds: Second,
-        override val elapsedBreakMinutes: Int
+        override val totalElapsedSeconds: Second,
+        override val currentSegmentElapsedSeconds: Second,
     ) : Active
 
     data class Paused(
         override val taskId: Long,
-        override val elapsedWorkSeconds: Second,
-        override val elapsedBreakMinutes: Int
+        override val totalElapsedSeconds: Second,
+        override val currentSegmentElapsedSeconds: Second,
     ) : Active
 }

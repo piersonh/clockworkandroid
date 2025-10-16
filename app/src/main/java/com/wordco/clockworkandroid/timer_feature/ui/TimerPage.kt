@@ -332,8 +332,8 @@ private fun SuspendedTimerPagePreview() {
         TimerPage(
             uiState = TimerUiState.Suspended(
                 taskName = "Ooga Booga",
-                elapsedSeconds = Duration.ofHours(1)
-                    .plusMinutes(21)
+                totalElapsedSeconds = Duration.ofHours(13)
+                    .plusMinutes(3)
                     .seconds.toInt(),
                 false
             ),

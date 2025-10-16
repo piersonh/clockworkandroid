@@ -31,7 +31,7 @@ class CalculateEstimateAccuracyUseCase {
 
         val absoluteError = abs(estimateMillis - taskMillis)
 
-        val relativeError = absoluteError / taskMillis
+        val relativeError = absoluteError / estimateMillis
 
         val accuracy = (1.0 - relativeError) * 100.0
 

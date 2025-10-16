@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.SessionListItemUiCard
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.theme.ROBOTO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
 import com.wordco.clockworkandroid.session_list_feature.ui.model.NewTaskListItem
@@ -84,7 +83,7 @@ fun UpcomingTaskUIListItem(
                 Text(
                     task.userEstimate?.asHHMM()
                         ?: "––:––",  // These are en dashes
-                    fontFamily = ROBOTO,
+                    fontFamily = LATO,
                     textAlign = TextAlign.Center,
                     fontSize = 23.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,

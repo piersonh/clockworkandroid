@@ -55,7 +55,6 @@ import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedLi
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
-import java.time.Duration
 
 @Composable
 fun TaskListPage(
@@ -381,8 +380,8 @@ private fun TaskListPagePreview() {
                         taskId = 0,
                         name = "Awooga",
                         color = Color(40, 50, 160),
-                        workTime = Duration.ZERO,
-                        breakTime = Duration.ZERO
+                        elapsedSeconds = 12345,
+                        progressToEstimate = 0.5f,
                     )
                 ),
             ),
@@ -430,8 +429,8 @@ private fun NoNewTasksListPagePreview() {
                         taskId = 1,
                         name = "Awooga",
                         color = Color(40, 50, 160),
-                        workTime = Duration.ZERO,
-                        breakTime = Duration.ZERO
+                        elapsedSeconds = 12345,
+                        progressToEstimate = 0.5f,
                     )
                 ),
             ),

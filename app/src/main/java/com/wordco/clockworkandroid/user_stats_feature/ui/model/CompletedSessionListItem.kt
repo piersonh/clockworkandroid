@@ -8,7 +8,7 @@ data class CompletedSessionListItem(
     val taskId: Long,
     val name: String,
     val color: Color,
-    val workTime: Duration,
-    val breakTime: Duration,
+    val totalTime: Duration,
+    val error: Duration, // + or -
     val completedAt: Instant,
 )

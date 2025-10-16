@@ -10,9 +10,9 @@ class CompleteStartedSessionUseCase(
     private val sessionRepository: TaskRepository
 ) {
     suspend operator fun invoke(
-        session: StartedTask
+        session: StartedTask,
+        now: Instant
     ) {
-        val now = Instant.now()
         val lastSegment = session.segments.last().run {
             copy(duration = Duration.between(startTime, now))
         }

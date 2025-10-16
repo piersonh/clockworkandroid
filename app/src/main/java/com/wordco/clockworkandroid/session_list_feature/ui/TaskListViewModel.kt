@@ -69,13 +69,18 @@ class TaskListViewModel(
                     is TimerState.Active -> {
                         val activeTask = tasks.first { it.taskId == timerState.taskId }
                             .let {
+                                val estimate = it.userEstimate
+                                val progress = if (estimate != null) {
+                                    timerState.totalElapsedSeconds / estimate.seconds.toFloat()
+                                } else null
                                 ActiveTaskListItem(
                                     name = it.name,
-                                    elapsedWorkSeconds = timerState.elapsedWorkSeconds,
-                                    elapsedBreakMinutes = timerState.elapsedBreakMinutes,
                                     taskId = timerState.taskId,
                                     status = timerState.toActiveSessionStatus(),
                                     color = it.color,
+                                    elapsedSeconds = timerState.totalElapsedSeconds,
+                                    currentSegmentElapsedSeconds = timerState.currentSegmentElapsedSeconds,
+                                    progressToEstimate = progress,
                                 )
                             }
 

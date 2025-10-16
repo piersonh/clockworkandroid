@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 class TimerService() : Service() {
 
@@ -74,17 +75,21 @@ class TimerService() : Service() {
                     serviceState.session,
                     serviceState.timer.state,
                 ) { session, timerState ->
+                    val totalTime = timerState.elapsedWorkSeconds + timerState.elapsedBreakSeconds
+
+                    //Log.i("TimerService", "$totalTime")
+
                     when (timerState) {
                         is SessionTimer.State.Break -> TimerState.Paused(
                             taskId = session.taskId,
-                            elapsedWorkSeconds = timerState.elapsedWorkSeconds,
-                            elapsedBreakMinutes = timerState.elapsedBreakSeconds / 60
+                            totalElapsedSeconds = totalTime,
+                            currentSegmentElapsedSeconds = timerState.currentSegmentElapsedSeconds,
                         )
 
                         is SessionTimer.State.Work -> TimerState.Running(
                             taskId = session.taskId,
-                            elapsedWorkSeconds = timerState.elapsedWorkSeconds,
-                            elapsedBreakMinutes = timerState.elapsedBreakSeconds / 60
+                            totalElapsedSeconds = totalTime,
+                            currentSegmentElapsedSeconds = timerState.currentSegmentElapsedSeconds,
                         )
                     }
                 }
@@ -198,18 +203,7 @@ class TimerService() : Service() {
     }
 
     private fun setState(newInternalState: InternalState) {
-        internalState.update { currentState ->
-            // if the new state does not use the existing timer (if there is one)
-            //  stop it
-            if (currentState is InternalState.Active && !(
-                newInternalState is InternalState.Active &&
-                newInternalState.timer === currentState.timer
-            )) {
-                currentState.timer.stop()
-            }
-
-            newInternalState
-        }
+        internalState.update { newInternalState }
     }
 
 
@@ -220,9 +214,14 @@ class TimerService() : Service() {
 
         val stateFlow = createStartedSessionStateFlow(taskId)
 
+        val session = stateFlow.value
+        val currentSegment = session.segments.maxBy { it.startTime }
         val sessionTimer = SessionTimer(
             coroutineScope = coroutineScope,
-            session = stateFlow
+            initialWorkSecondsExcludingCurrentSegment = session.workTime.seconds.toInt(),
+            initialBreakSecondsExcludingCurrentSegment = session.breakTime.seconds.toInt(),
+            currentSegmentStartTime = currentSegment.startTime,
+            currentSegmentType = currentSegment.type,
         )
 
         setState(InternalState.Active(
@@ -238,7 +237,10 @@ class TimerService() : Service() {
         return when (session) {
             is CompletedTask -> error("Attempted to load completed session")
             is NewTask -> {
-                val session = startNewSessionUseCase(session)
+                val session = startNewSessionUseCase(
+                    session,
+                    Instant.now()
+                )
                 flow.map { it as StartedTask }
                     .stateIn(
                         scope = coroutineScope,
@@ -252,7 +254,8 @@ class TimerService() : Service() {
                     StartedTask.Status.SUSPENDED -> {
                         endLastSegmentAndStartNewUseCase(
                             session,
-                            Segment.Type.WORK
+                            Segment.Type.WORK,
+                            Instant.now()
                         )
                         flow.map { it as StartedTask }.run {
                             stateIn(
@@ -299,12 +302,14 @@ class TimerService() : Service() {
             return
         }
 
-        internalState.timer.setWork()
+        val now = Instant.now()
+        internalState.timer.setWork(now)
 
         coroutineScope.launch {
             endLastSegmentAndStartNewUseCase(
                 internalState.session.value,
-                Segment.Type.WORK
+                Segment.Type.WORK,
+                now
             )
         }
     }
@@ -319,12 +324,14 @@ class TimerService() : Service() {
             return
         }
 
-        internalState.timer.setBreak()
+        val now = Instant.now()
+        internalState.timer.setBreak(now)
 
         coroutineScope.launch {
             endLastSegmentAndStartNewUseCase(
                 internalState.session.value,
-                Segment.Type.BREAK
+                Segment.Type.BREAK,
+                now
             )
         }
     }
@@ -342,7 +349,8 @@ class TimerService() : Service() {
         coroutineScope.launch {
             addMarkerUseCase(
                 sessionRepository = taskRepository,
-                session = internalState.session.value
+                session = internalState.session.value,
+                Instant.now()
             )
         }
     }
@@ -357,7 +365,8 @@ class TimerService() : Service() {
         coroutineScope.launch {
             endLastSegmentAndStartNewUseCase(
                 session,
-                Segment.Type.SUSPEND
+                Segment.Type.SUSPEND,
+                Instant.now()
             )
         }
 
@@ -376,7 +385,10 @@ class TimerService() : Service() {
         setState(InternalState.Closing)
 
         coroutineScope.launch {
-            completeStartedSessionUseCase(session)
+            completeStartedSessionUseCase(
+                session,
+                Instant.now()
+            )
         }
 
         stop()

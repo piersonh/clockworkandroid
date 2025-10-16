@@ -11,8 +11,8 @@ val LATO: FontFamily = FontFamily(
     Font(R.font.lato_bold, FontWeight.Bold),
     Font(R.font.lato_black, FontWeight.Black),
 )
-val ROBOTO: FontFamily = FontFamily(
-    Font(R.font.roboto_mono, FontWeight.Light)
+val TIME_DISPLAY: FontFamily = FontFamily(
+    Font(R.font.camingocode_bold)
 )
 //val typography = Typography(
 //    displayLarge = TODO(),

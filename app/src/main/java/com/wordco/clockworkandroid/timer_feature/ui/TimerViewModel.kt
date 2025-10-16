@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 
 class TimerViewModel (
@@ -48,6 +49,8 @@ class TimerViewModel (
 
     private val timerState = timerRepository.state
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
+
+    private var lastKnownActiveSeconds: Int? = null
 
     init {
         viewModelScope.launch {
@@ -81,11 +84,14 @@ class TimerViewModel (
                 val task = task as StartedTask
 
                 when (timerState) {
-                    is TimerState.Empty -> TimerUiState.Suspended(
-                        task.name,
-                        task.workTime.seconds.toInt(),
-                        timerState is TimerState.Preparing && timerState.taskId == taskId
-                    )
+                    is TimerState.Empty -> {
+                        val seconds = lastKnownActiveSeconds ?: task.workTime.plus(task.breakTime).seconds.toInt()
+                        TimerUiState.Suspended(
+                            task.name,
+                            seconds,
+                            timerState is TimerState.Preparing && timerState.taskId == taskId
+                        )
+                    }
                     is TimerState.Active if timerState.taskId != taskId -> TimerUiState.Suspended(
                         task.name,
                         task.workTime.seconds.toInt(),
@@ -93,27 +99,22 @@ class TimerViewModel (
                     )
                     is TimerState.Paused -> TimerUiState.Paused(
                         task.name,
-                        timerState.elapsedWorkSeconds
+                        timerState.totalElapsedSeconds,
+                        currentSegmentElapsedSeconds = timerState.currentSegmentElapsedSeconds,
                     )
                     is TimerState.Running -> TimerUiState.Running(
                         task.name,
-                        timerState.elapsedWorkSeconds
+                        timerState.totalElapsedSeconds,
+                        currentSegmentElapsedSeconds = timerState.currentSegmentElapsedSeconds
                     )
                 }
             }
             .collect { newState ->
-                _uiState.update { currentState ->
-                    // prevent time display flashing when suspending the timer
-                    if (
-                        currentState is TimerUiState.Active &&
-                        newState is TimerUiState.Suspended &&
-                        newState.elapsedSeconds < currentState.elapsedSeconds
-                    ) {
-                        newState.copy(elapsedSeconds = currentState.elapsedSeconds)
-                    } else {
-                        newState
-                    }
+                if (newState is TimerUiState.Active) {
+                    lastKnownActiveSeconds = newState.totalElapsedSeconds
                 }
+
+                _uiState.update { newState }
             }
         }
 
@@ -149,7 +150,8 @@ class TimerViewModel (
                 ?: error ("addMark can only be called when timer is running")
             val markerName = addMarkerUseCase(
                 sessionRepository = taskRepository,
-                session = session
+                session = session,
+                Instant.now()
             )
 
             _events.emit(
@@ -167,7 +169,10 @@ class TimerViewModel (
             } else {
                 val currentTask = loadedTask.value as StartedTask
 
-                completeStartedSessionUseCase(currentTask)
+                completeStartedSessionUseCase(
+                    currentTask,
+                    Instant.now()
+                )
             }
 
             _events.emit(TimerUiEvent.FinishSession)

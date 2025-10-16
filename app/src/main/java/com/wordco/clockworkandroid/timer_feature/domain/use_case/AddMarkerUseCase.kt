@@ -9,8 +9,8 @@ class AddMarkerUseCase {
     suspend operator fun invoke(
         sessionRepository: TaskRepository,
         session: StartedTask,
+        now: Instant,
     ) : String {
-        val now = Instant.now()
         val name = "Marker ${session.markers.size + 1}"
 
         sessionRepository.insertMarker(

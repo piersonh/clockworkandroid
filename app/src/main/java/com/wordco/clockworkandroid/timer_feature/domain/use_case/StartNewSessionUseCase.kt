@@ -9,11 +9,14 @@ import java.time.Instant
 class StartNewSessionUseCase(
     private val sessionRepository: TaskRepository,
 ) {
-    suspend operator fun invoke(session: NewTask) : StartedTask {
+    suspend operator fun invoke(
+        session: NewTask,
+        now: Instant,
+    ) : StartedTask {
         val segment = Segment(
             segmentId = 0,
             taskId = session.taskId,
-            startTime = Instant.now(),
+            startTime = now,
             duration = null,
             type = Segment.Type.WORK
         )

@@ -11,9 +11,9 @@ class EndLastSegmentAndStartNewUseCase(
 ) {
     suspend operator fun invoke(
         session: StartedTask,
-        type: Segment.Type
+        type: Segment.Type,
+        now: Instant,
     ) {
-        val now = Instant.now()
         val lastSegment = session.segments.last().run {
             copy(duration = Duration.between(startTime, now))
         }
