@@ -76,7 +76,7 @@ fun UpcomingTaskUIListItem(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.user),
-                    contentDescription = "Completed",
+                    contentDescription = "User Estimate",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.size(23.dpScaledWith(23.sp)),
                     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -98,7 +98,7 @@ fun UpcomingTaskUIListItem(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.computer),
-                    contentDescription = "Completed",
+                    contentDescription = "App Estimate",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.size(23.dpScaledWith(23.sp)),
                     colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)

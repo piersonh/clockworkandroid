@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
 
 import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import java.time.Duration
 import java.time.Instant
@@ -11,7 +12,7 @@ import kotlin.math.sqrt
 
 class GetAppEstimateUseCase {
     operator fun invoke(
-        todoSession: Task.Todo,
+        todoSession: NewTask,
         sessionHistory: List<CompletedTask>
     ) : AppEstimate {
         if (todoSession.userEstimate == null || sessionHistory.any { it.userEstimate == null }) {
@@ -148,14 +149,14 @@ class GetAppEstimateUseCase {
 //                Duration.ofMillis(it.toLong())
 //            }
 
-        val lowEstimate = todoSession.userEstimate!!
+        val lowEstimate = todoSession.userEstimate
             .toMillis()
             .times(weightedMeanTotal.minus(weightedStandardDeviation))
             .let {
                 Duration.ofMillis(it.toLong())
             }
 
-        val highEstimate = todoSession.userEstimate!!
+        val highEstimate = todoSession.userEstimate
             .toMillis()
             .times(weightedMeanTotal.plus(weightedStandardDeviation))
             .let {

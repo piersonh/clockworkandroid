@@ -14,7 +14,7 @@ private val DATE_TIME_FORMATTER: DateTimeFormatter =
 
 fun Instant?.asTaskDueFormat(): String {
     if (this == null) {
-        return "Not Scheduled"
+        return "No Due Date"
     }
 
     val todayStart =

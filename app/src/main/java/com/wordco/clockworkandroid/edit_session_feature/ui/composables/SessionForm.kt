@@ -132,7 +132,7 @@ fun SessionForm(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedTextFieldButton(
-                value = uiState.dueDate?.format(dateFormatter) ?: "Not Scheduled",
+                value = uiState.dueDate?.format(dateFormatter) ?: "No Due Date",
                 modifier = Modifier.run {
                     if (uiState.dueDate != null) {
                         width(160.dpScaledWith(16.sp)).weight(3f)

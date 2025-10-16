@@ -153,7 +153,8 @@ fun NavHost(
 
         taskCompletionPage(
             onBackClick = navController::popBackStack,
-            onContinueClick = navController::popBackStack
+            onContinueClick = navController::popBackStack,
+            onEditClick = navController::navigateToEditSession,
         )
 
         userStatsPage(

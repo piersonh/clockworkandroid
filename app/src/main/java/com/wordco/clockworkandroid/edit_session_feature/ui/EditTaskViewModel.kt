@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
@@ -53,7 +54,7 @@ class EditTaskViewModel (
     val snackbarEvent = _snackbarEvent.asSharedFlow()
 
 
-    private lateinit var loadedTask: Task.Todo
+    private lateinit var loadedTask: Task
     private var profileId: Long? = null
 
     private lateinit var profiles: StateFlow<List<Profile>>
@@ -63,8 +64,7 @@ class EditTaskViewModel (
 
     init {
         viewModelScope.launch {
-            loadedTask = taskRepository.getTask(taskId).first() as? Task.Todo
-                ?: error("Only Todo tasks can be edited here")
+            loadedTask = taskRepository.getTask(taskId).first()
 
             // Set defaults when done loading
             profiles = profileRepository.getProfiles().run {
@@ -228,6 +228,18 @@ class EditTaskViewModel (
                     profileId = profileId,
                     appEstimate = loadedTask.appEstimate,
                 )
+                is CompletedTask -> CompletedTask(
+                    taskId,
+                    name,
+                    dueDate,
+                    difficulty,
+                    color,
+                    userEstimate,
+                    segments = (loadedTask as CompletedTask).segments,
+                    markers = (loadedTask as CompletedTask).markers,
+                    profileId = profileId,
+                    appEstimate = loadedTask.appEstimate,
+                )
             }
 
             val shouldRecalculateEstimate = (profileId != loadedTask.profileId)
@@ -236,17 +248,21 @@ class EditTaskViewModel (
 
             viewModelScope.launch {
                 if (shouldRecalculateEstimate && userEstimate != null) {
-                    val sessionHistory = taskRepository.getCompletedTasks().first()
-                        .filter { it.userEstimate != null }
-
-                    val appEstimate = getAppEstimateUseCase(
-                        todoSession = task,
-                        sessionHistory = sessionHistory
-                    )
                     taskRepository.updateTask(
                         when(task) {
-                            is NewTask -> task.copy(appEstimate = appEstimate)
-                            is StartedTask -> task.copy(appEstimate = appEstimate)
+                            is NewTask -> {
+                                val sessionHistory = taskRepository.getCompletedTasks().first()
+                                    .filter { it.userEstimate != null }
+
+                                val appEstimate = getAppEstimateUseCase(
+                                    todoSession = task,
+                                    sessionHistory = sessionHistory
+                                )
+
+                                task.copy(appEstimate = appEstimate)
+                            }
+                            is StartedTask,
+                            is CompletedTask -> task
                         }
                     )
                 } else {

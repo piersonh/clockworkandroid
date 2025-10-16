@@ -51,6 +51,7 @@ import kotlin.math.roundToInt
 fun TaskCompletionPage(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onEditClick: () -> Unit,
     viewModel: TaskCompletionViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -59,7 +60,7 @@ fun TaskCompletionPage(
         uiState = uiState,
         onBackClick = onBackClick,
         onContinueClick = onContinueClick,
-        onEditClick = {},
+        onEditClick = onEditClick,
         onDeleteClick = viewModel::onDeleteClick,
     )
 

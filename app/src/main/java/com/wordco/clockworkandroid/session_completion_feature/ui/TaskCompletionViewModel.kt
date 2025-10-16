@@ -13,10 +13,12 @@ import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -32,30 +34,33 @@ class TaskCompletionViewModel (
     private val _events = MutableSharedFlow<TaskCompletionUiEvent>()
     val events = _events.asSharedFlow()
 
+    private val loadedTask = taskRepository.getTask(taskId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
+
     init {
         viewModelScope.launch {
-            taskRepository
-                .getTask(taskId)
-                .first { it is CompletedTask }
-                .let {it as CompletedTask }
-                .run {
-                    val totalTime = workTime.plus(breakTime)
+            loadedTask.map { task ->
+                if (task is CompletedTask) {
+                    val totalTime = task.workTime.plus(task.breakTime)
                     TaskCompletionUiState.Retrieved(
-                        name = name,
-                        estimate = userEstimate,
-                        workTime = workTime,
-                        breakTime = breakTime,
+                        name = task.name,
+                        estimate = task.userEstimate,
+                        workTime = task.workTime,
+                        breakTime = task.breakTime,
                         totalTime = totalTime,
-                        totalTimeAccuracy = userEstimate?.let{
+                        totalTimeAccuracy = task.userEstimate?.let{
                             calculateEstimateAccuracyUseCase(
                                 totalTime,
-                                userEstimate
+                                task.userEstimate
                             )
                         },
                     )
-                }.let { state ->
-                    _uiState.update { state }
+                } else {
+                    TaskCompletionUiState.Retrieving
                 }
+            }.collect { state ->
+                _uiState.update { state }
+            }
         }
     }
 

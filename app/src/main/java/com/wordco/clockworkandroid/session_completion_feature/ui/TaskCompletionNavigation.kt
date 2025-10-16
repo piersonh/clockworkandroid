@@ -26,7 +26,8 @@ fun NavController.navigateToCompletion(
 
 fun NavGraphBuilder.taskCompletionPage(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: () -> Unit,
+    onEditClick: (Long) -> Unit
 ) {
     composable<CompletionRoute> (
         enterTransition = {
@@ -65,7 +66,8 @@ fun NavGraphBuilder.taskCompletionPage(
         TaskCompletionPage(
             viewModel = taskCompletionViewModel,
             onBackClick = onBackClick,
-            onContinueClick = onContinueClick
+            onContinueClick = onContinueClick,
+            onEditClick = {onEditClick(taskId)},
         )
     }
 }
