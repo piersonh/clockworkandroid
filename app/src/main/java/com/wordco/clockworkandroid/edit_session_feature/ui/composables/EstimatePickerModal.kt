@@ -209,20 +209,20 @@ class EstimatePickerState(
 @Composable
 fun rememberEstimatePickerState(
     initialValue: UserEstimate,
-    itemHeight: Dp = 48.dp, // A sensible default
+    itemHeight: Dp = 48.dp,
 ): EstimatePickerState {
     val hours = (0..99).reversed().toList()
     val minutes = (0..59).reversed().toList()
 
     val hoursState = rememberWheelPickerState(
         items = hours,
-        initialItem = initialValue.hours,
+        initialIndex = hours.indexOf(initialValue.hours),
         itemHeight = itemHeight
     )
 
     val minutesState = rememberWheelPickerState(
         items = minutes,
-        initialItem = initialValue.minutes,
+        initialIndex = minutes.indexOf(initialValue.minutes),
         itemHeight = itemHeight
     )
 

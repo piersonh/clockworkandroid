@@ -1,7 +1,9 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui.composables
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +23,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 
@@ -44,9 +48,11 @@ fun <T> CircularWheelPicker(
     val totalHeight = state.itemHeight * state.numberOfDisplayedItems
     val haptics = LocalHapticFeedback.current
 
+    val coroutineScope = rememberCoroutineScope()
+
     // scroll to the initial designated item on first frame
-    LaunchedEffect(state.initialItem) {
-        state.scrollToItem(state.initialItem)
+    LaunchedEffect(state.initialIndex, state.items) {
+        state.scrollToListItemIndex(state.initialIndex)
     }
 
     // Trigger haptic feedback when the centered item changes
@@ -74,7 +80,18 @@ fun <T> CircularWheelPicker(
             Box(
                 modifier = Modifier
                     .height(state.itemHeight)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null, // disable the ripple effect
+                        onClick = {
+                            if (!isSelected) {
+                                coroutineScope.launch {
+                                    state.scrollToAbsoluteIndex(index)
+                                }
+                            }
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 itemContent(state.items[itemIndex], isSelected)
@@ -89,7 +106,7 @@ fun <T> CircularWheelPicker(
  */
 class WheelPickerState<T>(
     val items: List<T>,
-    val initialItem: T,
+    val initialIndex: Int,
     internal val listState: LazyListState,
     val itemHeight: Dp,
     val numberOfDisplayedItems: Int,
@@ -118,19 +135,25 @@ class WheelPickerState<T>(
         }
 
     /**
-     * Animate scrolls to the specified item.
+     * Instantly scrolls to the specified index of the [LazyColumn] list.
      */
-    suspend fun scrollToItem(item: T) {
+    suspend fun scrollToAbsoluteIndex(index: Int) {
         if (items.isNotEmpty()) {
-            val initialIndex = items.indexOf(item).coerceAtLeast(0)
-            val centralIndex = (Int.MAX_VALUE / 2) - ((Int.MAX_VALUE / 2) % items.size)
-
-            // FIX: Calculate how many items should be above the centered item.
             val paddingItems = (numberOfDisplayedItems - 1) / 2
+            val targetIndex = (index - paddingItems).coerceAtLeast(0)
 
-            // Scroll to the index that places the target item in the middle.
-            val targetIndex = centralIndex + initialIndex - paddingItems
-            listState.scrollToItem(targetIndex, 0) // The offset is now always 0.
+            listState.scrollToItem(targetIndex, 0)
+        }
+    }
+
+    /**
+     * Instantly scrolls to the specified index of the [WheelPickerState]'s [items].
+     */
+    suspend fun scrollToListItemIndex(listItemIndex: Int) {
+        if (items.isNotEmpty()) {
+            val centralIndex = (Int.MAX_VALUE / 2) - ((Int.MAX_VALUE / 2) % items.size)
+            val absoluteIndex = centralIndex + listItemIndex
+            scrollToAbsoluteIndex(absoluteIndex)
         }
     }
 }
@@ -141,17 +164,17 @@ class WheelPickerState<T>(
 @Composable
 fun <T> rememberWheelPickerState(
     items: List<T>,
-    initialItem: T,
+    initialIndex: Int,
     itemHeight: Dp,
     numberOfDisplayedItems: Int = 3,
 ): WheelPickerState<T> {
     require(numberOfDisplayedItems % 2 != 0) { "numberOfDisplayedItems must be an odd number." }
     val listState = rememberLazyListState(0)
 
-    return remember(items, initialItem, itemHeight, numberOfDisplayedItems) {
+    return remember(items, initialIndex, itemHeight, numberOfDisplayedItems) {
         WheelPickerState(
             items = items,
-            initialItem = initialItem,
+            initialIndex = initialIndex,
             listState = listState,
             itemHeight = itemHeight,
             numberOfDisplayedItems = numberOfDisplayedItems,
