@@ -51,6 +51,9 @@ fun <T> CircularWheelPicker(
     val coroutineScope = rememberCoroutineScope()
 
     // scroll to the initial designated item on first frame
+    //  or whenever the initialIndex/items change
+    //  there will be a feedback loop if the user has initialIndex set to a variable
+    //  that updates everytime currentItem changes
     LaunchedEffect(state.initialIndex, state.items) {
         state.scrollToListItemIndex(state.initialIndex)
     }
@@ -102,7 +105,7 @@ fun <T> CircularWheelPicker(
 
 
 /**
- * State holder for the [CircularWheelPicker].
+ * State holder for the [CircularWheelPicker].  See [rememberWheelPickerState]
  */
 class WheelPickerState<T>(
     val items: List<T>,
@@ -111,22 +114,35 @@ class WheelPickerState<T>(
     val itemHeight: Dp,
     val numberOfDisplayedItems: Int,
 ) {
-    /** The index of the item currently in the center of the picker. */
+    /**
+     * The index of the item currently in the center of the picker
+     * (or `-1` when there are no items).
+     */
     val centeredItemIndex by derivedStateOf {
         val layoutInfo = listState.layoutInfo
         val visibleItemsInfo = layoutInfo.visibleItemsInfo
         if (visibleItemsInfo.isEmpty()) {
             -1
         } else {
-            // Calculate the center relative to the viewport's own coordinate system.
+            // calculate the center relative to the viewport's own coordinate system
             val viewportCenter = layoutInfo.viewportSize.height / 2
 
-            // Now we are comparing two relative positions, which is correct.
-            visibleItemsInfo.minByOrNull { abs((it.offset + it.size / 2) - viewportCenter) }?.index ?: -1
+            // find item that is closest to the center
+            visibleItemsInfo.minByOrNull { itemInfo ->
+                abs((itemInfo.offset + itemInfo.size / 2) - viewportCenter)
+            }?.index ?: -1
         }
     }
 
-    /** The item object currently selected in the picker. */
+    /**
+     * The item object currently selected in the picker.
+     *
+     * **Feedback Loop Warning:** Do not update the variable
+     * used for `initialIndex` in [rememberWheelPickerState] on
+     * every change to [currentItem].  This will cause [rememberWheelPickerState]
+     * to recompose and [CircularWheelPicker] to scroll to the new `initialIndex`
+     * on every update.
+     */
     val currentItem: T?
         get() = if (centeredItemIndex != -1 && items.isNotEmpty()) {
             items[centeredItemIndex % items.size]

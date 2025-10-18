@@ -211,8 +211,8 @@ fun rememberEstimatePickerState(
     initialValue: UserEstimate,
     itemHeight: Dp = 48.dp,
 ): EstimatePickerState {
-    val hours = (0..99).reversed().toList()
-    val minutes = (0..59).reversed().toList()
+    val hours = remember { (0..99).reversed().toList() }
+    val minutes = remember { (0..59).reversed().toList() }
 
     val hoursState = rememberWheelPickerState(
         items = hours,
