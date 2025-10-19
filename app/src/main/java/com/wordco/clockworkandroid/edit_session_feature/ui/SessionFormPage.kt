@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,130 +33,102 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DatePickerModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EditPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EstimatePickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.PagerAwareSlideAwayBottomBar
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionForm
+import com.wordco.clockworkandroid.edit_session_feature.ui.composables.SessionFormPageScaffold
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.TimerPickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.rememberEstimatePickerState
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.ZoneOffset
 
 @Composable
-fun EditTaskPage (
+fun SessionFormPage(
     onBackClick: () -> Unit,
     onCreateProfileClick: () -> Unit,
-    viewModel: EditTaskViewModel
+    viewModel: SessionFormViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     val snackbarHostState = remember { SnackbarHostState() }
 
-    EditTaskPage(
+    SessionFormPage(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
-        onTaskNameChange = viewModel::onTaskNameChange,
-        onProfileChange = viewModel::onProfileChange,
-        onColorSliderChange = viewModel::onColorSliderChange,
-        onDifficultyChange = viewModel::onDifficultyChange,
-        onDueDateChange = viewModel::onDueDateChange,
-        onDueTimeChange = viewModel::onDueTimeChange,
-        onEstimateChange = viewModel::onEstimateChange,
         onCreateNewProfileClick = onCreateProfileClick,
-        onSaveClick = viewModel::onSaveClick,
+        onEvent = viewModel::onEvent,
     )
 
     LaunchedEffect(Unit) {
-        viewModel.snackbarEvent.collect { message ->
-            snackbarHostState.showSnackbar(message)
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is SessionFormEffect.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(effect.message)
+                }
+                is SessionFormEffect.NavigateBack -> {
+                    onBackClick()
+                }
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-private fun EditTaskPage(
-    uiState: EditTaskUiState,
+private fun SessionFormPage(
+    uiState: SessionFormUiState,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
-    onTaskNameChange: (String) -> Unit,
-    onProfileChange: (Long?) -> Unit,
-    onColorSliderChange: (Float) -> Unit,
-    onDifficultyChange: (Float) -> Unit,
-    onDueDateChange: (Long?) -> Unit,
-    onDueTimeChange: (LocalTime) -> Unit,
-    onEstimateChange: (UserEstimate?) -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onSaveClick: () -> Boolean,
+    onEvent: (SessionFormEvent) -> Unit,
 ) {
-
     when (uiState) {
-        EditTaskUiState.Retrieving -> EditPageScaffold(
-            title = "Edit Session",
+        is SessionFormUiState.Retrieving -> SessionFormPageScaffold(
+            title = uiState.title,
             onBackClick = onBackClick,
             snackbarHostState = snackbarHostState,
             content = { paddingValues ->
-                Box(
-                    modifier = Modifier.padding(paddingValues)
-                ) {
+                Box(modifier = Modifier.padding(paddingValues)) {
                     Text("Loading...")
                 }
             },
         )
 
-        is EditTaskUiState.Retrieved -> EditSessionPageRetrieved(
+        is SessionFormUiState.Retrieved -> SessionFormPageRetrieved(
             uiState = uiState,
             snackbarHostState = snackbarHostState,
             onBackClick = onBackClick,
-            onProfileChange = onProfileChange,
-            onTaskNameChange = onTaskNameChange,
-            onColorSliderChange = onColorSliderChange,
-            onDifficultyChange = onDifficultyChange,
-            onDueDateChange = onDueDateChange,
-            onDueTimeChange = onDueTimeChange,
-            onEstimateChange = onEstimateChange,
             onCreateNewProfileClick = onCreateNewProfileClick,
-            onSaveClick = onSaveClick,
+            onEvent = onEvent
         )
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun EditSessionPageRetrieved(
-    uiState: EditTaskUiState.Retrieved,
+private fun SessionFormPageRetrieved(
+    uiState: SessionFormUiState.Retrieved,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
-    onProfileChange: (Long?) -> Unit,
-    onTaskNameChange: (String) -> Unit,
-    onColorSliderChange: (Float) -> Unit,
-    onDifficultyChange: (Float) -> Unit,
-    onDueDateChange: (Long?) -> Unit,
-    onDueTimeChange: (LocalTime) -> Unit,
-    onEstimateChange: (UserEstimate?) -> Unit,
     onCreateNewProfileClick: () -> Unit,
-    onSaveClick: () -> Boolean,
+    onEvent: (SessionFormEvent) -> Unit,
 ) {
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+
     val pagerState = rememberPagerState(
-        initialPage = 1,
+        initialPage = uiState.initialPage,
         pageCount = { 2 }
     )
-    val coroutineScope = rememberCoroutineScope()
 
     val dueDatePickerState = rememberDatePickerState()
     val dueTimePickerState = rememberTimePickerState(
@@ -165,9 +138,7 @@ private fun EditSessionPageRetrieved(
     val estimatePickerState = rememberEstimatePickerState(
         initialValue = uiState.estimate ?: UserEstimate(0,0)
     )
-
     var currentModal by remember { mutableStateOf<Modal?>(null) }
-
     val onBackClickCheckChanges = {
         if (uiState.hasFieldChanges) {
             currentModal = Modal.Discard
@@ -176,12 +147,41 @@ private fun EditSessionPageRetrieved(
         }
     }
 
+    LaunchedEffect(uiState.dueDate) {
+        uiState.dueDate?.let {
+            dueDatePickerState.selectedDateMillis = it.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        }
+    }
+
+    LaunchedEffect(uiState.dueTime) {
+        uiState.dueTime?.let {
+            dueTimePickerState.hour = it.hour
+            dueTimePickerState.minute = it.minute
+        }
+    }
+
+    LaunchedEffect(uiState.estimate) {
+        val value = uiState.estimate ?: UserEstimate(0, 0)
+
+        val hoursState = estimatePickerState.hoursState
+        val newHourIndex = hoursState.items.indexOf(value.hours)
+        if (newHourIndex != -1 && hoursState.centeredItemIndex != newHourIndex) {
+            hoursState.scrollToListItemIndex(newHourIndex)
+        }
+
+        val minutesState = estimatePickerState.minutesState
+        val newMinuteIndex = minutesState.items.indexOf(value.minutes)
+        if (newMinuteIndex != -1 && minutesState.centeredItemIndex != newMinuteIndex) {
+            minutesState.scrollToListItemIndex(newMinuteIndex)
+        }
+    }
+
     BackHandler(enabled = uiState.hasFieldChanges) {
         currentModal = Modal.Discard
     }
 
-    EditPageScaffold(
-        title = "Edit Session",
+    SessionFormPageScaffold(
+        title = uiState.title,
         onBackClick = onBackClickCheckChanges,
         topBarActions = {
             if (pagerState.currentPage == 0) {
@@ -207,10 +207,7 @@ private fun EditSessionPageRetrieved(
                 ) {
                     AccentRectangleTextButton(
                         onClick = {
-                            val saveSucceeded = onSaveClick()
-                            if (saveSucceeded) {
-                                onBackClick()
-                            }
+                            onEvent(SessionFormEvent.SaveClicked)
                         },
                         maxHeight = 56.dp,
                         aspectRatio = 1.8f
@@ -234,27 +231,26 @@ private fun EditSessionPageRetrieved(
         ) { page ->
             when (page) {
                 1 -> Column(
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier
+                        .padding(paddingValues)
                         .verticalScroll(scrollState),
                 ) {
                     Spacer(modifier = Modifier.height(20.dp))
                     SessionForm(
-                        uiState = uiState.toFormUiState(),
+                        uiState = uiState,
                         modifier = Modifier
                             .padding(horizontal = 30.dp),
+                        onEvent = onEvent,
                         onShowProfilePicker = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(0)
+                                pagerState.animateScrollToPage(
+                                    page = 0,
+                                    animationSpec = tween(300))
                             }
                         },
-                        onTaskNameChange = onTaskNameChange,
-                        onColorSliderChange = onColorSliderChange,
-                        onDifficultyChange = onDifficultyChange,
                         onShowDatePicker = { currentModal = Modal.Date },
-                        onDueDateChange = onDueDateChange,
                         onShowTimePicker = { currentModal = Modal.Time },
                         onShowEstimatePicker = { currentModal = Modal.Estimate },
-                        onEstimateChange = onEstimateChange,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
@@ -263,9 +259,12 @@ private fun EditSessionPageRetrieved(
                     profiles = uiState.profiles,
                     modifier = Modifier.padding(paddingValues),
                     onProfileClick = { profileId ->
-                        onProfileChange(profileId)
+                        onEvent(SessionFormEvent.ProfileChanged(profileId))
                         coroutineScope.launch {
-                            pagerState.animateScrollToPage(1)
+                            pagerState.animateScrollToPage(
+                                page = 1,
+                                animationSpec = tween(300)
+                            )
                         }
                     },
                     onCreateProfileClick = onCreateNewProfileClick,
@@ -281,58 +280,25 @@ private fun EditSessionPageRetrieved(
             Modal.Date -> {
                 DatePickerModal(
                     datePickerState = dueDatePickerState,
-                    onValueChange = onDueDateChange,
+                    onValueChange = { onEvent(SessionFormEvent.DueDateChanged(it)) },
                     onDismissRequest = { currentModal = null },
                 )
             }
             Modal.Time -> {
                 TimerPickerModal(
                     timePickerState = dueTimePickerState,
-                    onValueChange = onDueTimeChange,
+                    onValueChange = { onEvent(SessionFormEvent.DueTimeChanged(it)) },
                     onDismissRequest = { currentModal = null },
                 )
             }
             Modal.Estimate -> {
                 EstimatePickerModal(
                     estimatePickerState = estimatePickerState,
-                    onValueChange = onEstimateChange,
+                    onValueChange = { onEvent(SessionFormEvent.EstimateChanged(it)) },
                     onDismissRequest = { currentModal = null },
                 )
             }
             null -> {}
         }
-    }
-}
-
-
-@AspectRatioPreviews
-@Composable
-private fun EditTaskPagePreview() {
-    ClockworkTheme {
-        EditTaskPage(
-            uiState = EditTaskUiState.Retrieved(
-                taskName = "",
-                profileName = "Preview",
-                colorSliderPos = 0f,
-                difficulty = 0f,
-                dueDate = LocalDate.parse("2025-12-05"),
-                dueTime = LocalTime.parse("10:15"),
-                estimate = UserEstimate(15, 2),
-                isEstimateEditable = false,
-                profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
-                hasFieldChanges = false
-            ),
-            snackbarHostState = remember { SnackbarHostState() },
-            onBackClick = { },
-            onTaskNameChange = { },
-            onProfileChange = { },
-            onColorSliderChange = { },
-            onDifficultyChange = { },
-            onDueDateChange = { },
-            onDueTimeChange = { },
-            onEstimateChange = { },
-            onCreateNewProfileClick = { },
-            onSaveClick = { true },
-        )
     }
 }

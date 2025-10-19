@@ -11,6 +11,10 @@ import com.wordco.clockworkandroid.core.domain.util.FakeSessionRepository
 import com.wordco.clockworkandroid.database.data.local.AppDatabase
 import com.wordco.clockworkandroid.database.data.repository.ProfileRepositoryImpl
 import com.wordco.clockworkandroid.database.data.repository.TaskRepositoryImpl
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.InsertNewSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.data.factory.TimerServiceIntentFactory
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerNotificationActionProviderImpl
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerRepositoryImpl
@@ -25,48 +29,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
-interface AppContainer {
-    val sessionRepository: TaskRepository
-    val profileRepository: ProfileRepository
-    val timerRepository: TimerRepositoryImpl
+abstract class AppContainer(context: Context) {
 
-    val restoreTimerObserver: RestoreTimerObserver
+    protected val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    val timerNotificationManager: TimerNotificationManager
-
-    val addMarkerUseCase: AddMarkerUseCase
-    val endLastSegmentAndStartNewUseCase: EndLastSegmentAndStartNewUseCase
-    val startNewSessionUseCase: StartNewSessionUseCase
-    val completeStartedSessionUseCase: CompleteStartedSessionUseCase
-
-    val permissionRequestSignal: PermissionRequestSignaller
-}
-
-class ProductionContainer(context: Context) : AppContainer {
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    private val db by lazy { AppDatabase.getDatabase(context) }
-
-    private val taskDao by lazy { db.taskDao() }
-    override val sessionRepository by lazy { TaskRepositoryImpl(taskDao) }
-
-    private val profileDao by lazy { db.profileDao() }
-    override val profileRepository by lazy { ProfileRepositoryImpl(profileDao) }
+    abstract val sessionRepository: TaskRepository
+    abstract val profileRepository: ProfileRepository
 
     private val timerServiceIntentFactory by lazy {
         TimerServiceIntentFactory(context)
     }
-
-    override val timerRepository by lazy { TimerRepositoryImpl(
-        context,
-        intentFactory = timerServiceIntentFactory
-    ) }
-
-    override val restoreTimerObserver by lazy { RestoreTimerObserver(
-        sessionRepository = sessionRepository,
-        timerRepository = timerRepository,
-        externalScope = applicationScope,
-    ) }
 
     private val timerNotificationActionProvider by lazy {
         TimerNotificationActionProviderImpl(
@@ -75,7 +47,26 @@ class ProductionContainer(context: Context) : AppContainer {
         )
     }
 
-    override val timerNotificationManager by lazy {
+    private val getAppEstimateUseCase by lazy {
+        GetAppEstimateUseCase()
+    }
+
+    val timerRepository: TimerRepositoryImpl by lazy {
+        TimerRepositoryImpl(
+            context,
+            intentFactory = timerServiceIntentFactory
+        )
+    }
+
+    val restoreTimerObserver: RestoreTimerObserver by lazy {
+        RestoreTimerObserver(
+            sessionRepository = sessionRepository,
+            timerRepository = timerRepository,
+            externalScope = applicationScope,
+        )
+    }
+
+    val timerNotificationManager: TimerNotificationManager by lazy {
         TimerNotificationManagerImpl(
             context = context,
             permissionSignal = permissionRequestSignal,
@@ -85,32 +76,57 @@ class ProductionContainer(context: Context) : AppContainer {
         )
     }
 
-    override val addMarkerUseCase by lazy {
+    val getSessionUseCase: GetSessionUseCase by lazy {
+        GetSessionUseCase(sessionRepository = sessionRepository)
+    }
+
+    val addMarkerUseCase: AddMarkerUseCase by lazy {
         AddMarkerUseCase()
     }
-    override val endLastSegmentAndStartNewUseCase by lazy {
-        EndLastSegmentAndStartNewUseCase(
-            sessionRepository = sessionRepository
-        )
+
+    val endLastSegmentAndStartNewUseCase: EndLastSegmentAndStartNewUseCase by lazy {
+        EndLastSegmentAndStartNewUseCase(sessionRepository = sessionRepository)
     }
-    override val startNewSessionUseCase by lazy {
-        StartNewSessionUseCase(
-            sessionRepository = sessionRepository
-        )
+
+    val startNewSessionUseCase: StartNewSessionUseCase by lazy {
+        StartNewSessionUseCase(sessionRepository = sessionRepository)
     }
-    override val completeStartedSessionUseCase by lazy {
-        CompleteStartedSessionUseCase(
-            sessionRepository = sessionRepository
+
+    val completeStartedSessionUseCase: CompleteStartedSessionUseCase by lazy {
+        CompleteStartedSessionUseCase(sessionRepository = sessionRepository)
+    }
+
+    val insertNewSessionUseCase: InsertNewSessionUseCase by lazy {
+        InsertNewSessionUseCase(
+            sessionRepository = sessionRepository,
+            getAppEstimateUseCase = getAppEstimateUseCase,
         )
     }
 
-    override val permissionRequestSignal by lazy {
+    val updateSessionUseCase: UpdateSessionUseCase by lazy {
+        UpdateSessionUseCase(
+            sessionRepository = sessionRepository,
+            getAppEstimateUseCase = getAppEstimateUseCase,
+        )
+    }
+
+    val permissionRequestSignal: PermissionRequestSignaller by lazy {
         PermissionRequestSignal()
     }
 }
 
-class FakeContainer(context: Context) : AppContainer {
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+class ProductionContainer(context: Context) : AppContainer(context) {
+
+    private val db by lazy { AppDatabase.getDatabase(context) }
+
+    private val taskDao by lazy { db.taskDao() }
+    override val sessionRepository by lazy { TaskRepositoryImpl(taskDao) }
+
+    private val profileDao by lazy { db.profileDao() }
+    override val profileRepository by lazy { ProfileRepositoryImpl(profileDao) }
+}
+
+class FakeContainer(context: Context) : AppContainer(context) {
 
     override val sessionRepository by lazy {
         FakeSessionRepository(DummyData.SESSIONS)
@@ -118,62 +134,5 @@ class FakeContainer(context: Context) : AppContainer {
 
     override val profileRepository by lazy {
         FakeProfileRepository(DummyData.PROFILES)
-    }
-
-    private val timerServiceIntentFactory by lazy {
-        TimerServiceIntentFactory(context)
-    }
-
-    override val timerRepository by lazy {
-        TimerRepositoryImpl(
-            context,
-            intentFactory = timerServiceIntentFactory
-        )
-    }
-
-    override val restoreTimerObserver by lazy { RestoreTimerObserver(
-        sessionRepository = sessionRepository,
-        timerRepository = timerRepository,
-        externalScope = applicationScope,
-    ) }
-
-    private val timerNotificationActionProvider by lazy {
-        TimerNotificationActionProviderImpl(
-            context = context,
-            intentFactory = timerServiceIntentFactory
-        )
-    }
-
-    override val timerNotificationManager by lazy {
-        TimerNotificationManagerImpl(
-            context = context,
-            permissionSignal = permissionRequestSignal,
-            coroutineScope = applicationScope,
-            sessionRepository = sessionRepository,
-            timerNotificationActionProvider = timerNotificationActionProvider
-        )
-    }
-
-    override val addMarkerUseCase by lazy {
-        AddMarkerUseCase()
-    }
-    override val endLastSegmentAndStartNewUseCase by lazy {
-        EndLastSegmentAndStartNewUseCase(
-            sessionRepository = sessionRepository
-        )
-    }
-    override val startNewSessionUseCase by lazy {
-        StartNewSessionUseCase(
-            sessionRepository = sessionRepository
-        )
-    }
-    override val completeStartedSessionUseCase by lazy {
-        CompleteStartedSessionUseCase(
-            sessionRepository = sessionRepository
-        )
-    }
-
-    override val permissionRequestSignal by lazy {
-        PermissionRequestSignal()
     }
 }

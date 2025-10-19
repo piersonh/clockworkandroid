@@ -17,7 +17,7 @@ import com.wordco.clockworkandroid.core.ui.theme.LATO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun EditPageScaffold(
+internal fun SessionFormPageScaffold(
     title: String,
     onBackClick: () -> Unit,
     topBarActions: @Composable (RowScope.() -> Unit) = {},

@@ -14,10 +14,9 @@ import com.wordco.clockworkandroid.edit_profile_feature.ui.createProfilePage
 import com.wordco.clockworkandroid.edit_profile_feature.ui.editProfilePage
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
-import com.wordco.clockworkandroid.edit_session_feature.ui.createNewTaskPage
-import com.wordco.clockworkandroid.edit_session_feature.ui.editTaskPage
-import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewTask
+import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewSession
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEditSession
+import com.wordco.clockworkandroid.edit_session_feature.ui.sessionFormPage
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
@@ -99,15 +98,15 @@ fun NavHost(
             )
         }
 
+        sessionFormPage(
+            onBackClick = navController::popBackStack,
+            onCreateNewProfileClick = navController::navigateToCreateProfile,
+        )
+
         taskListPage(
             navBar = { navBar(TaskListRoute) },
             onTaskClick = navController::navigateToTimer,
-            onCreateNewTaskClick = navController::navigateToCreateNewTask,
-        )
-
-        createNewTaskPage(
-            onBackClick = navController::popBackStack,
-            onCreateNewProfileClick = navController::navigateToCreateProfile,
+            onCreateNewTaskClick = navController::navigateToCreateNewSession,
         )
 
 
@@ -121,11 +120,6 @@ fun NavHost(
                 }
             },
             onEditClick = navController::navigateToEditSession,
-        )
-
-        editTaskPage(
-            onBackClick = navController::popBackStack,
-            onCreateNewProfileClick = navController::navigateToCreateProfile
         )
 
         profileListPage(
@@ -146,7 +140,7 @@ fun NavHost(
             onBackClick = navController::popBackStack,
             onEditClick = navController::navigateToEditProfile,
             onSessionClick = navController::navigateToTimer,
-            onCreateNewSessionClick = navController::navigateToCreateNewTask,
+            onCreateNewSessionClick = navController::navigateToCreateNewSession,
             onCompletedSessionClick = navController::navigateToCompletion,
             navBar = { navBar(ProfileListRoute) },
         )

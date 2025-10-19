@@ -27,28 +27,21 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
-import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent
 import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormUiState
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionForm(
-    uiState: SessionFormUiState,
+    uiState: SessionFormUiState.Retrieved,
     modifier: Modifier = Modifier,
+    onEvent: (SessionFormEvent) -> Unit,
     onShowProfilePicker: () -> Unit,
-    onTaskNameChange: (String) -> Unit,
-    onColorSliderChange: (Float) -> Unit,
-    onDifficultyChange: (Float) -> Unit,
     onShowDatePicker: () -> Unit,
-    onDueDateChange: (Long?) -> Unit,
     onShowTimePicker: () -> Unit,
     onShowEstimatePicker: () -> Unit,
-    onEstimateChange: (UserEstimate?) -> Unit,
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd/yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
@@ -83,7 +76,7 @@ fun SessionForm(
             value = uiState.taskName,
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            onValueChange = onTaskNameChange,
+            onValueChange = { onEvent(SessionFormEvent.TaskNameChanged(it)) },
             label = {
                 Text(
                     "Assignment Name",
@@ -95,7 +88,7 @@ fun SessionForm(
             trailingIcon = {
                 if (uiState.taskName.isNotEmpty()) {
                     IconButton(
-                        onClick = { onTaskNameChange("") }
+                        onClick = { onEvent(SessionFormEvent.TaskNameChanged("")) },
                     ) {
                         Icon(
                             Icons.Default.Clear,
@@ -113,7 +106,7 @@ fun SessionForm(
         ColorSlider(
             label = "Session Color",
             value = uiState.colorSliderPos,
-            onValueChange = onColorSliderChange,
+            onValueChange = { onEvent(SessionFormEvent.ColorSliderChanged(it)) },
         )
 
         Spacer(Modifier.height(5.dp))
@@ -121,7 +114,7 @@ fun SessionForm(
         DifficultySlider(
             label = "Session Difficulty",
             value = uiState.difficulty,
-            onValueChange = onDifficultyChange
+            onValueChange = { onEvent(SessionFormEvent.DifficultyChanged(it)) }
         )
 
         Spacer(Modifier.height(5.dp))
@@ -145,7 +138,7 @@ fun SessionForm(
                 trailingIcon = uiState.dueDate?.let {
                     {
                         IconButton(
-                            onClick = { onDueDateChange(null) }
+                            onClick = { onEvent(SessionFormEvent.DueDateChanged(null)) }
                         ) {
                             Icon(
                                 Icons.Default.Clear,
@@ -177,10 +170,10 @@ fun SessionForm(
             } ?: "No Estimate",
             label = "Estimated Duration",
             onClick = onShowEstimatePicker,
-            trailingIcon = if(uiState.estimate != null && uiState.isEstimateEditable) {
+            trailingIcon = if (uiState.estimate != null && uiState.isEstimateEditable) {
                 {
                     IconButton(
-                        onClick = { onEstimateChange(null) }
+                        onClick = { onEvent(SessionFormEvent.EstimateChanged(null)) }
                     ) {
                         Icon(
                             Icons.Default.Clear,
@@ -195,34 +188,6 @@ fun SessionForm(
             },
             modifier = Modifier.fillMaxWidth(),
             isEnabled = uiState.isEstimateEditable
-        )
-    }
-}
-
-@AspectRatioPreviews
-@Composable
-private fun EditTaskFormPreview() {
-    ClockworkTheme {
-        SessionForm(
-            uiState = SessionFormUiState (
-                taskName = "Preview",
-                profileName = "Preview",
-                colorSliderPos = Random.nextFloat(),
-                difficulty = Random.nextInt(0, 5).toFloat(),
-                dueDate = null,
-                dueTime = null,
-                estimate = null,
-                isEstimateEditable = false,
-            ),
-            onShowProfilePicker = {},
-            onTaskNameChange = {},
-            onColorSliderChange = {},
-            onDifficultyChange = {},
-            onShowDatePicker = {},
-            onDueDateChange = {},
-            onShowTimePicker = {},
-            onEstimateChange = {},
-            onShowEstimatePicker = {},
         )
     }
 }
