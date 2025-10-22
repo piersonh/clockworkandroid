@@ -55,6 +55,7 @@ import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toComplete
 import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.AnimationMode
+//import ir.ehsannarmani.compose_charts.models.DotProperties
 import ir.ehsannarmani.compose_charts.models.DrawStyle
 import ir.ehsannarmani.compose_charts.models.Line
 import kotlinx.coroutines.Dispatchers
@@ -210,14 +211,16 @@ private fun CompletedSessionList(
     uiState: UserStatsUiState.Retrieved,
     onTaskClick: (Long) -> Unit,
 ) {
-    Box(
+    Column (
         modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.4f)
-            .background(MaterialTheme.colorScheme.primaryContainer)
+            .fillMaxHeight()
+            .padding(horizontal = 15.dp),
     ) {
         LineChart(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp),
+            modifier = Modifier
+                .fillMaxHeight(0.3f)
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp, vertical = 10.dp),
             data = remember {
                 listOf(
                     Line(
@@ -229,6 +232,13 @@ private fun CompletedSessionList(
                         strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
                         gradientAnimationDelay = 1000,
                         drawStyle = DrawStyle.Stroke(width = 2.dp),
+                        /*dotProperties = DotProperties(
+                            enabled = true,
+                            color = SolidColor(Color.White),
+                            strokeWidth = 4.dp,
+                            radius = 7.dp,
+                            strokeColor = SolidColor(Color(0xFF23af92)),
+                        )*/
                     )
                 )
             },
@@ -236,29 +246,29 @@ private fun CompletedSessionList(
                 it * 500L
             }),
         )
-    }
 
-    Spacer(Modifier.height(5.dp))
+        Spacer(Modifier.height(5.dp))
 
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier
-            .padding(horizontal = 5.dp)
-            .background(color = MaterialTheme.colorScheme.primary)
-    ) {
-        item {
-            Spacer(Modifier.height(5.dp))
-        }
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier
+                .padding(horizontal = 5.dp)
+                .background(color = MaterialTheme.colorScheme.primary)
+        ) {
+            item {
+                Spacer(Modifier.height(5.dp))
+            }
 
-        items(
-            items = uiState.completedTasks,
-            key = { it.taskId}
-        ) { session ->
-            CompletedTaskUIListItem(
-                task = session,
-                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onClick = { onTaskClick(session.taskId) },
-            )
+            items(
+                items = uiState.completedTasks,
+                key = { it.taskId }
+            ) { session ->
+                CompletedTaskUIListItem(
+                    task = session,
+                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                    onClick = { onTaskClick(session.taskId) },
+                )
+            }
         }
     }
 }
