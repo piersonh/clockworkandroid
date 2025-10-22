@@ -140,7 +140,6 @@ private fun UserStatsPage(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
 
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .padding(paddingValues)
@@ -149,42 +148,11 @@ private fun UserStatsPage(
         {
             when (uiState) {
                 is UserStatsUiState.Retrieved if uiState.completedTasks.isEmpty() -> EmptyTaskList()
-                is UserStatsUiState.Retrieved -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.4f)
-                            .background(MaterialTheme.colorScheme.secondary)
-                    ) {
-                        LineChart(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp),
-                            data = remember {
-                                listOf(
-                                    Line(
-                                        label = "Windows",
-                                        values = listOf(28.0, 41.0, 5.0, 10.0, 35.0),
-                                        color = SolidColor(Color(0xFF23af92)),
-                                        firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
-                                        secondGradientFillColor = Color.Transparent,
-                                        strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
-                                        gradientAnimationDelay = 1000,
-                                        drawStyle = DrawStyle.Stroke(width = 2.dp),
-                                    )
-                                )
-                            },
-                            animationMode = AnimationMode.Together(delayBuilder = {
-                                it * 500L
-                            }),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
+                is UserStatsUiState.Retrieved ->
                     CompletedSessionList(
                         uiState,
                         onTaskClick = onCompletedSessionClick,
                     )
-                }
 
                 UserStatsUiState.Retrieving -> Text("Loading...")
             }
@@ -242,6 +210,36 @@ private fun CompletedSessionList(
     uiState: UserStatsUiState.Retrieved,
     onTaskClick: (Long) -> Unit,
 ) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.4f)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        LineChart(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp),
+            data = remember {
+                listOf(
+                    Line(
+                        label = "Windows",
+                        values = listOf(28.0, 41.0, 5.0, 10.0, 35.0),
+                        color = SolidColor(Color(0xFF23af92)),
+                        firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
+                        secondGradientFillColor = Color.Transparent,
+                        strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
+                        gradientAnimationDelay = 1000,
+                        drawStyle = DrawStyle.Stroke(width = 2.dp),
+                    )
+                )
+            },
+            animationMode = AnimationMode.Together(delayBuilder = {
+                it * 500L
+            }),
+        )
+    }
+
+    Spacer(Modifier.height(5.dp))
+
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier
