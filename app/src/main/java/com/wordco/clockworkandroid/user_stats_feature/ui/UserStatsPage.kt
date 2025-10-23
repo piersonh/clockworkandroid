@@ -150,11 +150,47 @@ private fun UserStatsPage(
             when (uiState) {
                 is UserStatsUiState.Retrieved if uiState.completedTasks.isEmpty() -> EmptyTaskList()
                 is UserStatsUiState.Retrieved ->
-                    CompletedSessionList(
-                        uiState,
-                        onTaskClick = onCompletedSessionClick,
-                    )
+                    Column (
+                        modifier = Modifier
+                    ) {
+                        LineChart(
+                            modifier = Modifier
+                                .fillMaxHeight(0.3f)
+                                .fillMaxWidth()
+                                .padding(horizontal = 5.dp, vertical = 10.dp),
+                            data = remember {
+                                listOf(
+                                    Line(
+                                        label = "Windows",
+                                        values = listOf(28.0, 41.0, 5.0, 10.0, 35.0),
+                                        color = SolidColor(Color(0xFF23af92)),
+                                        firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
+                                        secondGradientFillColor = Color.Transparent,
+                                        strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
+                                        gradientAnimationDelay = 1000,
+                                        drawStyle = DrawStyle.Stroke(width = 2.dp),
+                                        /*dotProperties = DotProperties(
+                                            enabled = true,
+                                            color = SolidColor(Color.White),
+                                            strokeWidth = 4.dp,
+                                            radius = 7.dp,
+                                            strokeColor = SolidColor(Color(0xFF23af92)),
+                                        )*/
+                                    )
+                                )
+                            },
+                            animationMode = AnimationMode.Together(delayBuilder = {
+                                it * 500L
+                            }),
+                        )
 
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        CompletedSessionList(
+                            uiState,
+                            onTaskClick = onCompletedSessionClick,
+                        )
+                    }
                 UserStatsUiState.Retrieving -> Text("Loading...")
             }
         }
@@ -211,67 +247,29 @@ private fun CompletedSessionList(
     uiState: UserStatsUiState.Retrieved,
     onTaskClick: (Long) -> Unit,
 ) {
-    Column (
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         modifier = Modifier
-            .fillMaxHeight()
-            .padding(horizontal = 15.dp),
+            .padding(horizontal = 5.dp)
+            .background(color = MaterialTheme.colorScheme.primary)
     ) {
-        LineChart(
-            modifier = Modifier
-                .fillMaxHeight(0.3f)
-                .fillMaxWidth()
-                .padding(horizontal = 5.dp, vertical = 10.dp),
-            data = remember {
-                listOf(
-                    Line(
-                        label = "Windows",
-                        values = listOf(28.0, 41.0, 5.0, 10.0, 35.0),
-                        color = SolidColor(Color(0xFF23af92)),
-                        firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
-                        secondGradientFillColor = Color.Transparent,
-                        strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
-                        gradientAnimationDelay = 1000,
-                        drawStyle = DrawStyle.Stroke(width = 2.dp),
-                        /*dotProperties = DotProperties(
-                            enabled = true,
-                            color = SolidColor(Color.White),
-                            strokeWidth = 4.dp,
-                            radius = 7.dp,
-                            strokeColor = SolidColor(Color(0xFF23af92)),
-                        )*/
-                    )
-                )
-            },
-            animationMode = AnimationMode.Together(delayBuilder = {
-                it * 500L
-            }),
-        )
+        item {
+            Spacer(Modifier.height(5.dp))
+        }
 
-        Spacer(Modifier.height(5.dp))
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier
-                .padding(horizontal = 5.dp)
-                .background(color = MaterialTheme.colorScheme.primary)
-        ) {
-            item {
-                Spacer(Modifier.height(5.dp))
-            }
-
-            items(
-                items = uiState.completedTasks,
-                key = { it.taskId }
-            ) { session ->
-                CompletedTaskUIListItem(
-                    task = session,
-                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    onClick = { onTaskClick(session.taskId) },
+        items(
+            items = uiState.completedTasks,
+            key = { it.taskId }
+        ) { session ->
+            CompletedTaskUIListItem(
+                task = session,
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                onClick = { onTaskClick(session.taskId) },
                 )
             }
         }
     }
-}
+
 
 
 @AspectRatioPreviews

@@ -11,6 +11,6 @@ fun CompletedTask.toCompletedSessionListItem() : CompletedSessionListItem {
         color = color,
         totalTime = totalTime,
         error = totalTime.minus(userEstimate),
-        completedAt = completedAt
+        completedAt = completedAt,
     )
 }
