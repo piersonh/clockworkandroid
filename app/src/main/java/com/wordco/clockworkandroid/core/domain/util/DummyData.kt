@@ -80,7 +80,7 @@ object DummyData {
             dueDate = null,
             difficulty = 1,
             color = Color.hsv(123f, 1f, 1f),
-            userEstimate = null,
+            userEstimate = Duration.ofMinutes(21),
             segments = listOf(
                 Segment(
                     segmentId = 1,
