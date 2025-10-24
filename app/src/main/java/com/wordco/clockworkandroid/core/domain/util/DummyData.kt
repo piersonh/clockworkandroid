@@ -85,7 +85,7 @@ object DummyData {
                 Segment(
                     segmentId = 1,
                     taskId = 7,
-                    startTime = Instant.parse("2007-12-03T10:15:30.00Z"),
+                    startTime = Instant.parse("2025-10-03T10:15:30.00Z"),
                     duration = Duration.ofSeconds(1452),
                     type = Segment.Type.WORK
                 )
@@ -93,7 +93,8 @@ object DummyData {
             markers = emptyList(),
             profileId = null,
             appEstimate = null,
-        )
+        ),
+
     )
 
 

@@ -53,6 +53,7 @@ import com.wordco.clockworkandroid.user_stats_feature.ui.composables.CompletedTa
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
+import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.AnimationMode
 //import ir.ehsannarmani.compose_charts.models.DotProperties
@@ -88,6 +89,7 @@ private fun UserStatsPage(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
 
     Scaffold(
         topBar = {
@@ -153,29 +155,23 @@ private fun UserStatsPage(
                     Column (
                         modifier = Modifier
                     ) {
+
                         LineChart(
                             modifier = Modifier
                                 .fillMaxHeight(0.3f)
                                 .fillMaxWidth()
                                 .padding(horizontal = 5.dp, vertical = 10.dp),
-                            data = remember {
+                            data = remember(uiState.accuracyChartData) {
                                 listOf(
                                     Line(
-                                        label = "Windows",
-                                        values = listOf(28.0, 41.0, 5.0, 10.0, 35.0),
+                                        label = "Completed tasks accuracy",
+                                        values = uiState.accuracyChartData.filterNotNull(),
                                         color = SolidColor(Color(0xFF23af92)),
                                         firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
                                         secondGradientFillColor = Color.Transparent,
                                         strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
                                         gradientAnimationDelay = 1000,
                                         drawStyle = DrawStyle.Stroke(width = 2.dp),
-                                        /*dotProperties = DotProperties(
-                                            enabled = true,
-                                            color = SolidColor(Color.White),
-                                            strokeWidth = 4.dp,
-                                            radius = 7.dp,
-                                            strokeColor = SolidColor(Color(0xFF23af92)),
-                                        )*/
                                     )
                                 )
                             },
@@ -275,12 +271,22 @@ private fun CompletedSessionList(
 @AspectRatioPreviews
 @Composable
 private fun UserStatsPagePreview() {
+    val calculateEstimateAccuracyUseCase = remember { CalculateEstimateAccuracyUseCase() }
+
     ClockworkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
                 completedTasks = DummyData.SESSIONS
-                    .filter { it is CompletedTask }
-                    .map { (it as CompletedTask).toCompletedSessionListItem() }
+                    .filterIsInstance<CompletedTask>()
+                    .map { it.toCompletedSessionListItem() },
+                accuracyChartData = DummyData.SESSIONS
+                    .filterIsInstance<CompletedTask>()
+                    .mapNotNull { 
+                        it.userEstimate?.let { userEstimate ->
+                            calculateEstimateAccuracyUseCase(it.workTime.plus(it.breakTime),
+                                userEstimate)
+                        } 
+                    }
             ),
             navBar = {
                 NavBar(
@@ -302,7 +308,8 @@ private fun UserStatsNoCompletedSessionsPagePreview() {
     ClockworkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
-                completedTasks = emptyList()
+                completedTasks = emptyList(),
+                accuracyChartData = emptyList(),
             ),
             navBar = {
                 NavBar(

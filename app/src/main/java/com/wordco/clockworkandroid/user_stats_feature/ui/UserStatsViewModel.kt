@@ -16,6 +16,7 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
@@ -37,7 +38,8 @@ class UserStatsViewModel(
     application: MainApplication,
     private val taskRepository: TaskRepository,
     private val profileRepository: ProfileRepository,
-    private val permissionRequestSignaller: PermissionRequestSignaller
+    private val permissionRequestSignaller: PermissionRequestSignaller,
+    private val calculateEstimateAccuracyUseCase: CalculateEstimateAccuracyUseCase
 ) : AndroidViewModel(application) {
 
 
@@ -60,7 +62,14 @@ class UserStatsViewModel(
                         completedTasks = tasks
                             .map { it.toCompletedSessionListItem() }
                             .sortedBy { it.completedAt }
-                            .reversed()
+                            .reversed(),
+                        accuracyChartData = tasks
+                            .map { it.userEstimate?.let { userEstimate ->
+                                calculateEstimateAccuracyUseCase(
+                                        it.workTime.plus(it.breakTime),
+                                    userEstimate)
+                            }
+                        }
                     )
                 }
             }.collect { uiState ->
@@ -173,6 +182,7 @@ class UserStatsViewModel(
                     profileRepository = profileRepository,
                     permissionRequestSignaller = permissionRequestSignaller,
                     //savedStateHandle = savedStateHandle
+                    calculateEstimateAccuracyUseCase = CalculateEstimateAccuracyUseCase()
                 )
             }
         }
