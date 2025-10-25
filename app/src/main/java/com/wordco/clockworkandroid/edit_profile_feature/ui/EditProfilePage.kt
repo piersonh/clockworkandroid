@@ -92,7 +92,7 @@ private fun EditProfilePage(
             TopAppBar(
                 title = {
                     Text(
-                        "Edit Profile",
+                        "Edit Template",
                         fontFamily = LATO,
                         fontWeight = FontWeight.Black,
                     )

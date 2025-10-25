@@ -330,7 +330,7 @@ private fun ProfileSessionListPageRetrieved(
                     onDismissRequest = { showDeleteDialog = false },
                     title = {
                         Text(
-                            "Delete Profile?",
+                            "Delete Template?",
                             fontFamily = LATO,
                             fontWeight = FontWeight.Bold,
                         )
@@ -546,7 +546,7 @@ private fun EmptyTodoList(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "You Haven't Made Any Tasks for this Profile",
+                        "You Haven't Made Any Tasks for this Template...",
                         fontFamily = LATO,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,

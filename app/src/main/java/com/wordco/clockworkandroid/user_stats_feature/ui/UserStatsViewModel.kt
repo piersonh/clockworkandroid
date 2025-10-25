@@ -71,7 +71,7 @@ class UserStatsViewModel(
 
     suspend fun onExportUserData() : Result<String, ExportDataError> {
         val content = buildString {
-            appendLine("Task Profiles:")
+            appendLine("Task Templates:")
             profileRepository.getProfiles().first().forEach { profile ->
                 appendLine("$profile")
             }

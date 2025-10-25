@@ -70,7 +70,7 @@ class CreateProfileViewModel (
 
             if (name.isBlank()) {
                 viewModelScope.launch {
-                    _snackbarEvent.emit("Failed to save profile: Missing Name")
+                    _snackbarEvent.emit("Failed to save template: Missing Name")
                 }
                 return false
             }

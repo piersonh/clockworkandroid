@@ -63,9 +63,9 @@ fun SessionForm(
     ) {
 
         OutlinedTextFieldButton(
-            value = uiState.profileName ?: "No Profile Selected",
+            value = uiState.profileName ?: "No Template Selected",
             modifier = Modifier.fillMaxWidth(),
-            label = "Profile",
+            label = "Template",
             onClick = onShowProfilePicker,
         )
 
@@ -99,7 +99,7 @@ fun SessionForm(
                     ) {
                         Icon(
                             Icons.Default.Clear,
-                            contentDescription = "Clear current profile",
+                            contentDescription = "Clear current template",
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(23.dpScaledWith(16.sp))
                         )
