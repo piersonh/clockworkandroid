@@ -79,7 +79,7 @@ private fun ProfileListPage (
             TopAppBar(
                 title = {
                     Text(
-                        "Task Profiles",
+                        "Task Templates",
                         fontFamily = LATO,
                     )
                 },
@@ -156,7 +156,7 @@ private fun EmptyProfileList(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                "You Don't Have Any Profiles!",
+                "You Don't Have Any Task Templates!",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
@@ -176,7 +176,7 @@ private fun EmptyProfileList(
                 onClick = onCreateProfileClick,
             ) {
                 Text(
-                    text = "Create Profile",
+                    text = "Create Template",
                     fontFamily = LATO,
                     fontWeight = FontWeight.Bold,
                     fontSize = 32.sp

@@ -65,7 +65,7 @@ fun SessionForm(
         OutlinedTextFieldButton(
             value = uiState.profileName ?: "No Profile Selected",
             modifier = Modifier.fillMaxWidth(),
-            label = "Profile",
+            label = "Template",
             onClick = onShowProfilePicker,
         )
 
