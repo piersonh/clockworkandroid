@@ -94,6 +94,73 @@ object DummyData {
             profileId = null,
             appEstimate = null,
         ),
+        CompletedTask(
+            taskId = 8,
+            name = "Session 8",
+            dueDate = Instant.now(),
+            difficulty = 1,
+            color = Color.hsv(30f, 1f, 1f),
+            userEstimate = Duration.ofMinutes(45),
+            segments = listOf(
+                Segment(
+                    segmentId = 2,
+                    taskId = 8,
+                    startTime = Instant.now().minus(Duration.ofHours(1)),
+                    duration = Duration.ofMinutes(40),
+                    type = Segment.Type.WORK
+                )
+            ),
+            markers = emptyList(),
+            profileId = 1,
+            appEstimate = null,
+        ),
+        CompletedTask(
+            taskId = 9,
+            name = "Session 9",
+            dueDate = Instant.now(),
+            difficulty = 1,
+            color = Color.hsv(60f, 1f, 1f),
+            userEstimate = Duration.ofHours(1),
+            segments = listOf(
+                Segment(
+                    segmentId = 3,
+                    taskId = 9,
+                    startTime = Instant.now().minus(Duration.ofDays(1)),
+                    duration = Duration.ofMinutes(55),
+                    type = Segment.Type.WORK
+                )
+            ),
+            markers = emptyList(),
+            profileId = 2,
+            appEstimate = null,
+        ),
+        CompletedTask(
+            taskId = 10,
+            name = "Session 10",
+            dueDate = Instant.now(),
+            difficulty = 1,
+            color = Color.hsv(90f, 1f, 1f),
+            userEstimate = Duration.ofMinutes(30),
+            segments = listOf(
+                Segment(
+                    segmentId = 4,
+                    taskId = 10,
+                    startTime = Instant.now().minus(Duration.ofDays(2)),
+                    duration = Duration.ofMinutes(25),
+                    type = Segment.Type.WORK
+                ),
+                Segment(
+                    segmentId = 5,
+                    taskId = 10,
+                    startTime = Instant.now().minus(Duration.ofDays(2).plusMinutes(25)),
+                    duration = Duration.ofMinutes(5),
+                    type = Segment.Type.BREAK
+                )
+            ),
+            markers = emptyList(),
+            profileId = 1,
+            appEstimate = null,
+        ),
 
     )
 
