@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -54,6 +57,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -184,7 +188,9 @@ private fun ProfileSessionListPageRetrieved(
                     Text(
                         uiState.profileName,
                         fontFamily = LATO,
-                        fontWeight = FontWeight.Black
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 actions = {
@@ -283,16 +289,26 @@ private fun ProfileSessionListPageRetrieved(
                             .clip(RoundedCornerShape(10.dp)),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+
+                        BasicText(
                             text = uiState.profileName,
-                            style = TextStyle(fontSize = 48.sp),
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 24.sp,
+                                maxFontSize = 48.sp
+                            ),
+                            style = TextStyle(
+                                fontFamily = LATO,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontSize = 48.sp
+                            ),
                             modifier = Modifier
                                 .background(MaterialTheme.colorScheme.primary)
                                 .fillMaxWidth()
-                                .padding(20.dp),
-                            fontFamily = LATO,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onPrimary,
+                                .padding(20.dp)
+                                .heightIn(max=60.dp),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                         )
 
                         Box (
@@ -768,7 +784,7 @@ private fun ProfileSessionListPageEmptyTodoPreview() {
     ClockworkTheme {
         ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
-                profileName = "Preview",
+                profileName = "PreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreview",
                 profileColor = Color.Yellow,
                 todoSessions = emptyList(),
                 completeSessions = emptyList(),
