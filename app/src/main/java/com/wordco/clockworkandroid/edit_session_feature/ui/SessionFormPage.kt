@@ -36,7 +36,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
+import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DatePickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EstimatePickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.PagerAwareSlideAwayBottomBar
@@ -48,6 +50,8 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.composables.rememberE
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneOffset
 
 @Composable
@@ -300,5 +304,35 @@ private fun SessionFormPageRetrieved(
             }
             null -> {}
         }
+    }
+}
+
+@AspectRatioPreviews
+@Composable
+private fun SessionFormPagePreview() {
+    ClockworkTheme {
+        SessionFormPageRetrieved(
+            uiState = SessionFormUiState.Retrieved(
+                title = "Preview",
+                initialPage = 1,
+                profiles = listOf(),
+                taskName = "Preview",
+                profileName = "Preview",
+                colorSliderPos = 0.5f,
+                difficulty = 1f,
+                dueDate = LocalDate.of(2025, 10, 31),
+                dueTime = LocalTime.of(23,59),
+                estimate = UserEstimate(
+                    minutes = 1,
+                    hours = 2
+                ),
+                isEstimateEditable = true,
+                hasFieldChanges = false
+            ),
+            snackbarHostState = SnackbarHostState(),
+            onBackClick = {},
+            onCreateNewProfileClick = {},
+            onEvent = {}
+        )
     }
 }

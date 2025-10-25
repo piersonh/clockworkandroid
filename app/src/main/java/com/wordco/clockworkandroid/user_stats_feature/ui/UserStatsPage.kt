@@ -233,8 +233,8 @@ private fun UserStatsPagePreview() {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
                 completedTasks = DummyData.SESSIONS
-                    .filter { it is CompletedTask }
-                    .map { (it as CompletedTask).toCompletedSessionListItem() }
+                    .filterIsInstance<CompletedTask>()
+                    .map { it.toCompletedSessionListItem() }
             ),
             navBar = {
                 NavBar(

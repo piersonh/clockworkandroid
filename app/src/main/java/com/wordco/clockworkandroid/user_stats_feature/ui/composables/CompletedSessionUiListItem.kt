@@ -42,93 +42,88 @@ fun CompletedTaskUIListItem(
         backgroundColor = backgroundColor,
         onClick = onClick
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier.padding(2.dp)
+        Text(
+            task.name,
+            fontFamily = LATO,
+            fontSize = 23.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 2,
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.height(30.dp),
         ) {
+            Box(
+                modifier = Modifier.size(23.dpScaledWith(23.sp)).padding(2.dp),
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.checked_box),
+                    contentDescription = "Completed",
+                    contentScale = ContentScale.Fit,
+
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                )
+            }
             Text(
-                task.name,
+                String.format(
+                    Locale.getDefault(),
+                    "%s",
+                    task.completedAt.asDateTime()
+                ),
                 fontFamily = LATO,
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
+                modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically)
             )
+        }
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.clock),
+                    contentDescription = "Session Time",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(23.dpScaledWith(23.sp)),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                )
+                Text(
+                    task.totalTime.asHHMM(),
+                    fontFamily = LATO,
+                    fontSize = 23.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.height(30.dp),
             ) {
-                Box(
-                    modifier = Modifier.size(23.dpScaledWith(23.sp)).padding(2.dp),
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.checked_box),
-                        contentDescription = "Completed",
-                        contentScale = ContentScale.Fit,
-
-                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    )
-                }
+                Image(
+                    painter = painterResource(id = R.drawable.bullseye),
+                    contentDescription = "Error",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(23.dpScaledWith(23.sp)),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
+                )
                 Text(
                     String.format(
                         Locale.getDefault(),
-                        "%s",
-                        task.completedAt.asDateTime()
+                        if (task.error.isNegative) "-%s" else "+%s",
+                        task.error.abs().asHHMM()
                     ),
                     fontFamily = LATO,
                     fontSize = 23.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically)
                 )
-            }
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.clock),
-                        contentDescription = "Session Time",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.size(23.dpScaledWith(23.sp)),
-                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    )
-                    Text(
-                        task.totalTime.asHHMM(),
-                        fontFamily = LATO,
-                        fontSize = 23.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.bullseye),
-                        contentDescription = "Error",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.size(23.dpScaledWith(23.sp)),
-                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-                    )
-                    Text(
-                        String.format(
-                            Locale.getDefault(),
-                            if (task.error.isNegative) "-%s" else "+%s",
-                            task.error.abs().asHHMM()
-                        ),
-                        fontFamily = LATO,
-                        fontSize = 23.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
             }
         }
     }
