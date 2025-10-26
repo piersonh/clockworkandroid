@@ -46,7 +46,7 @@ val topLevelDestinations = listOf(
     TopLevelDestination(
         route = ProfileListRoute,
         icon = R.drawable.fanned_cards,
-        label = "Profiles",
+        label = "Templates",
     ),
 
 )

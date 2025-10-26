@@ -67,7 +67,7 @@ fun ProfilePicker(
 
             item {
                 ProfilePickerUiItem(
-                    name = "No Profile",
+                    name = "No Template",
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.clickable {
                         onProfileClick(null)
@@ -117,7 +117,7 @@ private fun ProfilePickerNoProfiles(
         Spacer(Modifier)
 
         ProfilePickerUiItem(
-            name = "No Profile",
+            name = "No Template",
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.clickable {
                 onProfileClick(null)
@@ -142,7 +142,7 @@ private fun ProfilePickerNoProfiles(
         ) {
             Image(
                 painter = painterResource(id = R.drawable.fanned_cards),
-                contentDescription = "Profiles",
+                contentDescription = "Templates",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.height(170.dp),
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -156,7 +156,7 @@ private fun ProfilePickerNoProfiles(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                "You Haven't Made Any Profiles Yet!",
+                "You Haven't Made Any Templates Yet!",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
@@ -175,7 +175,7 @@ private fun ProfilePickerNoProfiles(
                 onClick = onCreateProfileClick,
             ) {
                 Text(
-                    text = "Create Profile",
+                    text = "Create Template",
                     fontFamily = LATO,
                     fontWeight = FontWeight.Bold,
                     fontSize = 32.sp

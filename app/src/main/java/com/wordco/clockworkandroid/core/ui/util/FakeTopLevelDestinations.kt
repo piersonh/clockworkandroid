@@ -21,6 +21,6 @@ val FAKE_TOP_LEVEL_DESTINATIONS = listOf(
     TopLevelDestination(
         route = FakeDestination::class,
         icon = R.drawable.fanned_cards,
-        label = "Profiles",
+        label = "Templates",
     ),
 )
