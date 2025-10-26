@@ -9,6 +9,6 @@ sealed interface UserStatsUiState {
 
     data class Retrieved(
         val completedTasks: List<CompletedSessionListItem>,
-        val accuracyChartData: List<Double?>
+        val accuracyChartData: List<Double>
     ) : UserStatsUiState
 }

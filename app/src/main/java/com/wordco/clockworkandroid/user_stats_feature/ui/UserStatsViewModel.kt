@@ -61,15 +61,16 @@ class UserStatsViewModel(
                     UserStatsUiState.Retrieved(
                         completedTasks = tasks
                             .map { it.toCompletedSessionListItem() }
-                            .sortedBy { it.completedAt }
-                            .reversed(),
+                            .sortedByDescending { it.completedAt },
                         accuracyChartData = tasks
-                            .map { it.userEstimate?.let { userEstimate ->
-                                calculateEstimateAccuracyUseCase(
-                                        it.workTime.plus(it.breakTime),
-                                    userEstimate)
-                            }
-                        }
+                            .sortedBy { it.completedAt }
+                            .mapNotNull { session ->
+                                session.userEstimate?.let { userEstimate ->
+                                    calculateEstimateAccuracyUseCase(
+                                        session.workTime.plus(session.breakTime),
+                                        userEstimate
+                                    )
+                            }}
                     )
                 }
             }.collect { uiState ->

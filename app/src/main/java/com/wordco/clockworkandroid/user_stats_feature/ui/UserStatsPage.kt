@@ -56,11 +56,16 @@ import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.AnimationMode
+import ir.ehsannarmani.compose_charts.models.DotProperties
 //import ir.ehsannarmani.compose_charts.models.DotProperties
 import ir.ehsannarmani.compose_charts.models.DrawStyle
+import ir.ehsannarmani.compose_charts.models.GridProperties
+import ir.ehsannarmani.compose_charts.models.LabelProperties
 import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.models.PopupProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun UserStatsPage(
@@ -165,19 +170,37 @@ private fun UserStatsPage(
                                 listOf(
                                     Line(
                                         label = "Completed tasks accuracy",
-                                        values = uiState.accuracyChartData.filterNotNull(),
+                                        values = uiState.accuracyChartData,
                                         color = SolidColor(Color(0xFF23af92)),
                                         firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
                                         secondGradientFillColor = Color.Transparent,
                                         strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
                                         gradientAnimationDelay = 1000,
                                         drawStyle = DrawStyle.Stroke(width = 2.dp),
+                                        dotProperties = DotProperties(
+                                            enabled = true,
+                                            color = SolidColor(Color(0xFF23af92))
+                                        ),
+                                        popupProperties = PopupProperties(
+                                            textStyle = TextStyle(
+                                                color = Color.White
+                                            ),
+                                            contentBuilder = {
+                                                String.format(
+                                                    Locale.getDefault(),
+                                                    "%.0f%%",
+                                                    it.value
+                                                )
+                                            }
+                                        )
                                     )
                                 )
                             },
                             animationMode = AnimationMode.Together(delayBuilder = {
                                 it * 500L
                             }),
+                            minValue = 0.0,
+                            maxValue = 100.0,
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
