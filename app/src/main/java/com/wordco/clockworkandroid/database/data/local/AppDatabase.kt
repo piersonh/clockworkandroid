@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
         ProfileEntity::class,
         ReminderEntity::class,
                ],
-    version = 13)
+    version = 14)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 
