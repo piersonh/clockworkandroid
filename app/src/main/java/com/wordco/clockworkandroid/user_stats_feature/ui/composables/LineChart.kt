@@ -317,7 +317,7 @@ fun LineChart(
         ) { measurables, constraints ->
 
             // --- 1. Measure all the labels ---
-            val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0)) }
+            val placeables = measurables.map { it.measure(constraints) }
             val totalWidth = constraints.maxWidth
             val numIntervals = xLabelValues.size - 1
             val height = placeables.maxOfOrNull { it.height } ?: 0
@@ -327,19 +327,10 @@ fun LineChart(
                 if (numIntervals <= 0) return@layout // Edge case
 
                 placeables.forEachIndexed { index, placeable ->
-
-                    // Get the data value for this label
-                    val xValue = xLabelValues[index]
-
                     // Calculate the x position based on its *value*, not its index
-                    val xPosition = ((xValue - bounds.minX) / bounds.xRange) * totalWidth
+                    val xPosition = (index.toFloat() / numIntervals) * totalWidth
 
-                    // This logic is now correct, as it uses the value-based xPosition
-                    val xOffset = when (index) {
-                        0 -> 0 // First label, align start
-                        placeables.lastIndex -> (xPosition - placeable.width).toInt() // Last, align end
-                        else -> (xPosition - (placeable.width / 2)).toInt() // Middle, align center
-                    }
+                    val xOffset = (xPosition - (placeable.width / 2)).toInt()
 
                     placeable.placeRelative(x = xOffset, y = 0)
                 }
@@ -353,8 +344,8 @@ fun LineChart(
 private fun LineChartPreview() {
     ClockworkTheme {
         val data = listOf(
-            LineChartDataPoint(0f, 10f),
-            LineChartDataPoint(1.2f, 50f),
+            LineChartDataPoint(0.9f, 10f),
+            LineChartDataPoint(1.2f, 49f),
             LineChartDataPoint(2.3f, 20f),
             LineChartDataPoint(3f, 45f),
             LineChartDataPoint(4.7f, 15f),
@@ -369,7 +360,11 @@ private fun LineChartPreview() {
                 pointColor = MaterialTheme.colorScheme.secondary,
                 lineColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
                 minY = 0f,
+                maxY = 50f,
+                minX = 0f,
+                maxX = 6f,
                 yAxisIntervals = 5,
+                xAxisIntervals = 6,
             )
         }
     }
