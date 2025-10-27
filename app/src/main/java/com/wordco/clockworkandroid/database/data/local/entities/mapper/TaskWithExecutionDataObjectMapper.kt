@@ -23,7 +23,7 @@ fun TaskWithExecutionDataObject.toTask() : Task {
             appEstimate = toOptionalAppEstimate(
                 taskEntity.lowAppEstimate,
                 taskEntity.highAppEstimate
-            )
+            ),
         )
         1 -> StartedTask(
             taskId = taskEntity.taskId,

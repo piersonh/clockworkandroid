@@ -16,5 +16,11 @@ data class TaskWithExecutionDataObject(
         parentColumn = "taskId",
         entityColumn = "taskId"
     )
-    val markers: List<MarkerEntity>
+    val markers: List<MarkerEntity>,
+
+    @Relation(
+        parentColumn = "taskId",
+        entityColumn = "sessionId"
+    )
+    val reminders: List<ReminderEntity>
 )

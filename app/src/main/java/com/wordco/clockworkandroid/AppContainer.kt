@@ -15,6 +15,7 @@ import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEs
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.InsertNewSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
+import com.wordco.clockworkandroid.reminder.ReminderNotificationManagerImpl
 import com.wordco.clockworkandroid.timer_feature.data.factory.TimerServiceIntentFactory
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerNotificationActionProviderImpl
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerRepositoryImpl
@@ -73,6 +74,14 @@ abstract class AppContainer(context: Context) {
             coroutineScope = applicationScope,
             sessionRepository = sessionRepository,
             timerNotificationActionProvider = timerNotificationActionProvider,
+        )
+    }
+
+    val reminderNotificationManager by lazy {
+        ReminderNotificationManagerImpl(
+            context = context,
+            permissionSignal = permissionRequestSignal,
+            coroutineScope = applicationScope,
         )
     }
 

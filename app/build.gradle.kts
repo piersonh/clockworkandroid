@@ -20,14 +20,6 @@ android {
         versionName = "m5-2025-10-15-db2-ui5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments.putAll(mapOf(
-                    "room.exportSchema" to "false" // TODO: use proper schema exporting
-                ))
-            }
-        }
     }
 
     buildTypes {
@@ -55,8 +47,14 @@ kotlin {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.exportSchema", "true")
+}
+
 dependencies {
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.process)
     ksp(libs.androidx.room.compiler)
@@ -77,6 +75,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.truth)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

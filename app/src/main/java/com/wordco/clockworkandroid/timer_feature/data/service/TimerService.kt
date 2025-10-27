@@ -157,7 +157,7 @@ class TimerService() : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = notificationManager.getForegroundNotification()
 
-        startForeground(TimerNotificationManagerImpl.Companion.NOTIFICATION_ID, notification)
+        startForeground(TimerNotificationManagerImpl.NOTIFICATION_ID, notification)
 
         when (intent?.action) {
             // android uses a null intent when restarting the service after killing it

@@ -42,3 +42,26 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_TaskEntity_profileId` ON `TaskEntity`(`profileId`)")
     }
 }
+
+val MIGRATION_13_14: Migration = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 1. Create the new ReminderEntity table
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `ReminderEntity` (
+                `reminderId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                `sessionId` INTEGER NOT NULL, 
+                `workRequestId` TEXT NOT NULL, 
+                `scheduledTime` INTEGER NOT NULL, 
+                `status` TEXT NOT NULL, 
+                FOREIGN KEY(`sessionId`) REFERENCES `TaskEntity`(`taskId`) 
+                    ON DELETE CASCADE
+            )
+        """)
+
+        // 2. Create the index on the foreign key for fast lookups
+        db.execSQL("""
+            CREATE INDEX IF NOT EXISTS `index_ReminderEntity_sessionId` 
+            ON `ReminderEntity` (`sessionId`)
+        """)
+    }
+}
