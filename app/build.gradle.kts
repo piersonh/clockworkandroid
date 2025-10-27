@@ -20,14 +20,6 @@ android {
         versionName = "m5-2025-10-15-db2-ui5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments.putAll(mapOf(
-                    "room.exportSchema" to "false" // TODO: use proper schema exporting
-                ))
-            }
-        }
     }
 
     buildTypes {
@@ -53,6 +45,11 @@ kotlin {
         jvmTarget.set(JvmTarget.fromTarget("11"))
         freeCompilerArgs.add("-Xwhen-guards")
     }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.exportSchema", "true")
 }
 
 dependencies {
