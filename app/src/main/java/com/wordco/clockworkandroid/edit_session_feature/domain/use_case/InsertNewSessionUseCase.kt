@@ -8,6 +8,7 @@ import com.wordco.clockworkandroid.core.domain.repository.SessionReminderSchedul
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.first
 import java.time.Instant
+import java.util.UUID
 
 class InsertNewSessionUseCase (
     private val sessionRepository: TaskRepository,
@@ -15,7 +16,10 @@ class InsertNewSessionUseCase (
     private val reminderRepository: ReminderRepository,
     private val scheduler: SessionReminderScheduler,
 ) {
-    suspend operator fun invoke(task: NewTask) {
+    suspend operator fun invoke(
+        task: NewTask,
+        reminderTimes: List<Instant>
+    ) {
         if (task.userEstimate != null) {
             val sessionHistory = sessionRepository.getCompletedTasks().first()
                 .filter { it.userEstimate != null }
@@ -29,33 +33,29 @@ class InsertNewSessionUseCase (
             sessionRepository.insertNewTask(task)
         }
 
-        if (task.dueDate != null && task.dueDate > Instant.now()) {
+        for (reminderTime in reminderTimes) {
+            val workRequestId = UUID.randomUUID()
+
             val initialReminder = Reminder(
                 reminderId = 0,
                 sessionId = task.taskId,
-                workRequestId = "",
-                scheduledTime = task.dueDate,
+                workRequestId = workRequestId.toString(),
+                scheduledTime = reminderTime,
                 status = Reminder.Status.PENDING
             )
 
-            // 2. Insert into DB to get the generated reminderId
             val reminderId = reminderRepository.insertReminder(initialReminder)
 
-            // 3. Prepare data for scheduler
             val tempReminderData = ReminderSchedulingData(
                 reminderId = reminderId,
                 sessionId = task.taskId,
                 message = task.name,
-                scheduledTime = task.dueDate,
-                notificationId = reminderId.hashCode()
+                scheduledTime = reminderTime,
+                notificationId = reminderId.hashCode(),
+                workRequestId = workRequestId
             )
 
-            // 4. Schedule the work
-            val workId = scheduler.schedule(tempReminderData)
-
-            // 5. Update the DB record with the workId
-            val finalReminder = initialReminder.copy(reminderId = reminderId, workRequestId = workId)
-            reminderRepository.updateReminder(finalReminder)
+            scheduler.schedule(tempReminderData)
         }
     }
 }

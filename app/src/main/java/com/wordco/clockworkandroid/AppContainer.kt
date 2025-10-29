@@ -128,6 +128,8 @@ abstract class AppContainer(context: Context) {
         InsertNewSessionUseCase(
             sessionRepository = sessionRepository,
             getAppEstimateUseCase = getAppEstimateUseCase,
+            reminderRepository = reminderRepository,
+            scheduler = reminderScheduler,
         )
     }
 
@@ -135,6 +137,8 @@ abstract class AppContainer(context: Context) {
         UpdateSessionUseCase(
             sessionRepository = sessionRepository,
             getAppEstimateUseCase = getAppEstimateUseCase,
+            reminderRepository = reminderRepository,
+            scheduler = reminderScheduler,
         )
     }
 

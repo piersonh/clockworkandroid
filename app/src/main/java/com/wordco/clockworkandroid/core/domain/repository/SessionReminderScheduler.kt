@@ -7,7 +7,7 @@ interface SessionReminderScheduler {
      * Schedules a reminder.
      * @return The unique String ID for the scheduled work.
      */
-    fun schedule(reminderData: ReminderSchedulingData): String
+    fun schedule(reminderData: ReminderSchedulingData)
 
     /**
      * Cancels a previously scheduled reminder.

@@ -269,15 +269,20 @@ class SessionFormViewModel(
             }
 
             viewModelScope.launch {
-                when (val state = internalState) {
+                when (internalState) {
                     is InternalState.Create -> {
                         val task = buildSession(this@run) as NewTask
-                        insertNewSessionUseCase(task)
+                        insertNewSessionUseCase(
+                            task = task,
+                            reminderTimes = listOfNotNull(task.dueDate)
+                        )
                     }
                     is InternalState.Edit -> {
                         val newTask = buildSession(this@run)
-                        val oldSession = state.session
-                        updateSessionUseCase(newTask, oldSession)
+                        updateSessionUseCase(
+                            newTask,
+                            reminderTimes = listOfNotNull(newTask.dueDate),
+                        )
                     }
                 }
 

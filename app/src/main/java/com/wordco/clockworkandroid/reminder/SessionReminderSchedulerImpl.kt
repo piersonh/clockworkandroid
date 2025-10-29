@@ -17,11 +17,10 @@ class SessionReminderSchedulerImpl (
 
     private val workManager = WorkManager.getInstance(context)
 
-    override fun schedule(reminderData: ReminderSchedulingData): String {
+    override fun schedule(reminderData: ReminderSchedulingData) {
         val scheduledTime = reminderData.scheduledTime
         val delay = Duration.between(Instant.now(), scheduledTime).toMillis()
 
-        // 2. Create Data
         val data = workDataOf(
             ReminderWorker.KEY_REMINDER_ID to reminderData.reminderId,
             ReminderWorker.KEY_NOTIFICATION_ID to reminderData.notificationId,
@@ -29,20 +28,15 @@ class SessionReminderSchedulerImpl (
             ReminderWorker.KEY_SCHEDULED_TIME to scheduledTime.toEpochMilli()
         )
 
-        // 3. Build Work Request
         val reminderWorkRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
+            .setId(reminderData.workRequestId)
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(data)
             .addTag("reminder") // General tag for all reminders
             .addTag("session_${reminderData.sessionId}") // Tag specific to the session
             .build()
 
-        // 4. Enqueue and get ID
-        val workId = reminderWorkRequest.id
         workManager.enqueue(reminderWorkRequest)
-
-        // 5. Return the ID
-        return workId.toString()
     }
 
     override fun cancel(workRequestId: String) {

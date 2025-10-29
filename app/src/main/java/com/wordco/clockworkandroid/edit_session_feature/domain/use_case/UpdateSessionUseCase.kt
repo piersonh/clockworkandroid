@@ -2,6 +2,8 @@ package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
 
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
+import com.wordco.clockworkandroid.core.domain.model.Reminder
+import com.wordco.clockworkandroid.core.domain.model.ReminderSchedulingData
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.ReminderRepository
@@ -9,6 +11,7 @@ import com.wordco.clockworkandroid.core.domain.repository.SessionReminderSchedul
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.first
 import java.time.Instant
+import java.util.UUID
 
 class UpdateSessionUseCase(
     private val sessionRepository: TaskRepository,
@@ -51,7 +54,28 @@ class UpdateSessionUseCase(
         reminderRepository.deleteAllRemindersForSession(taskToSave.taskId)
 
         for (reminderTime in reminderTimes) {
+            val workRequestId = UUID.randomUUID()
 
+            val initialReminder = Reminder(
+                reminderId = 0,
+                sessionId = taskToSave.taskId,
+                workRequestId = workRequestId.toString(),
+                scheduledTime = reminderTime,
+                status = Reminder.Status.PENDING
+            )
+
+            val reminderId = reminderRepository.insertReminder(initialReminder)
+
+            val tempReminderData = ReminderSchedulingData(
+                reminderId = reminderId,
+                sessionId = taskToSave.taskId,
+                message = taskToSave.name,
+                scheduledTime = reminderTime,
+                notificationId = reminderId.hashCode(),
+                workRequestId = workRequestId
+            )
+
+            scheduler.schedule(tempReminderData)
         }
     }
 }

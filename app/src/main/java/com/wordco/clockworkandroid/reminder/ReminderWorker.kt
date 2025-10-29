@@ -23,7 +23,6 @@ class ReminderWorker(
     private val reminderRepository: ReminderRepository =
         (context.applicationContext as MainApplication).appContainer.reminderRepository
 
-    // A key to retrieve the message from the input data
     companion object {
         const val KEY_REMINDER_MESSAGE = "reminder_message"
         const val KEY_NOTIFICATION_ID = "notification_id"

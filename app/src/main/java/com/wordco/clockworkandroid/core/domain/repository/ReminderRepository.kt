@@ -2,7 +2,6 @@ package com.wordco.clockworkandroid.core.domain.repository
 
 import com.wordco.clockworkandroid.core.domain.model.Reminder
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
 
 interface ReminderRepository {
     suspend fun insertReminder(reminder: Reminder): Long
