@@ -5,9 +5,10 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import java.time.Instant
 
-class AddMarkerUseCase {
+class AddMarkerUseCase(
+    private val sessionRepository: TaskRepository,
+) {
     suspend operator fun invoke(
-        sessionRepository: TaskRepository,
         session: StartedTask,
         now: Instant,
     ) : String {

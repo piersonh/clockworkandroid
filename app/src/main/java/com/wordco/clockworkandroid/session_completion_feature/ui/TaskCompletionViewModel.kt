@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 class TaskCompletionViewModel (
     private val taskRepository: TaskRepository,
     private val taskId: Long,
+    private val deleteSessionUseCase: DeleteSessionUseCase,
     private val calculateEstimateAccuracyUseCase: CalculateEstimateAccuracyUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<TaskCompletionUiState>(TaskCompletionUiState.Retrieving)
@@ -66,7 +68,7 @@ class TaskCompletionViewModel (
 
     fun onDeleteClick() {
         viewModelScope.launch {
-            taskRepository.deleteTask(taskId)
+            deleteSessionUseCase(taskId)
             _events.emit(TaskCompletionUiEvent.NavigateBack)
         }
     }
@@ -78,12 +80,15 @@ class TaskCompletionViewModel (
             initializer {
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
                 val taskRepository = appContainer.sessionRepository
+                val calculateEstimateAccuracyUseCase = appContainer.calculateEstimateAccuracyUseCase
+                val deleteSessionUseCase = appContainer.deleteSessionUseCase
                 val taskId = this[TASK_ID_KEY] as Long
 
                 TaskCompletionViewModel(
                     taskRepository = taskRepository,
                     taskId,
-                    calculateEstimateAccuracyUseCase = CalculateEstimateAccuracyUseCase()
+                    calculateEstimateAccuracyUseCase = calculateEstimateAccuracyUseCase,
+                    deleteSessionUseCase = deleteSessionUseCase,
                     //savedStateHandle = savedStateHandle
                 )
             }

@@ -14,6 +14,7 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
+import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -34,7 +35,8 @@ class TimerViewModel (
     private val timerRepository: TimerRepository,
     private val taskRepository: TaskRepository,
     private val addMarkerUseCase: AddMarkerUseCase,
-    private val completeStartedSessionUseCase: CompleteStartedSessionUseCase
+    private val completeStartedSessionUseCase: CompleteStartedSessionUseCase,
+    private val deleteSessionUseCase: DeleteSessionUseCase,
     //private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -122,7 +124,7 @@ class TimerViewModel (
 
     fun onDeleteClick() {
         viewModelScope.launch {
-            taskRepository.deleteTask(taskId)
+            deleteSessionUseCase(taskId)
             _events.emit(TimerUiEvent.NavigateBack)
         }
     }
@@ -149,7 +151,6 @@ class TimerViewModel (
             val session = loadedTask.value as? StartedTask
                 ?: error ("addMark can only be called when timer is running")
             val markerName = addMarkerUseCase(
-                sessionRepository = taskRepository,
                 session = session,
                 Instant.now()
             )
@@ -194,6 +195,7 @@ class TimerViewModel (
                 val timer = appContainer.timerRepository
                 val addMarkerUseCase = appContainer.addMarkerUseCase
                 val completeStartedSessionUseCase = appContainer.completeStartedSessionUseCase
+                val deleteSessionUseCase = appContainer.deleteSessionUseCase
                 val taskId = this[TASK_ID_KEY] as Long
 
                 TimerViewModel(
@@ -202,6 +204,7 @@ class TimerViewModel (
                     taskRepository = taskRepository,
                     addMarkerUseCase = addMarkerUseCase,
                     completeStartedSessionUseCase = completeStartedSessionUseCase,
+                    deleteSessionUseCase = deleteSessionUseCase,
                     //savedStateHandle = savedStateHandle
                 )
             }

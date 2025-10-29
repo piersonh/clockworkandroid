@@ -348,7 +348,6 @@ class TimerService() : Service() {
 
         coroutineScope.launch {
             addMarkerUseCase(
-                sessionRepository = taskRepository,
                 session = internalState.session.value,
                 Instant.now()
             )

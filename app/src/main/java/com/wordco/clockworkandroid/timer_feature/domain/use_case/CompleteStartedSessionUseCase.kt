@@ -2,17 +2,24 @@ package com.wordco.clockworkandroid.timer_feature.domain.use_case
 
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
+import com.wordco.clockworkandroid.core.domain.repository.ReminderRepository
+import com.wordco.clockworkandroid.core.domain.repository.SessionReminderScheduler
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import java.time.Duration
 import java.time.Instant
 
 class CompleteStartedSessionUseCase(
-    private val sessionRepository: TaskRepository
+    private val sessionRepository: TaskRepository,
+    private val reminderRepository: ReminderRepository,
+    private val scheduler: SessionReminderScheduler,
 ) {
     suspend operator fun invoke(
         session: StartedTask,
         now: Instant
     ) {
+        scheduler.cancelAllForSession(session.taskId)
+        reminderRepository.deleteAllPendingRemindersForSession(session.taskId)
+
         val lastSegment = session.segments.last().run {
             copy(duration = Duration.between(startTime, now))
         }

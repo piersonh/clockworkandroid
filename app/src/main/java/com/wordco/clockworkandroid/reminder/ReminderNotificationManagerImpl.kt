@@ -76,7 +76,7 @@ class ReminderNotificationManagerImpl(
         message: String
     ) : Notification {
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.stopwatch) // TODO: Add your icon
+            .setSmallIcon(R.drawable.stopwatch)
             .setContentTitle("Reminder")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
