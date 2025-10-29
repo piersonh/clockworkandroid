@@ -35,6 +35,14 @@ class FakeReminderRepository : ReminderRepository {
         reminders.value -= id
     }
 
+    override suspend fun deleteAllRemindersForSession(sessionId: Long) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAllPendingRemindersForSession(sessionId: Long) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun updateReminder(reminder: Reminder) {
         if (reminders.value.containsKey(reminder.reminderId)) {
             reminders.value += (reminder.reminderId to reminder)
@@ -48,14 +56,14 @@ class FakeReminderRepository : ReminderRepository {
         }
     }
 
+    override fun getReminder(id: Long): Flow<Reminder> {
+        TODO("Not yet implemented")
+    }
+
     override fun getRemindersForSession(sessionId: Long): Flow<List<Reminder>> {
         return reminders.map { map ->
             map.values.filter { it.sessionId == sessionId }
         }
     }
 
-    // Helper function for tests to check the state
-    fun getReminder(id: Long): Reminder? {
-        return reminders.value[id]
-    }
 }

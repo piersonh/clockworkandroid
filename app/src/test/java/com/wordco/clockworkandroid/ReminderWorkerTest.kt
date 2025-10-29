@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.wordco.clockworkandroid.core.domain.model.Reminder
 import com.wordco.clockworkandroid.reminder.ReminderWorker
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -43,7 +44,6 @@ class ReminderWorkerTest {
 
         whenever(mockContext.applicationContext).thenReturn(mockApplication)
         whenever(mockApplication.appContainer).thenReturn(mockAppContainer)
-        whenever(mockAppContainer.reminderRepository).thenReturn(fakeRepository)
         whenever(mockAppContainer.reminderNotificationManager).thenReturn(fakeNotificationManager)
     }
 
@@ -81,8 +81,8 @@ class ReminderWorkerTest {
         assertEquals(message, fakeNotificationManager.lastMessage)
         assertEquals(notificationId, fakeNotificationManager.lastNotificationId)
 
-        val finalReminder = fakeRepository.getReminder(reminderId)
-        assertEquals(Reminder.Status.COMPLETED, finalReminder?.status)
+        val finalReminder = fakeRepository.getReminder(reminderId).first()
+        assertEquals(Reminder.Status.COMPLETED, finalReminder.status)
     }
 
     @Test
@@ -118,8 +118,8 @@ class ReminderWorkerTest {
         assertEquals(ListenableWorker.Result.success(), result)
         assertFalse(fakeNotificationManager.wasNotificationSent) // Should not send
 
-        val finalReminder = fakeRepository.getReminder(reminderId)
-        assertEquals(Reminder.Status.EXPIRED, finalReminder?.status)
+        val finalReminder = fakeRepository.getReminder(reminderId).first()
+        assertEquals(Reminder.Status.EXPIRED, finalReminder.status)
     }
 
     @Test

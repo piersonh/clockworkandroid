@@ -13,10 +13,8 @@ import androidx.core.app.NotificationManagerCompat
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
 import com.wordco.clockworkandroid.core.domain.repository.ReminderNotificationManager
-import com.wordco.clockworkandroid.timer_feature.ui.notification.TimerNotificationManagerImpl.Companion.NOTIFICATION_ID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 class ReminderNotificationManagerImpl(
     private val context: Context,
@@ -56,17 +54,17 @@ class ReminderNotificationManagerImpl(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            if (permissionJob == null) {
-                permissionJob = coroutineScope.launch {
-                    val hasPermission = permissionSignal.request(
-                        Manifest.permission.POST_NOTIFICATIONS
-                    )
-
-                    if (hasPermission) {
-                        notificationManager.notify(NOTIFICATION_ID, notification)
-                    }
-                }
-            }
+//            if (permissionJob == null) {
+//                permissionJob = coroutineScope.launch {
+//                    val hasPermission = permissionSignal.request(
+//                        Manifest.permission.POST_NOTIFICATIONS
+//                    )
+//
+//                    if (hasPermission) {
+//                        notificationManager.notify(NOTIFICATION_ID, notification)
+//                    }
+//                }
+//            }
         } else {
             notificationManager.notify(notificationId, notification)
         }

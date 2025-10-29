@@ -10,15 +10,17 @@ class FakeSessionReminderScheduler : SessionReminderScheduler {
 
     var scheduledData: ReminderSchedulingData? = null
     var cancelledWorkId: String? = null
-    var nextWorkIdToReturn = "fake-work-id-123"
 
-    override fun schedule(reminderData: ReminderSchedulingData): String {
+    override fun schedule(reminderData: ReminderSchedulingData) {
         this.scheduledData = reminderData
-        return nextWorkIdToReturn
     }
 
     override fun cancel(workRequestId: String) {
         this.cancelledWorkId = workRequestId
+    }
+
+    override fun cancelAllForSession(sessionId: Long) {
+        TODO("Not yet implemented")
     }
 
     // Helper to reset state between tests

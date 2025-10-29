@@ -14,10 +14,10 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
-import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
+import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.InsertNewSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
@@ -44,8 +44,8 @@ import java.time.ZoneOffset
 
 class SessionFormViewModel(
     formMode: SessionFormMode,
-    private val profileRepository: ProfileRepository,
     private val getSessionUseCase: GetSessionUseCase,
+    private val getAllProfilesUseCase: GetAllProfilesUseCase,
     private val insertNewSessionUseCase: InsertNewSessionUseCase,
     private val updateSessionUseCase: UpdateSessionUseCase,
 ) : ViewModel() {
@@ -77,7 +77,7 @@ class SessionFormViewModel(
 
     init {
         viewModelScope.launch {
-            profiles = profileRepository.getProfiles().run {
+            profiles = getAllProfilesUseCase().run {
                 stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
@@ -340,18 +340,17 @@ class SessionFormViewModel(
             initializer {
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
 
-                val profileRepository = appContainer.profileRepository
-
                 val formMode = this[FORM_MODE_KEY] as SessionFormMode
 
                 val getSessionUseCase = appContainer.getSessionUseCase
+                val getAllProfilesUseCase = appContainer.getAllProfilesUseCase
                 val insertNewSessionUseCase = appContainer.insertNewSessionUseCase
                 val updateSessionUseCase = appContainer.updateSessionUseCase
 
                 SessionFormViewModel(
-                    profileRepository = profileRepository,
                     formMode = formMode,
                     getSessionUseCase = getSessionUseCase,
+                    getAllProfilesUseCase = getAllProfilesUseCase,
                     insertNewSessionUseCase = insertNewSessionUseCase,
                     updateSessionUseCase = updateSessionUseCase,
                 )

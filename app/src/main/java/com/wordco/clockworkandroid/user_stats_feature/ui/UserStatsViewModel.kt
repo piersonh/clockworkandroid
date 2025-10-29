@@ -14,8 +14,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
-import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
+import com.wordco.clockworkandroid.user_stats_feature.domain.use_case.GetAllCompletedSessionsUseCase
+import com.wordco.clockworkandroid.user_stats_feature.domain.use_case.GetAllSessionsUseCase
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
@@ -35,8 +36,9 @@ import java.io.IOException
 
 class UserStatsViewModel(
     application: MainApplication,
-    private val taskRepository: TaskRepository,
-    private val profileRepository: ProfileRepository,
+    getAllCompletedSessionsUseCase: GetAllCompletedSessionsUseCase,
+    private val getAllSessionsUseCase: GetAllSessionsUseCase,
+    private val getAllProfilesUseCase: GetAllProfilesUseCase,
     private val permissionRequestSignaller: PermissionRequestSignaller
 ) : AndroidViewModel(application) {
 
@@ -47,7 +49,7 @@ class UserStatsViewModel(
 
 
     // TODO: make a getCompletedTasks (?)
-    private val _tasks = taskRepository.getCompletedTasks()
+    private val _tasks = getAllCompletedSessionsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -72,12 +74,12 @@ class UserStatsViewModel(
     suspend fun onExportUserData() : Result<String, ExportDataError> {
         val content = buildString {
             appendLine("Task Profiles:")
-            profileRepository.getProfiles().first().forEach { profile ->
+            getAllProfilesUseCase().first().forEach { profile ->
                 appendLine("$profile")
             }
             appendLine()
             appendLine("Task Sessions:")
-            taskRepository.getTasks().first().forEach { session ->
+            getAllSessionsUseCase().first().forEach { session ->
                 appendLine("$session")
             }
         }
@@ -163,15 +165,15 @@ class UserStatsViewModel(
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val application = (this[APPLICATION_KEY] as MainApplication)
-                val taskRepository = application.appContainer.sessionRepository
-                val profileRepository = application.appContainer.profileRepository
                 val permissionRequestSignaller = application.appContainer.permissionRequestSignal
 
                 UserStatsViewModel(
                     application = application,
-                    taskRepository = taskRepository,
-                    profileRepository = profileRepository,
                     permissionRequestSignaller = permissionRequestSignaller,
+                    getAllCompletedSessionsUseCase = application.appContainer.getAllCompletedSessionsUseCase,
+                    getAllSessionsUseCase = application.appContainer.getAllSessionsUseCase,
+                    getAllProfilesUseCase = application.appContainer.getAllProfilesUseCase,
+
                     //savedStateHandle = savedStateHandle
                 )
             }

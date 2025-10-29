@@ -9,8 +9,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.GetProfileUseCase
+import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
+import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,8 +26,9 @@ import kotlinx.coroutines.launch
 
 class ProfileSessionListViewModel(
     private val profileId: Long,
-    private val profileRepository: ProfileRepository,
-    private val sessionRepository: TaskRepository,
+    getProfileUseCase: GetProfileUseCase,
+    getAllSessionsForProfileUseCase: GetAllSessionsForProfileUseCase,
+    private val deleteProfileUseCase: DeleteProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProfileSessionListUiState>(
@@ -38,10 +40,10 @@ class ProfileSessionListViewModel(
     private val _events = MutableSharedFlow<ProfileSessionListUiEvent>()
     val events = _events.asSharedFlow()
 
-    private val _profile = profileRepository.getProfile(profileId)
+    private val _profile = getProfileUseCase(profileId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
-    private val _sessions = sessionRepository.getSessionsForProfile(profileId)
+    private val _sessions = getAllSessionsForProfileUseCase(profileId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -76,7 +78,7 @@ class ProfileSessionListViewModel(
 
     fun onDeleteClick() {
         viewModelScope.launch {
-            profileRepository.deleteProfile(profileId)
+            deleteProfileUseCase(profileId)
             _events.emit(ProfileSessionListUiEvent.NavigateBack)
         }
     }
@@ -92,13 +94,12 @@ class ProfileSessionListViewModel(
                 //val savedStateHandle = createSavedStateHandle()
                 val profileId = this[PROFILE_ID_KEY] as Long
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val sessionRepository = appContainer.sessionRepository
-                val profileRepository = appContainer.profileRepository
 
-                ProfileSessionListViewModel (
+                ProfileSessionListViewModel(
                     profileId = profileId,
-                    profileRepository = profileRepository,
-                    sessionRepository = sessionRepository,
+                    getProfileUseCase = appContainer.getProfileUseCase,
+                    getAllSessionsForProfileUseCase = appContainer.getAllSessionsForProfileUseCase,
+                    deleteProfileUseCase = appContainer.deleteProfileUseCase,
                     //savedStateHandle = savedStateHandle
                 )
             }

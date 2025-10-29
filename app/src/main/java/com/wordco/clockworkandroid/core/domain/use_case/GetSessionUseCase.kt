@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_session_feature.domain.use_case
+package com.wordco.clockworkandroid.core.domain.use_case
 
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository

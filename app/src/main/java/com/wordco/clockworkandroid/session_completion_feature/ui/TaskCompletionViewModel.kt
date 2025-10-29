@@ -9,8 +9,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +25,8 @@ import kotlinx.coroutines.launch
 
 
 class TaskCompletionViewModel (
-    private val taskRepository: TaskRepository,
     private val taskId: Long,
+    private val getSessionUseCase: GetSessionUseCase,
     private val deleteSessionUseCase: DeleteSessionUseCase,
     private val calculateEstimateAccuracyUseCase: CalculateEstimateAccuracyUseCase,
 ) : ViewModel() {
@@ -36,7 +36,7 @@ class TaskCompletionViewModel (
     private val _events = MutableSharedFlow<TaskCompletionUiEvent>()
     val events = _events.asSharedFlow()
 
-    private val loadedTask = taskRepository.getTask(taskId)
+    private val loadedTask = getSessionUseCase(taskId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
     init {
@@ -79,14 +79,14 @@ class TaskCompletionViewModel (
 
             initializer {
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val taskRepository = appContainer.sessionRepository
+                val getSessionUseCase = appContainer.getSessionUseCase
                 val calculateEstimateAccuracyUseCase = appContainer.calculateEstimateAccuracyUseCase
                 val deleteSessionUseCase = appContainer.deleteSessionUseCase
                 val taskId = this[TASK_ID_KEY] as Long
 
                 TaskCompletionViewModel(
-                    taskRepository = taskRepository,
                     taskId,
+                    getSessionUseCase = getSessionUseCase,
                     calculateEstimateAccuracyUseCase = calculateEstimateAccuracyUseCase,
                     deleteSessionUseCase = deleteSessionUseCase,
                     //savedStateHandle = savedStateHandle

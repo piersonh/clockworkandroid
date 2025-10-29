@@ -12,12 +12,13 @@ import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.TimerState
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.model.SessionTimer
 import com.wordco.clockworkandroid.timer_feature.domain.repository.TimerNotificationManager
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.AddMarkerUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.CompleteStartedSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.EndLastSegmentAndStartNewUseCase
+import com.wordco.clockworkandroid.timer_feature.domain.use_case.GetActiveSessionIdUseCase
 import com.wordco.clockworkandroid.timer_feature.domain.use_case.StartNewSessionUseCase
 import com.wordco.clockworkandroid.timer_feature.ui.notification.TimerNotificationManagerImpl
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +46,9 @@ class TimerService() : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
 
     private lateinit var notificationManager: TimerNotificationManager
-    private lateinit var taskRepository: TaskRepository
+
+    private lateinit var getSessionUseCase: GetSessionUseCase
+    private lateinit var getActiveSessionIdUseCase: GetActiveSessionIdUseCase
     private lateinit var addMarkerUseCase: AddMarkerUseCase
     private lateinit var startNewSessionUseCase: StartNewSessionUseCase
     private lateinit var endLastSegmentAndStartNewUseCase: EndLastSegmentAndStartNewUseCase
@@ -107,7 +110,8 @@ class TimerService() : Service() {
         super.onCreate()
         val appContainer = (application as MainApplication).appContainer
 
-        taskRepository = appContainer.sessionRepository
+        getSessionUseCase = appContainer.getSessionUseCase
+        getActiveSessionIdUseCase = appContainer.getActiveSessionIdUseCase
         addMarkerUseCase = appContainer.addMarkerUseCase
         endLastSegmentAndStartNewUseCase = appContainer.endLastSegmentAndStartNewUseCase
         startNewSessionUseCase = appContainer.startNewSessionUseCase
@@ -163,7 +167,7 @@ class TimerService() : Service() {
             // android uses a null intent when restarting the service after killing it
             null -> {
                 coroutineScope.launch {
-                    taskRepository.getActiveTaskId()?.let {
+                    getActiveSessionIdUseCase()?.let {
                         start(it)
                     }
                 }
@@ -231,7 +235,7 @@ class TimerService() : Service() {
     }
 
     private suspend fun createStartedSessionStateFlow(taskId: Long) : StateFlow<StartedTask> {
-        val flow = taskRepository.getTask(taskId)
+        val flow = getSessionUseCase(taskId)
         val session = flow.first()
 
         return when (session) {

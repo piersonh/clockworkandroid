@@ -10,8 +10,8 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.TimerState
-import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetAllTodoSessionsUseCase
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
@@ -26,8 +26,8 @@ import kotlinx.coroutines.launch
 
 
 class TaskListViewModel(
-    private val taskRepository: TaskRepository,
     private val timerRepository: TimerRepository,
+    getAllTodoSessionsUseCase: GetAllTodoSessionsUseCase,
 ) : ViewModel() {
 
 
@@ -37,7 +37,7 @@ class TaskListViewModel(
 
     private val timerState = timerRepository.state
 
-    private val tasks = taskRepository.getTodoTasks()
+    private val tasks = getAllTodoSessionsUseCase()
 
     init {
         viewModelScope.launch {
@@ -108,12 +108,11 @@ class TaskListViewModel(
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val taskRepository = appContainer.sessionRepository
                 val timer = appContainer.timerRepository
 
-                TaskListViewModel (
-                    taskRepository = taskRepository,
+                TaskListViewModel(
                     timerRepository = timer,
+                    getAllTodoSessionsUseCase = appContainer.getAllTodoSessionsUseCase,
                     //savedStateHandle = savedStateHandle
                 )
             }
