@@ -11,7 +11,7 @@ class FakeReminderNotificationManager : ReminderNotificationManager {
     var lastMessage: String? = null
     var lastNotificationId: Int? = null
 
-    override fun sendReminderNotification(message: String, notificationId: Int) {
+    override fun sendReminderNotification(message: String, sessionId: Long, notificationId: Int) {
         wasNotificationSent = true
         lastMessage = message
         lastNotificationId = notificationId
