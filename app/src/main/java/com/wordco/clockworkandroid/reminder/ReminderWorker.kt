@@ -21,11 +21,13 @@ class ReminderWorker(
         const val KEY_NOTIFICATION_ID = "notification_id"
         const val KEY_REMINDER_ID = "reminder_id"
         const val KEY_SCHEDULED_TIME = "scheduled_time"
+        const val KEY_SESSION_ID = "session_id"
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val reminderId = inputData.getLong(KEY_REMINDER_ID, 0)
-        if (reminderId == 0L) return@withContext Result.failure()
+        val sessionId = inputData.getLong(KEY_SESSION_ID, 0)
+        if (reminderId == 0L || sessionId == 0L) return@withContext Result.failure()
 
         val message = inputData.getString(KEY_REMINDER_MESSAGE) ?: "You have a reminder."
         val notificationId = inputData.getInt(KEY_NOTIFICATION_ID, 0)
@@ -34,6 +36,7 @@ class ReminderWorker(
         try {
             processReminderUseCase(
                 reminderId = reminderId,
+                sessionId = sessionId,
                 message = message,
                 notificationId = notificationId,
                 scheduledTime = scheduledTime

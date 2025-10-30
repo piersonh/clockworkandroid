@@ -25,7 +25,8 @@ class SessionReminderSchedulerImpl (
             ReminderWorker.KEY_REMINDER_ID to reminderData.reminderId,
             ReminderWorker.KEY_NOTIFICATION_ID to reminderData.notificationId,
             ReminderWorker.KEY_REMINDER_MESSAGE to reminderData.message,
-            ReminderWorker.KEY_SCHEDULED_TIME to scheduledTime.toEpochMilli()
+            ReminderWorker.KEY_SCHEDULED_TIME to scheduledTime.toEpochMilli(),
+            ReminderWorker.KEY_SESSION_ID to reminderData.sessionId,
         )
 
         val reminderWorkRequest = OneTimeWorkRequestBuilder<ReminderWorker>()

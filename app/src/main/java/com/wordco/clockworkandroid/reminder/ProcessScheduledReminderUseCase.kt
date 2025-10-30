@@ -14,6 +14,7 @@ class ProcessScheduledReminderUseCase(
 
     suspend operator fun invoke(
         reminderId: Long,
+        sessionId: Long,
         message: String,
         notificationId: Int,
         scheduledTime: Long
@@ -21,7 +22,11 @@ class ProcessScheduledReminderUseCase(
         val lateness = Duration.between(Instant.ofEpochMilli(scheduledTime), Instant.now())
 
         if (lateness < tolerance) {
-            reminderNotifier.sendReminderNotification(message, notificationId)
+            reminderNotifier.sendReminderNotification(
+                message,
+                sessionId,
+                notificationId
+            )
             reminderRepository.updateReminderStatus(reminderId, Reminder.Status.COMPLETED)
         } else {
             reminderRepository.updateReminderStatus(reminderId, Reminder.Status.EXPIRED)

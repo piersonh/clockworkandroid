@@ -1,8 +1,11 @@
 package com.wordco.clockworkandroid
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.wordco.clockworkandroid.core.data.permission.PermissionRequestSignal
+import com.wordco.clockworkandroid.core.data.preferences.SharedPreferencesAppPreferencesRepository
 import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
+import com.wordco.clockworkandroid.core.domain.repository.AppPreferencesRepository
 import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.domain.repository.ReminderNotificationManager
 import com.wordco.clockworkandroid.core.domain.repository.ReminderRepository
@@ -10,12 +13,13 @@ import com.wordco.clockworkandroid.core.domain.repository.SessionReminderSchedul
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
 import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
-import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
-import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.CreateProfileUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.ManageFirstLaunchUseCase
+import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.CreateProfileUseCase
 import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
@@ -231,5 +235,20 @@ class AppContainer(
 
     val permissionRequestSignal: PermissionRequestSignaller by lazy {
         PermissionRequestSignal()
+    }
+
+    private val sharedPreferences: SharedPreferences by lazy {
+        context.applicationContext.getSharedPreferences(
+            "ClockworkPrefs",
+            Context.MODE_PRIVATE,
+        )
+    }
+
+    val appPreferencesRepository: AppPreferencesRepository by lazy {
+        SharedPreferencesAppPreferencesRepository(sharedPreferences)
+    }
+
+    val manageFirstLaunchUseCase: ManageFirstLaunchUseCase by lazy {
+        ManageFirstLaunchUseCase(appPreferencesRepository)
     }
 }
