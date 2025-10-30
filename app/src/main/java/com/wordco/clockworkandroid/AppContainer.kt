@@ -20,6 +20,7 @@ import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.CreatePr
 import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
@@ -71,6 +72,12 @@ class AppContainer(
 
     private val getAppEstimateUseCase by lazy {
         GetAppEstimateUseCase()
+    }
+
+    val getAverageSessionDurationUseCase by lazy {
+        GetAverageSessionDurationUseCase(
+            sessionRepository = sessionRepository
+        )
     }
 
     val timerRepository: TimerRepositoryImpl by lazy {

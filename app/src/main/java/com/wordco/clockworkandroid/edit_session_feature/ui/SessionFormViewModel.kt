@@ -19,6 +19,7 @@ import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -48,6 +50,7 @@ class SessionFormViewModel(
     private val getAllProfilesUseCase: GetAllProfilesUseCase,
     private val createSessionUseCase: CreateSessionUseCase,
     private val updateSessionUseCase: UpdateSessionUseCase,
+    private val getAverageSessionDurationUseCase: GetAverageSessionDurationUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SessionFormUiState>(SessionFormUiState.Retrieving(
@@ -74,6 +77,8 @@ class SessionFormViewModel(
     private lateinit var fieldDefaults: SessionFormDefaults
 
     private var profileId: Long? = null
+
+    private var getAverageSessionDuration: ((Int) -> Duration)? = null
 
     init {
         viewModelScope.launch {
@@ -103,6 +108,12 @@ class SessionFormViewModel(
                 profileId?.let { id -> profilesList.first { it.id == id } }
             )
 
+            val profileId = profileId
+            if (profileId != null) {
+                getAverageSessionDuration = getAverageSessionDurationUseCase(
+                    profileId = profileId,
+                )
+            }
 
             _uiState.update {
                 when (val state = internalState) {
@@ -121,6 +132,9 @@ class SessionFormViewModel(
                             estimate = fieldDefaults.estimate,
                             hasFieldChanges = false,
                             isEstimateEditable = true,
+                            averageSessionDuration = getAverageSessionDuration?.invoke(
+                                fieldDefaults.difficulty.toInt()
+                            ),
                         )
                     }
                     is InternalState.Edit -> {
@@ -141,6 +155,9 @@ class SessionFormViewModel(
                             estimate = session.userEstimate?.toEstimate(),
                             isEstimateEditable = session is NewTask,
                             hasFieldChanges = false,
+                            averageSessionDuration = getAverageSessionDuration?.invoke(
+                                session.difficulty
+                            ),
                         )
                     }
                 }
@@ -186,6 +203,9 @@ class SessionFormViewModel(
         _uiState.updateIfRetrieved { it.copy(
             difficulty = newDifficulty,
             hasFieldChanges = true,
+            averageSessionDuration = getAverageSessionDuration?.invoke(
+                newDifficulty.toInt()
+            )
         ) }
     }
 
@@ -253,6 +273,30 @@ class SessionFormViewModel(
                         hasFieldChanges = true,
                     )
                 }
+            }
+        }
+
+        val profileId = profileId
+        if (profileId != null) {
+            viewModelScope.launch {
+                getAverageSessionDuration = getAverageSessionDurationUseCase(
+                    profileId = profileId,
+                )
+
+                _uiState.updateIfRetrieved { uiState ->
+                    uiState.copy(
+                        averageSessionDuration = getAverageSessionDuration?.invoke(
+                            uiState.difficulty.toInt()
+                        )
+                    )
+                }
+            }
+        } else {
+            getAverageSessionDuration = null
+            _uiState.updateIfRetrieved { uiState ->
+                uiState.copy(
+                    averageSessionDuration = null
+                )
             }
         }
     }
@@ -344,17 +388,13 @@ class SessionFormViewModel(
 
                 val formMode = this[FORM_MODE_KEY] as SessionFormMode
 
-                val getSessionUseCase = appContainer.getSessionUseCase
-                val getAllProfilesUseCase = appContainer.getAllProfilesUseCase
-                val insertNewSessionUseCase = appContainer.createSessionUseCase
-                val updateSessionUseCase = appContainer.updateSessionUseCase
-
                 SessionFormViewModel(
                     formMode = formMode,
-                    getSessionUseCase = getSessionUseCase,
-                    getAllProfilesUseCase = getAllProfilesUseCase,
-                    createSessionUseCase = insertNewSessionUseCase,
-                    updateSessionUseCase = updateSessionUseCase,
+                    getSessionUseCase = appContainer.getSessionUseCase,
+                    getAllProfilesUseCase = appContainer.getAllProfilesUseCase,
+                    createSessionUseCase = appContainer.createSessionUseCase,
+                    updateSessionUseCase = appContainer.updateSessionUseCase,
+                    getAverageSessionDurationUseCase = appContainer.getAverageSessionDurationUseCase,
                 )
             }
         }

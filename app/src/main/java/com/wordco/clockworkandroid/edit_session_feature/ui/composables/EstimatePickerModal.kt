@@ -34,144 +34,169 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import java.time.Duration
 
 @Composable
 fun EstimatePickerModal(
     estimatePickerState: EstimatePickerState,
+    averageSessionDuration: Duration?,
     onValueChange: (UserEstimate) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
     Dialog(
         onDismissRequest = onDismissRequest,
     ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        EstimatePickerUi(
+            estimatePickerState = estimatePickerState,
+            averageSessionDuration = averageSessionDuration,
+            onValueChange = onValueChange,
+            onDismissRequest = onDismissRequest
+        )
+    }
+}
+
+@Composable
+private fun EstimatePickerUi(
+    estimatePickerState: EstimatePickerState,
+    averageSessionDuration: Duration?,
+    onValueChange: (UserEstimate) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
+                text = "Select Estimated Session Duration",
+                style = MaterialTheme.typography.labelMedium
+            )
+
+            if (averageSessionDuration != null) {
                 Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 20.dp),
-                    text = "Select Estimated Session Duration",
-                    style = MaterialTheme.typography.labelMedium
+                    text = "Average Duration: ${averageSessionDuration.asHHMM()}"
                 )
-                Row (
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+            }
+
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = "Hours",
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            fontFamily = LATO,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = TextStyle(
-                                letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                    Text(
+                        text = "Hours",
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = TextStyle(
+                            letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                        )
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    CircularWheelPicker(
+                        state = estimatePickerState.hoursState,
+                        modifier = Modifier.width(60.dp),
+                        itemContent = { item, isSelected ->
+                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
+                            val color by animateColorAsState(
+                                targetValue = if (isSelected) MaterialTheme.colorScheme.secondary
+                                else MaterialTheme.colorScheme.onSurface
                             )
-                        )
-
-                        Spacer(Modifier.height(8.dp))
-
-                        CircularWheelPicker(
-                            state = estimatePickerState.hoursState,
-                            modifier = Modifier.width(60.dp),
-                            itemContent = { item, isSelected ->
-                                val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
-                                val color by animateColorAsState(
-                                    targetValue = if (isSelected) MaterialTheme.colorScheme.secondary
-                                    else MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "%02d".format(item),
-                                    color = color,
-                                    fontFamily = LATO,
-                                    modifier = Modifier.graphicsLayer {
-                                        scaleX = scale
-                                        scaleY = scale
-                                    }
-                                )
-                            }
-                        )
-                    }
-
-
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(":", style = MaterialTheme.typography.headlineMedium)
-                    Spacer(modifier = Modifier.width(16.dp))
-
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Minutes",
-                            textAlign = TextAlign.Center,
-                            fontSize = 20.sp,
-                            fontFamily = LATO,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = TextStyle(
-                                letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
+                            Text(
+                                text = "%02d".format(item),
+                                color = color,
+                                fontFamily = LATO,
+                                modifier = Modifier.graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
                             )
-                        )
-
-                        Spacer(Modifier.height(8.dp))
-
-                        CircularWheelPicker(
-                            state = estimatePickerState.minutesState,
-                            modifier = Modifier.width(60.dp),
-                            itemContent = { item, isSelected ->
-                                val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
-                                val color by animateColorAsState(
-                                    targetValue = if (isSelected) MaterialTheme.colorScheme.secondary
-                                    else MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "%02d".format(item),
-                                    color = color,
-                                    fontFamily = LATO,
-                                    modifier = Modifier.graphicsLayer {
-                                        scaleX = scale
-                                        scaleY = scale
-                                    }
-                                )
-                            }
-                        )
-                    }
+                        }
+                    )
                 }
-                Row(
-                    modifier = Modifier
-                        .padding(top = 24.dp)
-                        .fillMaxWidth()
+
+
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(":", style = MaterialTheme.typography.headlineMedium)
+                Spacer(modifier = Modifier.width(16.dp))
+
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    TextButton(onClick = onDismissRequest) {
-                        Text(
-                            "Cancel",
-                            fontFamily = LATO,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary,
+                    Text(
+                        text = "Minutes",
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = TextStyle(
+                            letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                         )
-                    }
-                    TextButton(onClick = {
-                        onValueChange(estimatePickerState.currentValue)
-                        onDismissRequest()
-                    }
-                    ) {
-                        Text(
-                            "OK",
-                            fontFamily = LATO,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    CircularWheelPicker(
+                        state = estimatePickerState.minutesState,
+                        modifier = Modifier.width(60.dp),
+                        itemContent = { item, isSelected ->
+                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
+                            val color by animateColorAsState(
+                                targetValue = if (isSelected) MaterialTheme.colorScheme.secondary
+                                else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "%02d".format(item),
+                                color = color,
+                                fontFamily = LATO,
+                                modifier = Modifier.graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .padding(top = 24.dp)
+                    .fillMaxWidth()
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onDismissRequest) {
+                    Text(
+                        "Cancel",
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+                TextButton(onClick = {
+                    onValueChange(estimatePickerState.currentValue)
+                    onDismissRequest()
+                }
+                ) {
+                    Text(
+                        "OK",
+                        fontFamily = LATO,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
                 }
             }
         }
@@ -244,10 +269,11 @@ private fun EstimatePickerModalPreview() {
                     initialValue = UserEstimate(0,15)
                 )
 
-                EstimatePickerModal(
+                EstimatePickerUi(
                     estimatePickerState = state,
                     onValueChange = {},
-                    onDismissRequest = {}
+                    onDismissRequest = {},
+                    averageSessionDuration = Duration.ofSeconds(12345)
                 )
             }
         }

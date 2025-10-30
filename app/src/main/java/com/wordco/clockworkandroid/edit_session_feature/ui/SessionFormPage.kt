@@ -50,6 +50,7 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.composables.rememberE
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import kotlinx.coroutines.launch
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneOffset
@@ -300,6 +301,7 @@ private fun SessionFormPageRetrieved(
                     estimatePickerState = estimatePickerState,
                     onValueChange = { onEvent(SessionFormEvent.EstimateChanged(it)) },
                     onDismissRequest = { currentModal = null },
+                    averageSessionDuration = uiState.averageSessionDuration
                 )
             }
             null -> {}
@@ -327,7 +329,8 @@ private fun SessionFormPagePreview() {
                     hours = 2
                 ),
                 isEstimateEditable = true,
-                hasFieldChanges = false
+                hasFieldChanges = false,
+                averageSessionDuration = Duration.ofSeconds(1234)
             ),
             snackbarHostState = SnackbarHostState(),
             onBackClick = {},

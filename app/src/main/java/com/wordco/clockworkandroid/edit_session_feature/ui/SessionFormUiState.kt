@@ -2,6 +2,7 @@ package com.wordco.clockworkandroid.edit_session_feature.ui
 
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -25,5 +26,6 @@ interface SessionFormUiState {
         val estimate: UserEstimate?,
         val isEstimateEditable: Boolean,
         val hasFieldChanges: Boolean,
+        val averageSessionDuration: Duration?
     ) : SessionFormUiState
 }
