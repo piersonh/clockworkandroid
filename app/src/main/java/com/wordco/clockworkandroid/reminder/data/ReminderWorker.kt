@@ -1,10 +1,11 @@
-package com.wordco.clockworkandroid.reminder
+package com.wordco.clockworkandroid.reminder.data
 
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.wordco.clockworkandroid.MainApplication
+import com.wordco.clockworkandroid.reminder.domain.use_case.ProcessScheduledReminderUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -23,9 +23,9 @@ import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEs
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
-import com.wordco.clockworkandroid.reminder.ProcessScheduledReminderUseCase
-import com.wordco.clockworkandroid.reminder.ReminderNotificationManagerImpl
-import com.wordco.clockworkandroid.reminder.SessionReminderSchedulerImpl
+import com.wordco.clockworkandroid.reminder.data.ReminderNotificationManagerImpl
+import com.wordco.clockworkandroid.reminder.data.SessionReminderSchedulerImpl
+import com.wordco.clockworkandroid.reminder.domain.use_case.ProcessScheduledReminderUseCase
 import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetAllTodoSessionsUseCase
 import com.wordco.clockworkandroid.timer_feature.data.factory.TimerServiceIntentFactory
@@ -101,8 +101,6 @@ class AppContainer(
     val reminderNotificationManager: ReminderNotificationManager by lazy {
         ReminderNotificationManagerImpl(
             context = context,
-            permissionSignal = permissionRequestSignal,
-            coroutineScope = applicationScope,
         )
     }
 

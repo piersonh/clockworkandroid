@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.reminder
+package com.wordco.clockworkandroid.reminder.data
 
 import android.content.Context
 import androidx.work.OneTimeWorkRequestBuilder

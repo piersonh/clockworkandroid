@@ -2,7 +2,7 @@ package com.wordco.clockworkandroid
 
 import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.NewTask
-import com.wordco.clockworkandroid.core.domain.util.FakeSessionRepository
+import com.wordco.clockworkandroid.core.data.fake.FakeSessionRepository
 import junit.framework.TestCase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -25,7 +25,7 @@ class FakeSessionRepositoryTest {
             )
         )
 
-        val repo = FakeSessionRepository.Companion.factory(sessions)
+        val repo = FakeSessionRepository(sessions)
 
 
         repo.updateTask(

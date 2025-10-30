@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.reminder
+package com.wordco.clockworkandroid.reminder.data
 
 import android.Manifest
 import android.app.Notification
@@ -16,20 +16,13 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.wordco.clockworkandroid.MainActivity
 import com.wordco.clockworkandroid.R
-import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
 import com.wordco.clockworkandroid.core.domain.repository.ReminderNotificationManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 
 class ReminderNotificationManagerImpl(
     private val context: Context,
-    private val permissionSignal: PermissionRequestSignaller,
-    private val coroutineScope: CoroutineScope,
 ) : ReminderNotificationManager {
 
     private val notificationManager = NotificationManagerCompat.from(context)
-
-    private var permissionJob: Job? = null
 
     companion object {
         private const val CHANNEL_ID = "ReminderChannel_v1"
@@ -63,17 +56,6 @@ class ReminderNotificationManagerImpl(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-//            if (permissionJob == null) {
-//                permissionJob = coroutineScope.launch {
-//                    val hasPermission = permissionSignal.request(
-//                        Manifest.permission.POST_NOTIFICATIONS
-//                    )
-//
-//                    if (hasPermission) {
-//                        notificationManager.notify(NOTIFICATION_ID, notification)
-//                    }
-//                }
-//            }
             Log.w("ReminderNotifications", "Failed to show notification: no permission")
         } else {
             notificationManager.notify(notificationId, notification)

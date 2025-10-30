@@ -8,7 +8,6 @@ import com.wordco.clockworkandroid.database.data.local.entities.mapper.toReminde
 import com.wordco.clockworkandroid.database.data.util.fromReminderStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 
 class ReminderRepositoryImpl(
     private val reminderDao: ReminderDao
@@ -29,19 +28,11 @@ class ReminderRepositoryImpl(
         reminderDao.deleteAllPendingRemindersForSession(sessionId)
     }
 
-    override suspend fun updateReminder(reminder: Reminder) {
-        reminderDao.updateReminder(reminder.toReminderEntity())
-    }
-
     override suspend fun updateReminderStatus(
         reminderId: Long,
         status: Reminder.Status
     ) {
         reminderDao.updateStatus(reminderId, fromReminderStatus(status))
-    }
-
-    override fun getReminder(id: Long): Flow<Reminder> {
-        return reminderDao.getReminder(id).mapNotNull { it?.toReminder() }
     }
 
     override fun getRemindersForSession(sessionId: Long): Flow<List<Reminder>> {

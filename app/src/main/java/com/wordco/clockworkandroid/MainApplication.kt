@@ -3,9 +3,10 @@ package com.wordco.clockworkandroid
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.wordco.clockworkandroid.core.data.fake.FakeProfileRepository
+import com.wordco.clockworkandroid.core.data.fake.FakeReminderRepository
+import com.wordco.clockworkandroid.core.data.fake.FakeSessionRepository
 import com.wordco.clockworkandroid.core.domain.util.DummyData
-import com.wordco.clockworkandroid.core.domain.util.FakeProfileRepository
-import com.wordco.clockworkandroid.core.domain.util.FakeSessionRepository
 import com.wordco.clockworkandroid.database.data.local.AppDatabase
 import com.wordco.clockworkandroid.database.data.repository.ProfileRepositoryImpl
 import com.wordco.clockworkandroid.database.data.repository.ReminderRepositoryImpl
@@ -41,9 +42,7 @@ class MainApplication : Application() {
             context = context,
             sessionRepoFactory = { FakeSessionRepository(DummyData.SESSIONS) },
             profileRepoFactory = { FakeProfileRepository(DummyData.PROFILES) },
-            reminderRepoFactory = {
-                TODO("FakeReminderRepository not yet implemented")
-            }
+            reminderRepoFactory = { FakeReminderRepository() },
         )
     }
 }

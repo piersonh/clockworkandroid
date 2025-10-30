@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.reminder
+package com.wordco.clockworkandroid.reminder.domain.use_case
 
 import com.wordco.clockworkandroid.core.domain.model.Reminder
 import com.wordco.clockworkandroid.core.domain.repository.ReminderNotificationManager
