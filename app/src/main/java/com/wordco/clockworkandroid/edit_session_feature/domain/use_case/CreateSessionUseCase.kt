@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.util.UUID
 
-class InsertNewSessionUseCase (
+class CreateSessionUseCase (
     private val sessionRepository: TaskRepository,
     private val getAppEstimateUseCase: GetAppEstimateUseCase,
     private val reminderRepository: ReminderRepository,
@@ -20,7 +20,7 @@ class InsertNewSessionUseCase (
         task: NewTask,
         reminderTimes: List<Instant>
     ) {
-        if (task.userEstimate != null) {
+        val sessionId = if (task.userEstimate != null) {
             val sessionHistory = sessionRepository.getCompletedTasks().first()
                 .filter { it.userEstimate != null }
 
@@ -38,7 +38,7 @@ class InsertNewSessionUseCase (
 
             val initialReminder = Reminder(
                 reminderId = 0,
-                sessionId = task.taskId,
+                sessionId = sessionId,
                 workRequestId = workRequestId.toString(),
                 scheduledTime = reminderTime,
                 status = Reminder.Status.PENDING
@@ -48,7 +48,7 @@ class InsertNewSessionUseCase (
 
             val tempReminderData = ReminderSchedulingData(
                 reminderId = reminderId,
-                sessionId = task.taskId,
+                sessionId = sessionId,
                 message = task.name,
                 scheduledTime = reminderTime,
                 notificationId = reminderId.hashCode(),

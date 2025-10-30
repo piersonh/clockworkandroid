@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 
 class FakeSessionRepository(
     initialValues: List<Task>,
@@ -32,12 +33,12 @@ class FakeSessionRepository(
         }
     }
 
-    override suspend fun insertNewTask(task: Task) {
+    override suspend fun insertNewTask(task: Task): Long {
         if (task.taskId != 0L) {
             error("new database entries must have an id of 0")
         }
 
-        _sessions.update { sessions ->
+        val sessions = _sessions.updateAndGet { sessions ->
             val newId = sessions.maxOfOrNull {
                 it.taskId
             }?.plus(1) ?: 1
@@ -50,6 +51,8 @@ class FakeSessionRepository(
                 }
             )
         }
+
+        return sessions.maxOf { it.taskId }
     }
 
     override suspend fun updateTask(task: Task) {

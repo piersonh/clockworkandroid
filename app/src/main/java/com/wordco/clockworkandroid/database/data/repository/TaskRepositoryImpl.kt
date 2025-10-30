@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.map
 class TaskRepositoryImpl (
     private val taskDao: TaskDao,
 ) : TaskRepository {
-    override suspend fun insertNewTask(task: Task) {
-        taskDao.insertTask(task.toTaskEntity())
+    override suspend fun insertNewTask(task: Task): Long {
+        return taskDao.insertTask(task.toTaskEntity())
     }
 
     override suspend fun updateTask(task: Task) {

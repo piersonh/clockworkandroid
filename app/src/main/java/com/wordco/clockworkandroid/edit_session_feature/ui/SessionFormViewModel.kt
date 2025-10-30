@@ -18,7 +18,7 @@ import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.InsertNewSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
@@ -46,7 +46,7 @@ class SessionFormViewModel(
     formMode: SessionFormMode,
     private val getSessionUseCase: GetSessionUseCase,
     private val getAllProfilesUseCase: GetAllProfilesUseCase,
-    private val insertNewSessionUseCase: InsertNewSessionUseCase,
+    private val createSessionUseCase: CreateSessionUseCase,
     private val updateSessionUseCase: UpdateSessionUseCase,
 ) : ViewModel() {
 
@@ -272,7 +272,7 @@ class SessionFormViewModel(
                 when (internalState) {
                     is InternalState.Create -> {
                         val task = buildSession(this@run) as NewTask
-                        insertNewSessionUseCase(
+                        createSessionUseCase(
                             task = task,
                             reminderTimes = listOfNotNull(task.dueDate)
                         )
@@ -344,14 +344,14 @@ class SessionFormViewModel(
 
                 val getSessionUseCase = appContainer.getSessionUseCase
                 val getAllProfilesUseCase = appContainer.getAllProfilesUseCase
-                val insertNewSessionUseCase = appContainer.insertNewSessionUseCase
+                val insertNewSessionUseCase = appContainer.createSessionUseCase
                 val updateSessionUseCase = appContainer.updateSessionUseCase
 
                 SessionFormViewModel(
                     formMode = formMode,
                     getSessionUseCase = getSessionUseCase,
                     getAllProfilesUseCase = getAllProfilesUseCase,
-                    insertNewSessionUseCase = insertNewSessionUseCase,
+                    createSessionUseCase = insertNewSessionUseCase,
                     updateSessionUseCase = updateSessionUseCase,
                 )
             }

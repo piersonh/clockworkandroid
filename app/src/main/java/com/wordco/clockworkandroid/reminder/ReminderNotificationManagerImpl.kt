@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -65,8 +66,10 @@ class ReminderNotificationManagerImpl(
 //                    }
 //                }
 //            }
+            Log.w("ReminderNotifications", "Failed to show notification: no permission")
         } else {
             notificationManager.notify(notificationId, notification)
+            Log.i("ReminderNotifications", "Reminder Notification Shown")
         }
     }
 

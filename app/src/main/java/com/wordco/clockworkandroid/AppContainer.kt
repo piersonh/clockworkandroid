@@ -12,10 +12,10 @@ import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.CreateProfileUseCase
-import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.GetProfileUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.InsertNewSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
@@ -162,8 +162,8 @@ class AppContainer(
         )
     }
 
-    val insertNewSessionUseCase: InsertNewSessionUseCase by lazy {
-        InsertNewSessionUseCase(
+    val createSessionUseCase: CreateSessionUseCase by lazy {
+        CreateSessionUseCase(
             sessionRepository = sessionRepository,
             getAppEstimateUseCase = getAppEstimateUseCase,
             reminderRepository = reminderRepository,

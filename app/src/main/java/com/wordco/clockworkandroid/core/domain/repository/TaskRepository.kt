@@ -10,7 +10,7 @@ interface TaskRepository {
     /**
      * Inserts only the properties associated with the task, not the Segments or Markers.
      * */
-    suspend fun insertNewTask(task: Task)
+    suspend fun insertNewTask(task: Task): Long
 
     suspend fun updateTask(task: Task)
 

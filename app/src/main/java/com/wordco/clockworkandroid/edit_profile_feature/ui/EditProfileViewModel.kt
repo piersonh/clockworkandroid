@@ -13,7 +13,7 @@ import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.GetProfileUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableSharedFlow
