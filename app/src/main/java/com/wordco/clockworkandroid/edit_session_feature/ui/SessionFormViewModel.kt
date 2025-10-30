@@ -281,7 +281,9 @@ class SessionFormViewModel(
                         val newTask = buildSession(this@run)
                         updateSessionUseCase(
                             newTask,
-                            reminderTimes = listOfNotNull(newTask.dueDate),
+                            reminderTimes = listOfNotNull(
+                                newTask.dueDate.takeIf { newTask !is CompletedTask }
+                            ),
                         )
                     }
                 }

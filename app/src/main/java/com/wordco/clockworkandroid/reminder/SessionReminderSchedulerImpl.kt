@@ -47,7 +47,7 @@ class SessionReminderSchedulerImpl (
     }
 
     override fun cancelAllForSession(sessionId: Long) {
-        val sessionTag = "task_$sessionId"
+        val sessionTag = "session_$sessionId"
         workManager.cancelAllWorkByTag(sessionTag)
     }
 }
