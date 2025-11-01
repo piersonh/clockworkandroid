@@ -108,6 +108,7 @@ private fun EstimatePickerUi(
                     CircularWheelPicker(
                         state = estimatePickerState.hoursState,
                         modifier = Modifier.width(60.dp),
+                        scrollMultiplier = 1.5f,
                         itemContent = { item, isSelected ->
                             val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
                             val color by animateColorAsState(
@@ -153,6 +154,7 @@ private fun EstimatePickerUi(
                     CircularWheelPicker(
                         state = estimatePickerState.minutesState,
                         modifier = Modifier.width(60.dp),
+                        scrollMultiplier = 1.5f,
                         itemContent = { item, isSelected ->
                             val scale by animateFloatAsState(targetValue = if (isSelected) 1.75f else 1f)
                             val color by animateColorAsState(
