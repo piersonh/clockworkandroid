@@ -54,15 +54,20 @@ class TaskRepositoryImpl (
 
     override fun getCompletedTasks(): Flow<List<CompletedTask>> {
         return taskDao
-            .getCompletedTasksWithExecutionData()
-            .map { todoSessions ->
-                todoSessions.mapNotNull { it.toTask() as? CompletedTask }
+            .getCompletedTasksWithExecutionData().map { sessions ->
+                sessions.mapNotNull { it.toTask() as? CompletedTask }
             }
     }
 
     override fun getSessionsForProfile(profileId: Long): Flow<List<Task>> {
         return taskDao.getSessionsForProfile(profileId).map { taskList ->
             taskList.map { it.toTask() }
+        }
+    }
+
+    override fun getCompletedSessionsForProfile(profileId: Long): Flow<List<CompletedTask>> {
+        return taskDao.getCompletedSessionsForProfile(profileId).map { sessions ->
+            sessions.mapNotNull { it.toTask() as? CompletedTask }
         }
     }
 

@@ -84,6 +84,10 @@ interface TaskDao {
     fun getSessionsForProfile(profileId: Long) : Flow<List<TaskWithExecutionDataObject>>
 
 
+    @Transaction
+    @Query("SELECT * FROM TaskEntity WHERE profileId = :profileId AND status = 2")
+    fun getCompletedSessionsForProfile(profileId: Long) : Flow<List<TaskWithExecutionDataObject>>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertMarker(toMarkerEntity: MarkerEntity)
 

@@ -301,7 +301,8 @@ private fun SessionFormPageRetrieved(
                     estimatePickerState = estimatePickerState,
                     onValueChange = { onEvent(SessionFormEvent.EstimateChanged(it)) },
                     onDismissRequest = { currentModal = null },
-                    averageSessionDuration = uiState.averageSessionDuration
+                    averageSessionDuration = uiState.averageSessionDuration,
+                    averageEstimateError = uiState.averageEstimateError,
                 )
             }
             null -> {}
@@ -330,7 +331,8 @@ private fun SessionFormPagePreview() {
                 ),
                 isEstimateEditable = true,
                 hasFieldChanges = false,
-                averageSessionDuration = Duration.ofSeconds(1234)
+                averageSessionDuration = Duration.ofSeconds(1234),
+                averageEstimateError = null
             ),
             snackbarHostState = SnackbarHostState(),
             onBackClick = {},

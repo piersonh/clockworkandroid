@@ -26,6 +26,7 @@ interface SessionFormUiState {
         val estimate: UserEstimate?,
         val isEstimateEditable: Boolean,
         val hasFieldChanges: Boolean,
-        val averageSessionDuration: Duration?
+        val averageSessionDuration: Duration?,
+        val averageEstimateError: Double?,
     ) : SessionFormUiState
 }

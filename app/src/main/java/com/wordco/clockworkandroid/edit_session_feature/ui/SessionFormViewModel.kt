@@ -19,6 +19,7 @@ import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
@@ -51,6 +52,7 @@ class SessionFormViewModel(
     private val createSessionUseCase: CreateSessionUseCase,
     private val updateSessionUseCase: UpdateSessionUseCase,
     private val getAverageSessionDurationUseCase: GetAverageSessionDurationUseCase,
+    private val getAverageEstimateErrorUseCase: GetAverageEstimateErrorUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SessionFormUiState>(SessionFormUiState.Retrieving(
@@ -79,6 +81,8 @@ class SessionFormViewModel(
     private var profileId: Long? = null
 
     private var getAverageSessionDuration: ((Int) -> Duration)? = null
+
+    private var getAverageEstimateError: ((Int) -> Double)? = null
 
     init {
         viewModelScope.launch {
@@ -113,6 +117,10 @@ class SessionFormViewModel(
                 getAverageSessionDuration = getAverageSessionDurationUseCase(
                     profileId = profileId,
                 )
+
+                getAverageEstimateError = getAverageEstimateErrorUseCase(
+                    profileId = profileId,
+                )
             }
 
             _uiState.update {
@@ -133,6 +141,9 @@ class SessionFormViewModel(
                             hasFieldChanges = false,
                             isEstimateEditable = true,
                             averageSessionDuration = getAverageSessionDuration?.invoke(
+                                fieldDefaults.difficulty.toInt()
+                            ),
+                            averageEstimateError = getAverageEstimateError?.invoke(
                                 fieldDefaults.difficulty.toInt()
                             ),
                         )
@@ -156,6 +167,9 @@ class SessionFormViewModel(
                             isEstimateEditable = session is NewTask,
                             hasFieldChanges = false,
                             averageSessionDuration = getAverageSessionDuration?.invoke(
+                                session.difficulty
+                            ),
+                            averageEstimateError = getAverageEstimateError?.invoke(
                                 session.difficulty
                             ),
                         )
@@ -204,6 +218,9 @@ class SessionFormViewModel(
             difficulty = newDifficulty,
             hasFieldChanges = true,
             averageSessionDuration = getAverageSessionDuration?.invoke(
+                newDifficulty.toInt()
+            ),
+            averageEstimateError = getAverageEstimateError?.invoke(
                 newDifficulty.toInt()
             )
         ) }
@@ -282,20 +299,28 @@ class SessionFormViewModel(
                 getAverageSessionDuration = getAverageSessionDurationUseCase(
                     profileId = profileId,
                 )
+                getAverageEstimateError = getAverageEstimateErrorUseCase(
+                    profileId = profileId
+                )
 
                 _uiState.updateIfRetrieved { uiState ->
                     uiState.copy(
                         averageSessionDuration = getAverageSessionDuration?.invoke(
                             uiState.difficulty.toInt()
-                        )
+                        ),
+                        averageEstimateError = getAverageEstimateError?.invoke(
+                            uiState.difficulty.toInt()
+                        ),
                     )
                 }
             }
         } else {
             getAverageSessionDuration = null
+            getAverageEstimateError = null
             _uiState.updateIfRetrieved { uiState ->
                 uiState.copy(
-                    averageSessionDuration = null
+                    averageSessionDuration = null,
+                    averageEstimateError = null,
                 )
             }
         }
@@ -395,6 +420,7 @@ class SessionFormViewModel(
                     createSessionUseCase = appContainer.createSessionUseCase,
                     updateSessionUseCase = appContainer.updateSessionUseCase,
                     getAverageSessionDurationUseCase = appContainer.getAverageSessionDurationUseCase,
+                    getAverageEstimateErrorUseCase = appContainer.getAverageEstimateErrorUseCase,
                 )
             }
         }

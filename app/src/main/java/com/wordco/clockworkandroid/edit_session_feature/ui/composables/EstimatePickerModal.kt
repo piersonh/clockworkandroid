@@ -37,11 +37,13 @@ import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.Duration
+import kotlin.math.abs
 
 @Composable
 fun EstimatePickerModal(
     estimatePickerState: EstimatePickerState,
     averageSessionDuration: Duration?,
+    averageEstimateError: Double?,
     onValueChange: (UserEstimate) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
@@ -51,6 +53,7 @@ fun EstimatePickerModal(
         EstimatePickerUi(
             estimatePickerState = estimatePickerState,
             averageSessionDuration = averageSessionDuration,
+            averageEstimateError = averageEstimateError,
             onValueChange = onValueChange,
             onDismissRequest = onDismissRequest
         )
@@ -61,6 +64,7 @@ fun EstimatePickerModal(
 private fun EstimatePickerUi(
     estimatePickerState: EstimatePickerState,
     averageSessionDuration: Duration?,
+    averageEstimateError: Double?,
     onValueChange: (UserEstimate) -> Unit,
     onDismissRequest: () -> Unit,
 ) {
@@ -80,6 +84,21 @@ private fun EstimatePickerUi(
             if (averageSessionDuration != null) {
                 Text(
                     text = "Average Duration: ${averageSessionDuration.asHHMM()}"
+                )
+            }
+
+            if (averageEstimateError != null) {
+                val percentage = averageEstimateError * 100
+                val roundedPercentage = abs(percentage).toInt()
+
+                val message = when {
+                    percentage > 0 -> "$roundedPercentage% Overestimate"
+                    percentage < 0 -> "$roundedPercentage% Underestimate"
+                    else -> "0%"
+                }
+
+                Text(
+                    text = "Average Error: $message"
                 )
             }
 
@@ -275,7 +294,8 @@ private fun EstimatePickerModalPreview() {
                     estimatePickerState = state,
                     onValueChange = {},
                     onDismissRequest = {},
-                    averageSessionDuration = Duration.ofSeconds(12345)
+                    averageSessionDuration = Duration.ofSeconds(12345),
+                    averageEstimateError = 0.3
                 )
             }
         }

@@ -26,6 +26,8 @@ interface TaskRepository {
 
     fun getSessionsForProfile(profileId: Long) : Flow<List<Task>>
 
+    fun getCompletedSessionsForProfile(profileId: Long) : Flow<List<CompletedTask>>
+
     suspend fun getActiveTaskId() : Long?
 
     suspend fun insertSegment(segment: Segment)

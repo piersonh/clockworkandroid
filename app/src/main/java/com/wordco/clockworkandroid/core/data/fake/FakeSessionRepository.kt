@@ -106,6 +106,13 @@ class FakeSessionRepository(
         }
     }
 
+    override fun getCompletedSessionsForProfile(profileId: Long): Flow<List<CompletedTask>> {
+        return _sessions.map { map ->
+            map.values.filter { it.profileId == profileId }
+                .filterIsInstance<CompletedTask>()
+        }
+    }
+
     override suspend fun getActiveTaskId(): Long? {
         return _sessions.value.values.firstOrNull {
             it is StartedTask && it.segments.last().type == Segment.Type.WORK
