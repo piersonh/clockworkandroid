@@ -11,7 +11,7 @@ class GetAverageSessionDurationUseCase(
     private val sessionRepository: TaskRepository,
 ) {
     companion object {
-        private val RECENCY_WINDOW = Duration.ofDays(60)
+        private val RECENCY_WINDOW = Duration.ofDays(120)
     }
 
     suspend operator fun invoke(profileId: Long): ((difficulty: Int) -> Duration)? {
@@ -20,10 +20,10 @@ class GetAverageSessionDurationUseCase(
             .filter { it.completedAt > recency }
             .sortedByDescending { it.completedAt }
 
-        if (sessions.size < 2) return null
+        if (sessions.isEmpty()) return null
 
         val firstDifficulty = sessions.first().difficulty
-        if (sessions.any { it.difficulty != firstDifficulty }) {
+        if (sessions.size >= 2 && sessions.any { it.difficulty != firstDifficulty }) {
             val results = getLinearRegression(sessions)
 
             return { difficulty ->
@@ -42,7 +42,7 @@ class GetAverageSessionDurationUseCase(
 
 
     private fun getLinearRegression(sessions: List<CompletedTask>): LinearRegressionResults {
-        val regression = SimpleRegression()
+        val regression = SimpleRegression(true)
 
         for (session in sessions) {
             regression.addData(
@@ -51,11 +51,28 @@ class GetAverageSessionDurationUseCase(
             )
         }
 
-        return LinearRegressionResults(
-            baseTime = regression.intercept,
-            difficultyFactor = regression.slope,
-            rSquared = regression.rSquare
-        )
+        if (regression.intercept >= 0) {
+            return LinearRegressionResults(
+                baseTime = regression.intercept,
+                difficultyFactor = regression.slope,
+                rSquared = regression.rSquare
+            )
+        } else {
+            // redo regression to force all points to be non-negative
+            val noInterceptRegression = SimpleRegression(false)
+            for (session in sessions) {
+                noInterceptRegression.addData(
+                    session.difficulty.toDouble(),
+                    session.totalTime.seconds.toDouble()
+                )
+            }
+
+            return LinearRegressionResults(
+                baseTime = 0.0,
+                difficultyFactor = noInterceptRegression.slope,
+                rSquared = noInterceptRegression.rSquare
+            )
+        }
     }
 
     private data class LinearRegressionResults(

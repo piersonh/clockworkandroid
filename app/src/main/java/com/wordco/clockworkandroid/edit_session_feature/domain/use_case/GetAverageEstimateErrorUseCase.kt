@@ -20,10 +20,10 @@ class GetAverageEstimateErrorUseCase(
             .filter { it.completedAt > recency && it.userEstimate != null }
             .sortedByDescending { it.completedAt }
 
-        if (sessions.size < 2) return null
+        if (sessions.isEmpty()) return null
 
         val firstDifficulty = sessions.first().difficulty
-        if (sessions.any { it.difficulty != firstDifficulty }) {
+        if (sessions.size >= 2 && sessions.any { it.difficulty != firstDifficulty }) {
             val results = getLinearRegression(sessions)
 
             return { difficulty ->

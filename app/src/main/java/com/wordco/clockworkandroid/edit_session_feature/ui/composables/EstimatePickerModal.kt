@@ -102,6 +102,10 @@ private fun EstimatePickerUi(
                 )
             }
 
+            if (averageSessionDuration != null || averageEstimateError != null) {
+                Spacer(Modifier.height(20.dp))
+            }
+
             Row (
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,

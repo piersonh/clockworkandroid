@@ -49,6 +49,7 @@ import com.wordco.clockworkandroid.edit_session_feature.ui.composables.TimerPick
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.rememberEstimatePickerState
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.Modal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
@@ -141,7 +142,9 @@ private fun SessionFormPageRetrieved(
         initialMinute = uiState.dueTime?.minute ?: 0
     )
     val estimatePickerState = rememberEstimatePickerState(
-        initialValue = uiState.estimate ?: UserEstimate(0,0)
+        initialValue = uiState.estimate
+            ?: uiState.averageSessionDuration?.toEstimate()
+            ?: UserEstimate(0,0)
     )
     var currentModal by remember { mutableStateOf<Modal?>(null) }
     val onBackClickCheckChanges = {
@@ -151,6 +154,8 @@ private fun SessionFormPageRetrieved(
             onBackClick()
         }
     }
+
+    // update displayed values on changes
 
     LaunchedEffect(uiState.dueDate) {
         uiState.dueDate?.let {
@@ -165,8 +170,10 @@ private fun SessionFormPageRetrieved(
         }
     }
 
-    LaunchedEffect(uiState.estimate) {
-        val value = uiState.estimate ?: UserEstimate(0, 0)
+    LaunchedEffect(uiState.estimate, uiState.averageSessionDuration) {
+        val value = uiState.estimate
+            ?: uiState.averageSessionDuration?.toEstimate()
+            ?: UserEstimate(0,0)
 
         val hoursState = estimatePickerState.hoursState
         val newHourIndex = hoursState.items.indexOf(value.hours)

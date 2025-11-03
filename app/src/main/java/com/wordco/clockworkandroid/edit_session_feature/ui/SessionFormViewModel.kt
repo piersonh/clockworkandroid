@@ -24,7 +24,6 @@ import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAvera
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.getFieldDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
@@ -44,6 +43,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlin.random.Random
 
 class SessionFormViewModel(
     formMode: SessionFormMode,
@@ -108,10 +108,6 @@ class SessionFormViewModel(
                 }
             }
 
-            fieldDefaults = getFieldDefaults(
-                profileId?.let { id -> profilesList.first { it.id == id } }
-            )
-
             val profileId = profileId
             if (profileId != null) {
                 getAverageSessionDuration = getAverageSessionDurationUseCase(
@@ -122,6 +118,12 @@ class SessionFormViewModel(
                     profileId = profileId,
                 )
             }
+
+            fieldDefaults = getFieldDefaults(
+                profileId?.let { id -> profilesList.first { it.id == id } }
+            )
+
+            println(fieldDefaults.difficulty.toInt())
 
             _uiState.update {
                 when (val state = internalState) {
@@ -185,6 +187,33 @@ class SessionFormViewModel(
         }
     }
 
+
+    fun getFieldDefaults(
+        profile: Profile?
+    ): SessionFormDefaults {
+        return if (profile == null) {
+            SessionFormDefaults(
+                taskName = "",
+                profileName = null,
+                colorSliderPos = Random.Default.nextFloat(),
+                difficulty = 0f,
+                dueTime = LocalTime.of(23, 59),
+                estimate = null
+            )
+        } else {
+            SessionFormDefaults(
+                // TODO replace this with a truth from the database so that the quantity
+                //  is retained after sessions are deleted or switched profiles
+                taskName = "${profile.name} ${profile.sessions.size + 1}",
+                profileName = profile.name,
+                colorSliderPos = profile.color.hue().div(360),
+                difficulty = profile.defaultDifficulty.toFloat(),
+                dueTime = LocalTime.of(23, 59),
+                estimate = null
+            )
+        }
+    }
+
     fun onEvent(event: SessionFormEvent) {
         when(event) {
             is SessionFormEvent.ColorSliderChanged -> onColorSliderChange(event.position)
@@ -214,16 +243,18 @@ class SessionFormViewModel(
     }
 
     private fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateIfRetrieved { it.copy(
-            difficulty = newDifficulty,
-            hasFieldChanges = true,
-            averageSessionDuration = getAverageSessionDuration?.invoke(
-                newDifficulty.toInt()
-            ),
-            averageEstimateError = getAverageEstimateError?.invoke(
-                newDifficulty.toInt()
+        _uiState.updateIfRetrieved {
+            it.copy(
+                difficulty = newDifficulty,
+                hasFieldChanges = true,
+                averageSessionDuration = getAverageSessionDuration?.invoke(
+                    newDifficulty.toInt()
+                ),
+                averageEstimateError = getAverageEstimateError?.invoke(
+                    newDifficulty.toInt()
+                ),
             )
-        ) }
+        }
     }
 
     private fun onDueDateChange(newDate: Long?) {
@@ -253,75 +284,74 @@ class SessionFormViewModel(
     private fun onProfileChange(newProfileId: Long?) {
         if (newProfileId == profileId) return
 
-        _uiState.updateIfRetrieved { uiState ->
+        viewModelScope.launch {
 
-            profileId = newProfileId
             val oldDefaults = fieldDefaults
+            profileId = newProfileId
+
+            if (newProfileId != null) {
+                getAverageSessionDuration = getAverageSessionDurationUseCase(
+                    profileId = newProfileId,
+                )
+
+                getAverageEstimateError = getAverageEstimateErrorUseCase(
+                    profileId = newProfileId,
+                )
+            } else {
+                getAverageSessionDuration = null
+                getAverageEstimateError = null
+            }
+
+
             fieldDefaults = getFieldDefaults(
                 newProfileId?.let { profiles.value.first { it.id == newProfileId } }
             )
+
             val profileName = fieldDefaults.profileName
 
-            when(internalState) {
-                is InternalState.Create -> {
-                    val taskName = if (uiState.taskName == oldDefaults.taskName) {
-                        fieldDefaults.taskName
-                    } else uiState.taskName
-
-                    val colorSliderPos = if (uiState.colorSliderPos == oldDefaults.colorSliderPos) {
-                        fieldDefaults.colorSliderPos
-                    } else uiState.colorSliderPos
-
-                    val difficulty = if (uiState.difficulty == oldDefaults.difficulty) {
-                        fieldDefaults.difficulty
-                    } else uiState.difficulty
-
-                    uiState.copy(
-                        profileName = profileName,
-                        taskName = taskName,
-                        colorSliderPos = colorSliderPos,
-                        difficulty = difficulty,
-                        hasFieldChanges = true,
-                    )
-                }
-                is InternalState.Edit -> {
-                    uiState.copy(
-                        profileName = profileName,
-                        hasFieldChanges = true,
-                    )
-                }
-            }
-        }
-
-        val profileId = profileId
-        if (profileId != null) {
-            viewModelScope.launch {
-                getAverageSessionDuration = getAverageSessionDurationUseCase(
-                    profileId = profileId,
-                )
-                getAverageEstimateError = getAverageEstimateErrorUseCase(
-                    profileId = profileId
-                )
-
-                _uiState.updateIfRetrieved { uiState ->
-                    uiState.copy(
-                        averageSessionDuration = getAverageSessionDuration?.invoke(
-                            uiState.difficulty.toInt()
-                        ),
-                        averageEstimateError = getAverageEstimateError?.invoke(
-                            uiState.difficulty.toInt()
-                        ),
-                    )
-                }
-            }
-        } else {
-            getAverageSessionDuration = null
-            getAverageEstimateError = null
             _uiState.updateIfRetrieved { uiState ->
-                uiState.copy(
-                    averageSessionDuration = null,
-                    averageEstimateError = null,
-                )
+
+                when(internalState) {
+                    is InternalState.Create -> {
+                        val taskName = if (uiState.taskName == oldDefaults.taskName) {
+                            fieldDefaults.taskName
+                        } else uiState.taskName
+
+                        val colorSliderPos = if (uiState.colorSliderPos == oldDefaults.colorSliderPos) {
+                            fieldDefaults.colorSliderPos
+                        } else uiState.colorSliderPos
+
+                        val difficulty = if (uiState.difficulty == oldDefaults.difficulty) {
+                            fieldDefaults.difficulty
+                        } else uiState.difficulty
+
+                        uiState.copy(
+                            profileName = profileName,
+                            taskName = taskName,
+                            colorSliderPos = colorSliderPos,
+                            difficulty = difficulty,
+                            hasFieldChanges = true,
+                            averageSessionDuration = getAverageSessionDuration?.invoke(
+                                difficulty.toInt()
+                            ),
+                            averageEstimateError = getAverageEstimateError?.invoke(
+                                difficulty.toInt()
+                            ),
+                        )
+                    }
+                    is InternalState.Edit -> {
+                        uiState.copy(
+                            profileName = profileName,
+                            hasFieldChanges = true,
+                            averageSessionDuration = getAverageSessionDuration?.invoke(
+                                uiState.difficulty.toInt()
+                            ),
+                            averageEstimateError = getAverageEstimateError?.invoke(
+                                uiState.difficulty.toInt()
+                            ),
+                        )
+                    }
+                }
             }
         }
     }

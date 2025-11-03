@@ -167,7 +167,7 @@ fun SessionForm(
         OutlinedTextFieldButton(
             value = uiState.estimate?.let {
                 "${it.hours} hours, ${it.minutes} minutes"
-            } ?: "No Estimate",
+            } ?: "Not Set",
             label = "Estimated Duration",
             onClick = onShowEstimatePicker,
             trailingIcon = if (uiState.estimate != null && uiState.isEstimateEditable) {
