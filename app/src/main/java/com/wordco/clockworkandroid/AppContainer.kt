@@ -11,6 +11,7 @@ import com.wordco.clockworkandroid.core.domain.repository.ReminderNotificationMa
 import com.wordco.clockworkandroid.core.domain.repository.ReminderRepository
 import com.wordco.clockworkandroid.core.domain.repository.SessionReminderScheduler
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
@@ -28,7 +29,6 @@ import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.
 import com.wordco.clockworkandroid.reminder.data.ReminderNotificationManagerImpl
 import com.wordco.clockworkandroid.reminder.data.SessionReminderSchedulerImpl
 import com.wordco.clockworkandroid.reminder.domain.use_case.ProcessScheduledReminderUseCase
-import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetAllTodoSessionsUseCase
 import com.wordco.clockworkandroid.timer_feature.data.factory.TimerServiceIntentFactory
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerNotificationActionProviderImpl

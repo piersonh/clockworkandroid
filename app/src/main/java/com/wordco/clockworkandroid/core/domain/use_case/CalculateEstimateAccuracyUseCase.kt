@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.domain.use_case
+package com.wordco.clockworkandroid.core.domain.use_case
 
 import java.time.Duration
 import kotlin.math.abs
@@ -13,20 +13,20 @@ import kotlin.math.abs
 class CalculateEstimateAccuracyUseCase {
 
     /**
-     * @param taskTime The actual duration the task took.
+     * @param actualTime The actual duration the task session took.
      * @param userEstimate The duration the user estimated for the task.
      * @return A [Double] representing the accuracy percentage (e.g., 95.0 for 95%).
-     * Returns 0.0 if the [taskTime] is zero to prevent division by zero.
+     * Returns 0.0 if the [actualTime] is zero to prevent division by zero.
      */
     operator fun invoke(
-        taskTime: Duration,
+        actualTime: Duration,
         userEstimate: Duration,
     ): Double {
-        if (taskTime.isZero) {
+        if (actualTime.isZero) {
             return if (userEstimate.isZero) 100.0 else 0.0
         }
 
-        val taskMillis = taskTime.toMillis().toDouble()
+        val taskMillis = actualTime.toMillis().toDouble()
         val estimateMillis = userEstimate.toMillis().toDouble()
 
         val absoluteError = abs(estimateMillis - taskMillis)
