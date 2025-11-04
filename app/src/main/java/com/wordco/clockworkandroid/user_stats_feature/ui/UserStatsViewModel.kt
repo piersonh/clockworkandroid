@@ -17,6 +17,9 @@ import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSigna
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.user_stats_feature.domain.use_case.GetAllCompletedSessionsUseCase
 import com.wordco.clockworkandroid.user_stats_feature.domain.use_case.GetAllSessionsUseCase
+import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
+import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.session_completion_feature.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
@@ -40,6 +43,7 @@ class UserStatsViewModel(
     private val getAllSessionsUseCase: GetAllSessionsUseCase,
     private val getAllProfilesUseCase: GetAllProfilesUseCase,
     private val permissionRequestSignaller: PermissionRequestSignaller
+    private val calculateEstimateAccuracyUseCase: CalculateEstimateAccuracyUseCase
 ) : AndroidViewModel(application) {
 
 
@@ -61,8 +65,16 @@ class UserStatsViewModel(
                     UserStatsUiState.Retrieved(
                         completedTasks = tasks
                             .map { it.toCompletedSessionListItem() }
+                            .sortedByDescending { it.completedAt },
+                        accuracyChartData = tasks
                             .sortedBy { it.completedAt }
-                            .reversed()
+                            .mapNotNull { session ->
+                                session.userEstimate?.let { userEstimate ->
+                                    calculateEstimateAccuracyUseCase(
+                                        session.workTime.plus(session.breakTime),
+                                        userEstimate
+                                    )
+                            }}
                     )
                 }
             }.collect { uiState ->
@@ -73,7 +85,7 @@ class UserStatsViewModel(
 
     suspend fun onExportUserData() : Result<String, ExportDataError> {
         val content = buildString {
-            appendLine("Task Profiles:")
+            appendLine("Task Templates:")
             getAllProfilesUseCase().first().forEach { profile ->
                 appendLine("$profile")
             }
@@ -175,6 +187,7 @@ class UserStatsViewModel(
                     getAllProfilesUseCase = application.appContainer.getAllProfilesUseCase,
 
                     //savedStateHandle = savedStateHandle
+                    calculateEstimateAccuracyUseCase = CalculateEstimateAccuracyUseCase()
                 )
             }
         }

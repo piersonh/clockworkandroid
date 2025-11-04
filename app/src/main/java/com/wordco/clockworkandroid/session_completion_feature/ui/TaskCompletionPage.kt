@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -33,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -248,12 +252,21 @@ private fun SessionReport(
                 .fillMaxHeight()
         ) {
 
-            Text(
+            BasicText(
                 text = uiState.name,
-                style = TextStyle(fontSize = 40.sp),
-                textAlign = TextAlign.Center,
-                modifier = Modifier,
-                color = MaterialTheme.colorScheme.onPrimary
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 24.sp,
+                    maxFontSize = 40.sp
+                ),
+                style = TextStyle(
+                    fontFamily = LATO,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 48.sp
+                ),
+                modifier = Modifier.heightIn(max=60.dp),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             Spacer(modifier = Modifier.weight(0.004f))
 

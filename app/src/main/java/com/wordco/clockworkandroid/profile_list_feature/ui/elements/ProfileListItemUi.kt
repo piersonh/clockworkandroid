@@ -48,7 +48,8 @@ fun ProfileListItemUi(
                 fontSize = 23.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 2,
             )
 
             Row(

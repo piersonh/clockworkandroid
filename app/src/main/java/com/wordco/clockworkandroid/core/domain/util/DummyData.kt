@@ -80,12 +80,12 @@ object DummyData {
             dueDate = null,
             difficulty = 1,
             color = Color.hsv(123f, 1f, 1f),
-            userEstimate = null,
+            userEstimate = Duration.ofMinutes(21),
             segments = listOf(
                 Segment(
                     segmentId = 1,
                     taskId = 7,
-                    startTime = Instant.parse("2007-12-03T10:15:30.00Z"),
+                    startTime = Instant.parse("2025-10-03T10:15:30.00Z"),
                     duration = Duration.ofSeconds(1452),
                     type = Segment.Type.WORK
                 )
@@ -93,7 +93,75 @@ object DummyData {
             markers = emptyList(),
             profileId = null,
             appEstimate = null,
-        )
+        ),
+        CompletedTask(
+            taskId = 8,
+            name = "Session 8",
+            dueDate = Instant.now(),
+            difficulty = 1,
+            color = Color.hsv(30f, 1f, 1f),
+            userEstimate = Duration.ofMinutes(45),
+            segments = listOf(
+                Segment(
+                    segmentId = 2,
+                    taskId = 8,
+                    startTime = Instant.now().minus(Duration.ofHours(1)),
+                    duration = Duration.ofMinutes(40),
+                    type = Segment.Type.WORK
+                )
+            ),
+            markers = emptyList(),
+            profileId = 1,
+            appEstimate = null,
+        ),
+        CompletedTask(
+            taskId = 9,
+            name = "Session 9",
+            dueDate = Instant.now(),
+            difficulty = 1,
+            color = Color.hsv(60f, 1f, 1f),
+            userEstimate = Duration.ofHours(1),
+            segments = listOf(
+                Segment(
+                    segmentId = 3,
+                    taskId = 9,
+                    startTime = Instant.now().minus(Duration.ofDays(1)),
+                    duration = Duration.ofMinutes(55),
+                    type = Segment.Type.WORK
+                )
+            ),
+            markers = emptyList(),
+            profileId = 2,
+            appEstimate = null,
+        ),
+        CompletedTask(
+            taskId = 10,
+            name = "Session 10",
+            dueDate = Instant.now(),
+            difficulty = 1,
+            color = Color.hsv(90f, 1f, 1f),
+            userEstimate = Duration.ofMinutes(30),
+            segments = listOf(
+                Segment(
+                    segmentId = 4,
+                    taskId = 10,
+                    startTime = Instant.now().minus(Duration.ofDays(2)),
+                    duration = Duration.ofMinutes(25),
+                    type = Segment.Type.WORK
+                ),
+                Segment(
+                    segmentId = 5,
+                    taskId = 10,
+                    startTime = Instant.now().minus(Duration.ofDays(2).plusMinutes(25)),
+                    duration = Duration.ofMinutes(5),
+                    type = Segment.Type.BREAK
+                )
+            ),
+            markers = emptyList(),
+            profileId = 1,
+            appEstimate = null,
+        ),
+
     )
 
 

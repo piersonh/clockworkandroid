@@ -97,7 +97,7 @@ private fun CreateProfilePage(
             TopAppBar(
                 title = {
                     Text(
-                        "Create Profile",
+                        "Create Template",
                         fontFamily = LATO,
                     )
 

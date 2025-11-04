@@ -45,7 +45,7 @@ fun EditProfileForm(
             onValueChange = onNameChange,
             label = {
                 Text(
-                    "Profile Name", style = TextStyle(
+                    "Template Name", style = TextStyle(
                         letterSpacing = 0.02.em // or use TextUnit(value, TextUnitType.Sp)
                     )
                 )
@@ -53,7 +53,7 @@ fun EditProfileForm(
         )
 
         ColorSlider(
-            label = "Profile Color",
+            label = "Template Color",
             value = uiState.colorSliderPos,
             onValueChange = onColorSliderChange,
         )

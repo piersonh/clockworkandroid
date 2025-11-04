@@ -77,6 +77,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation("org.apache.commons:commons-math3:3.6.1")
+    // Compose Charts
+    implementation ("io.github.ehsannarmani:compose-charts:0.2.0")
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockito.kotlin)
