@@ -1,6 +1,5 @@
 package com.wordco.clockworkandroid.user_stats_feature.ui
 
-//import ir.ehsannarmani.compose_charts.models.DotProperties
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -58,10 +57,7 @@ import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
 import ir.ehsannarmani.compose_charts.LineChart
 import ir.ehsannarmani.compose_charts.models.AnimationMode
 import ir.ehsannarmani.compose_charts.models.DotProperties
-//import ir.ehsannarmani.compose_charts.models.DotProperties
 import ir.ehsannarmani.compose_charts.models.DrawStyle
-import ir.ehsannarmani.compose_charts.models.GridProperties
-import ir.ehsannarmani.compose_charts.models.LabelProperties
 import ir.ehsannarmani.compose_charts.models.Line
 import ir.ehsannarmani.compose_charts.models.PopupProperties
 import kotlinx.coroutines.Dispatchers
