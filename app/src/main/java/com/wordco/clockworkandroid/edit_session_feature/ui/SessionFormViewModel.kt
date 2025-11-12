@@ -21,10 +21,13 @@ import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetRemindersForSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.ReminderListItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toReminderListItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -53,6 +56,7 @@ class SessionFormViewModel(
     private val updateSessionUseCase: UpdateSessionUseCase,
     private val getAverageSessionDurationUseCase: GetAverageSessionDurationUseCase,
     private val getAverageEstimateErrorUseCase: GetAverageEstimateErrorUseCase,
+    private val getRemindersForSessionUseCase: GetRemindersForSessionUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SessionFormUiState>(SessionFormUiState.Retrieving(
@@ -148,6 +152,7 @@ class SessionFormViewModel(
                             averageEstimateError = getAverageEstimateError?.invoke(
                                 fieldDefaults.difficulty.toInt()
                             ),
+                            reminder = null
                         )
                     }
                     is InternalState.Edit -> {
@@ -174,6 +179,8 @@ class SessionFormViewModel(
                             averageEstimateError = getAverageEstimateError?.invoke(
                                 session.difficulty
                             ),
+                            reminder = getRemindersForSessionUseCase(session.taskId)
+                                .first().firstOrNull()?.toReminderListItem()
                         )
                     }
                 }
@@ -198,7 +205,8 @@ class SessionFormViewModel(
                 colorSliderPos = Random.Default.nextFloat(),
                 difficulty = 0f,
                 dueTime = LocalTime.of(23, 59),
-                estimate = null
+                estimate = null,
+                reminderTime = LocalTime.of(12,0),
             )
         } else {
             SessionFormDefaults(
@@ -209,7 +217,8 @@ class SessionFormViewModel(
                 colorSliderPos = profile.color.hue().div(360),
                 difficulty = profile.defaultDifficulty.toFloat(),
                 dueTime = LocalTime.of(23, 59),
-                estimate = null
+                estimate = null,
+                reminderTime = LocalTime.of(12,0),
             )
         }
     }
@@ -224,6 +233,8 @@ class SessionFormViewModel(
             is SessionFormEvent.ProfileChanged -> onProfileChange(event.id)
             is SessionFormEvent.SaveClicked -> onSaveClick()
             is SessionFormEvent.TaskNameChanged -> onTaskNameChange(event.name)
+            is SessionFormEvent.ReminderDateChanged -> onReminderDateChange(event.date)
+            is SessionFormEvent.ReminderTimeChanged -> onReminderTimeChange(event.time)
         }
     }
 
@@ -356,6 +367,35 @@ class SessionFormViewModel(
         }
     }
 
+    private fun onReminderDateChange(newDate: Long?) {
+        _uiState.updateIfRetrieved { uiState ->
+            uiState.copy(
+                reminder = newDate?.let {
+                    val date = Instant.ofEpochMilli(newDate)
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate()
+                    uiState.reminder?.copy(scheduledDate = date)
+                        ?: ReminderListItem(
+                            scheduledDate = date,
+                            scheduledTime = fieldDefaults.reminderTime
+                        )
+                },
+                hasFieldChanges = true,
+            )
+        }
+    }
+
+    private fun onReminderTimeChange(newTime: LocalTime) {
+        _uiState.updateIfRetrieved { uiState ->
+            uiState.copy(
+                reminder = uiState.reminder?.copy(
+                    scheduledTime = newTime
+                ),
+                hasFieldChanges = true,
+            )
+        }
+    }
+
     private fun onSaveClick() {
         _uiState.getIfType<SessionFormUiState.Retrieved>()?.run {
             if (taskName.isBlank()) {
@@ -373,7 +413,12 @@ class SessionFormViewModel(
                         val task = buildSession(this@run) as NewTask
                         createSessionUseCase(
                             task = task,
-                            reminderTimes = listOfNotNull(task.dueDate)
+                            reminderTimes = listOfNotNull(
+                                reminder?.run {
+                                    LocalDateTime.of(scheduledDate, scheduledTime)
+                                        .atZone(ZoneId.systemDefault()).toInstant()
+                                }
+                            )
                         )
                     }
                     is InternalState.Edit -> {
@@ -381,7 +426,10 @@ class SessionFormViewModel(
                         updateSessionUseCase(
                             newTask,
                             reminderTimes = listOfNotNull(
-                                newTask.dueDate.takeIf { newTask !is CompletedTask }
+                                reminder?.takeIf { newTask !is CompletedTask }?.run {
+                                    LocalDateTime.of(scheduledDate, scheduledTime)
+                                        .atZone(ZoneId.systemDefault()).toInstant()
+                                }
                             ),
                         )
                     }
@@ -451,6 +499,7 @@ class SessionFormViewModel(
                     updateSessionUseCase = appContainer.updateSessionUseCase,
                     getAverageSessionDurationUseCase = appContainer.getAverageSessionDurationUseCase,
                     getAverageEstimateErrorUseCase = appContainer.getAverageEstimateErrorUseCase,
+                    getRemindersForSessionUseCase = appContainer.getRemindersForSessionUseCase,
                 )
             }
         }

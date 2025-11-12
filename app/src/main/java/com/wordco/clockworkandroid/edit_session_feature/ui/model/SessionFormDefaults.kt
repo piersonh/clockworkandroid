@@ -8,5 +8,6 @@ data class SessionFormDefaults(
     val colorSliderPos: Float,
     val difficulty: Float,
     val dueTime: LocalTime,
-    val estimate: UserEstimate?
+    val estimate: UserEstimate?,
+    val reminderTime: LocalTime,
 )

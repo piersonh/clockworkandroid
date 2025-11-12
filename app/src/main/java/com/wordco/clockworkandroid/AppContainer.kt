@@ -23,6 +23,7 @@ import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSe
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetRemindersForSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
@@ -231,6 +232,12 @@ class AppContainer(
     val deleteProfileUseCase: DeleteProfileUseCase by lazy {
         DeleteProfileUseCase(
             profileRepository = profileRepository
+        )
+    }
+    
+    val getRemindersForSessionUseCase: GetRemindersForSessionUseCase by lazy {
+        GetRemindersForSessionUseCase(
+            reminderRepository = reminderRepository,
         )
     }
 

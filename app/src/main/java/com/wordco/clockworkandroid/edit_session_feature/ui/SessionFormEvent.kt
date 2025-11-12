@@ -11,5 +11,8 @@ sealed interface SessionFormEvent {
     data class DueDateChanged(val date: Long?) : SessionFormEvent
     data class DueTimeChanged(val time: LocalTime) : SessionFormEvent
     data class EstimateChanged(val estimate: UserEstimate?) : SessionFormEvent
+
+    data class ReminderDateChanged(val date: Long?) : SessionFormEvent
+    data class ReminderTimeChanged(val time: LocalTime) : SessionFormEvent
     data object SaveClicked : SessionFormEvent
 }

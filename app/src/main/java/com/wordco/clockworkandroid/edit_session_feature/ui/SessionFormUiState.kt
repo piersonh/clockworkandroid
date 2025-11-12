@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.ReminderListItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.Duration
 import java.time.LocalDate
@@ -28,5 +29,6 @@ interface SessionFormUiState {
         val hasFieldChanges: Boolean,
         val averageSessionDuration: Duration?,
         val averageEstimateError: Double?,
+        val reminder: ReminderListItem?,
     ) : SessionFormUiState
 }

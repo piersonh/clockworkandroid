@@ -39,9 +39,11 @@ fun SessionForm(
     modifier: Modifier = Modifier,
     onEvent: (SessionFormEvent) -> Unit,
     onShowProfilePicker: () -> Unit,
-    onShowDatePicker: () -> Unit,
-    onShowTimePicker: () -> Unit,
+    onShowDueDatePicker: () -> Unit,
+    onShowDueTimePicker: () -> Unit,
     onShowEstimatePicker: () -> Unit,
+    onShowReminderDatePicker: () -> Unit,
+    onShowReminderTimePicker: () -> Unit,
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd/yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
@@ -133,8 +135,8 @@ fun SessionForm(
                         fillMaxWidth()
                     }
                 },
-                label = "Due Date",
-                onClick = onShowDatePicker,
+                label = if (uiState.dueDate == null) "Complete By" else "Complete By Date",
+                onClick = onShowDueDatePicker,
                 trailingIcon = uiState.dueDate?.let {
                     {
                         IconButton(
@@ -156,8 +158,8 @@ fun SessionForm(
                     value = uiState.dueTime!!.format(timeFormatter),
                     modifier = Modifier.width(110.dpScaledWith(16.sp))
                         .weight(2f),
-                    label = "Due Time",
-                    onClick = onShowTimePicker,
+                    label = "Complete By Time",
+                    onClick = onShowDueTimePicker,
                 )
             }
         }
@@ -189,5 +191,49 @@ fun SessionForm(
             modifier = Modifier.fillMaxWidth(),
             isEnabled = uiState.isEstimateEditable
         )
+
+        Spacer(Modifier.height(5.dp))
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextFieldButton(
+                value = uiState.reminder?.scheduledDate?.format(dateFormatter) ?: "No Reminder Set",
+                modifier = Modifier.run {
+                    if (uiState.reminder != null) {
+                        width(160.dpScaledWith(16.sp)).weight(3f)
+                    } else {
+                        fillMaxWidth()
+                    }
+                },
+                label = if (uiState.reminder == null) "Remind Me At" else "Remind Me At Date",
+                onClick = onShowReminderDatePicker,
+                trailingIcon = uiState.reminder?.let {
+                    {
+                        IconButton(
+                            onClick = { onEvent(SessionFormEvent.ReminderDateChanged(null)) }
+                        ) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Clear selected date",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(23.dpScaledWith(16.sp))
+                            )
+                        }
+                    }
+                }
+            )
+
+            if (uiState.reminder != null) {
+                OutlinedTextFieldButton(
+                    value = uiState.reminder.scheduledTime.format(timeFormatter),
+                    modifier = Modifier.width(110.dpScaledWith(16.sp))
+                        .weight(2f),
+                    label = "Remind Me At Time",
+                    onClick = onShowReminderTimePicker,
+                )
+            }
+        }
     }
 }

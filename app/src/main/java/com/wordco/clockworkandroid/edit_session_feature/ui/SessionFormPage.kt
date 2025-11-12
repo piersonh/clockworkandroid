@@ -39,6 +39,13 @@ import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.DueDateChanged
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.DueTimeChanged
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.EstimateChanged
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.ProfileChanged
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.ReminderDateChanged
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.ReminderTimeChanged
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.SaveClicked
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DatePickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EstimatePickerModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.composables.PagerAwareSlideAwayBottomBar
@@ -146,6 +153,11 @@ private fun SessionFormPageRetrieved(
             ?: uiState.averageSessionDuration?.toEstimate()
             ?: UserEstimate(0,0)
     )
+    val reminderDatePickerState = rememberDatePickerState()
+    val reminderTimePickerState = rememberTimePickerState(
+        initialHour = uiState.dueTime?.hour ?: 0,
+        initialMinute = uiState.dueTime?.minute ?: 0
+    )
     var currentModal by remember { mutableStateOf<Modal?>(null) }
     val onBackClickCheckChanges = {
         if (uiState.hasFieldChanges) {
@@ -188,6 +200,16 @@ private fun SessionFormPageRetrieved(
         }
     }
 
+    LaunchedEffect(uiState.reminder) {
+        uiState.reminder?.let {
+            dueDatePickerState.selectedDateMillis = it.scheduledDate.atStartOfDay(ZoneOffset.UTC)
+                .toInstant().toEpochMilli()
+            dueTimePickerState.hour = it.scheduledTime.hour
+            dueTimePickerState.minute = it.scheduledTime.minute
+        }
+    }
+
+
     BackHandler(enabled = uiState.hasFieldChanges) {
         currentModal = Modal.Discard
     }
@@ -219,7 +241,7 @@ private fun SessionFormPageRetrieved(
                 ) {
                     AccentRectangleTextButton(
                         onClick = {
-                            onEvent(SessionFormEvent.SaveClicked)
+                            onEvent(SaveClicked)
                         },
                         maxHeight = 56.dp,
                         aspectRatio = 1.8f
@@ -257,12 +279,15 @@ private fun SessionFormPageRetrieved(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(
                                     page = 0,
-                                    animationSpec = tween(300))
+                                    animationSpec = tween(300)
+                                )
                             }
                         },
-                        onShowDatePicker = { currentModal = Modal.Date },
-                        onShowTimePicker = { currentModal = Modal.Time },
+                        onShowDueDatePicker = { currentModal = Modal.DueDate },
+                        onShowDueTimePicker = { currentModal = Modal.DueTime },
                         onShowEstimatePicker = { currentModal = Modal.Estimate },
+                        onShowReminderDatePicker = { currentModal = Modal.ReminderDate },
+                        onShowReminderTimePicker = { currentModal = Modal.ReminderTime },
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
@@ -271,7 +296,7 @@ private fun SessionFormPageRetrieved(
                     profiles = uiState.profiles,
                     modifier = Modifier.padding(paddingValues),
                     onProfileClick = { profileId ->
-                        onEvent(SessionFormEvent.ProfileChanged(profileId))
+                        onEvent(ProfileChanged(profileId))
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(
                                 page = 1,
@@ -289,30 +314,44 @@ private fun SessionFormPageRetrieved(
                 onDismiss = { currentModal = null },
                 onConfirm = onBackClick
             )
-            Modal.Date -> {
+            Modal.DueDate -> {
                 DatePickerModal(
                     datePickerState = dueDatePickerState,
-                    onValueChange = { onEvent(SessionFormEvent.DueDateChanged(it)) },
+                    onValueChange = { onEvent(DueDateChanged(it)) },
                     onDismissRequest = { currentModal = null },
                 )
             }
-            Modal.Time -> {
+            Modal.DueTime -> {
                 TimerPickerModal(
                     timePickerState = dueTimePickerState,
-                    onValueChange = { onEvent(SessionFormEvent.DueTimeChanged(it)) },
+                    onValueChange = { onEvent(DueTimeChanged(it)) },
                     onDismissRequest = { currentModal = null },
                 )
             }
             Modal.Estimate -> {
                 EstimatePickerModal(
                     estimatePickerState = estimatePickerState,
-                    onValueChange = { onEvent(SessionFormEvent.EstimateChanged(it)) },
+                    onValueChange = { onEvent(EstimateChanged(it)) },
                     onDismissRequest = { currentModal = null },
                     averageSessionDuration = uiState.averageSessionDuration,
                     averageEstimateError = uiState.averageEstimateError,
                 )
             }
             null -> {}
+            Modal.ReminderDate -> {
+                DatePickerModal(
+                    datePickerState = reminderDatePickerState,
+                    onValueChange = { onEvent(ReminderDateChanged(it)) },
+                    onDismissRequest = { currentModal = null },
+                )
+            }
+            Modal.ReminderTime -> {
+                TimerPickerModal(
+                    timePickerState = reminderTimePickerState,
+                    onValueChange = { onEvent(ReminderTimeChanged(it)) },
+                    onDismissRequest = { currentModal = null },
+                )
+            }
         }
     }
 }
@@ -339,7 +378,8 @@ private fun SessionFormPagePreview() {
                 isEstimateEditable = true,
                 hasFieldChanges = false,
                 averageSessionDuration = Duration.ofSeconds(1234),
-                averageEstimateError = null
+                averageEstimateError = null,
+                reminder = null,
             ),
             snackbarHostState = SnackbarHostState(),
             onBackClick = {},
