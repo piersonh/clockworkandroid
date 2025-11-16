@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp") version "2.2.0-2.0.2" // https://github.com/google/ksp/releases
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
+    id("com.google.devtools.ksp") version "2.2.21-2.0.4" // https://github.com/google/ksp/releases
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.21"
 }
 
 android {
@@ -16,8 +16,8 @@ android {
         applicationId = "com.wordco.clockworkandroid"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "m5-2025-10-15-db2-ui5"
+        versionCode = 5
+        versionName = "m6-2025-10-30-db3-ui5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +38,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    sourceSets {
+        getByName("androidTest") {
+            assets.srcDirs(files("$projectDir/schemas"))
+        }
+    }
 }
 
 kotlin {
@@ -54,6 +60,7 @@ ksp {
 
 dependencies {
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.process)
     ksp(libs.androidx.room.compiler)
@@ -68,12 +75,21 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation("org.apache.commons:commons-math3:3.6.1")
+    // Compose Charts
+    implementation ("io.github.ehsannarmani:compose-charts:0.2.0")
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.inline)
+    androidTestImplementation(libs.kotlinx.serialization.json)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.truth)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

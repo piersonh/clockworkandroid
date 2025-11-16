@@ -10,7 +10,7 @@ interface TaskRepository {
     /**
      * Inserts only the properties associated with the task, not the Segments or Markers.
      * */
-    suspend fun insertNewTask(task: Task)
+    suspend fun insertNewTask(task: Task): Long
 
     suspend fun updateTask(task: Task)
 
@@ -25,6 +25,8 @@ interface TaskRepository {
     fun getCompletedTasks() : Flow<List<CompletedTask>>
 
     fun getSessionsForProfile(profileId: Long) : Flow<List<Task>>
+
+    fun getCompletedSessionsForProfile(profileId: Long) : Flow<List<CompletedTask>>
 
     suspend fun getActiveTaskId() : Long?
 

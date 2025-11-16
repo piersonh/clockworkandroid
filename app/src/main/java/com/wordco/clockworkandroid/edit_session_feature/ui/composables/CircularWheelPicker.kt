@@ -2,6 +2,8 @@ package com.wordco.clockworkandroid.edit_session_feature.ui.composables
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -19,7 +21,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.flow.drop
@@ -43,6 +49,7 @@ import kotlin.math.abs
 fun <T> CircularWheelPicker(
     modifier: Modifier = Modifier,
     state: WheelPickerState<T>,
+    scrollMultiplier: Float = 1f,
     itemContent: @Composable (item: T, isSelected: Boolean) -> Unit,
 ) {
     val totalHeight = state.itemHeight * state.numberOfDisplayedItems
@@ -67,11 +74,43 @@ fun <T> CircularWheelPicker(
             }
     }
 
+    // responsible for augmenting the list scroll amount to user finger drag amount
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                return if (source == NestedScrollSource.UserInput) {
+                    available.copy(y = available.y * -scrollMultiplier)
+                } else {
+                    Offset.Zero
+                }
+            }
+        }
+    }
+
+
+    val snappingFlingBehavior = rememberSnapFlingBehavior(lazyListState = state.listState)
+
+    val cappedSnappingFlingBehavior = remember(snappingFlingBehavior) {
+        object : FlingBehavior {
+            override suspend fun ScrollScope.performFling(
+                initialVelocity: Float
+            ): Float {
+                return with(snappingFlingBehavior) {
+                    performFling(initialVelocity.coerceIn(
+                        minimumValue = -5000f,
+                        maximumValue = 5000f,
+                    ))
+                }
+            }
+        }
+    }
+
 
     LazyColumn(
-        modifier = modifier.height(totalHeight),
+        modifier = modifier.height(totalHeight)
+            .nestedScroll(nestedScrollConnection),
         state = state.listState,
-        flingBehavior = rememberSnapFlingBehavior(lazyListState = state.listState)
+        flingBehavior = cappedSnappingFlingBehavior
     ) {
         items(count = Int.MAX_VALUE, key = { it }) { index ->
             // prevent index out of bounds if items list is empty

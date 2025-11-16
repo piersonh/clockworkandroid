@@ -27,28 +27,23 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
-import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent
 import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormUiState
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
 import java.time.format.DateTimeFormatter
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionForm(
-    uiState: SessionFormUiState,
+    uiState: SessionFormUiState.Retrieved,
     modifier: Modifier = Modifier,
+    onEvent: (SessionFormEvent) -> Unit,
     onShowProfilePicker: () -> Unit,
-    onTaskNameChange: (String) -> Unit,
-    onColorSliderChange: (Float) -> Unit,
-    onDifficultyChange: (Float) -> Unit,
-    onShowDatePicker: () -> Unit,
-    onDueDateChange: (Long?) -> Unit,
-    onShowTimePicker: () -> Unit,
+    onShowDueDatePicker: () -> Unit,
+    onShowDueTimePicker: () -> Unit,
     onShowEstimatePicker: () -> Unit,
-    onEstimateChange: (UserEstimate?) -> Unit,
+    onShowReminderDatePicker: () -> Unit,
+    onShowReminderTimePicker: () -> Unit,
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd/yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
@@ -83,7 +78,7 @@ fun SessionForm(
             value = uiState.taskName,
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            onValueChange = onTaskNameChange,
+            onValueChange = { onEvent(SessionFormEvent.TaskNameChanged(it)) },
             label = {
                 Text(
                     "Assignment Name",
@@ -95,7 +90,7 @@ fun SessionForm(
             trailingIcon = {
                 if (uiState.taskName.isNotEmpty()) {
                     IconButton(
-                        onClick = { onTaskNameChange("") }
+                        onClick = { onEvent(SessionFormEvent.TaskNameChanged("")) },
                     ) {
                         Icon(
                             Icons.Default.Clear,
@@ -113,7 +108,7 @@ fun SessionForm(
         ColorSlider(
             label = "Session Color",
             value = uiState.colorSliderPos,
-            onValueChange = onColorSliderChange,
+            onValueChange = { onEvent(SessionFormEvent.ColorSliderChanged(it)) },
         )
 
         Spacer(Modifier.height(5.dp))
@@ -121,7 +116,7 @@ fun SessionForm(
         DifficultySlider(
             label = "Session Difficulty",
             value = uiState.difficulty,
-            onValueChange = onDifficultyChange
+            onValueChange = { onEvent(SessionFormEvent.DifficultyChanged(it)) }
         )
 
         Spacer(Modifier.height(5.dp))
@@ -140,12 +135,12 @@ fun SessionForm(
                         fillMaxWidth()
                     }
                 },
-                label = "Due Date",
-                onClick = onShowDatePicker,
+                label = if (uiState.dueDate == null) "Complete By" else "Complete By Date",
+                onClick = onShowDueDatePicker,
                 trailingIcon = uiState.dueDate?.let {
                     {
                         IconButton(
-                            onClick = { onDueDateChange(null) }
+                            onClick = { onEvent(SessionFormEvent.DueDateChanged(null)) }
                         ) {
                             Icon(
                                 Icons.Default.Clear,
@@ -163,8 +158,8 @@ fun SessionForm(
                     value = uiState.dueTime!!.format(timeFormatter),
                     modifier = Modifier.width(110.dpScaledWith(16.sp))
                         .weight(2f),
-                    label = "Due Time",
-                    onClick = onShowTimePicker,
+                    label = "Complete By Time",
+                    onClick = onShowDueTimePicker,
                 )
             }
         }
@@ -174,13 +169,13 @@ fun SessionForm(
         OutlinedTextFieldButton(
             value = uiState.estimate?.let {
                 "${it.hours} hours, ${it.minutes} minutes"
-            } ?: "No Estimate",
+            } ?: "Not Set",
             label = "Estimated Duration",
             onClick = onShowEstimatePicker,
-            trailingIcon = if(uiState.estimate != null && uiState.isEstimateEditable) {
+            trailingIcon = if (uiState.estimate != null && uiState.isEstimateEditable) {
                 {
                     IconButton(
-                        onClick = { onEstimateChange(null) }
+                        onClick = { onEvent(SessionFormEvent.EstimateChanged(null)) }
                     ) {
                         Icon(
                             Icons.Default.Clear,
@@ -196,33 +191,49 @@ fun SessionForm(
             modifier = Modifier.fillMaxWidth(),
             isEnabled = uiState.isEstimateEditable
         )
-    }
-}
 
-@AspectRatioPreviews
-@Composable
-private fun EditTaskFormPreview() {
-    ClockworkTheme {
-        SessionForm(
-            uiState = SessionFormUiState (
-                taskName = "Preview",
-                profileName = "Preview",
-                colorSliderPos = Random.nextFloat(),
-                difficulty = Random.nextInt(0, 5).toFloat(),
-                dueDate = null,
-                dueTime = null,
-                estimate = null,
-                isEstimateEditable = false,
-            ),
-            onShowProfilePicker = {},
-            onTaskNameChange = {},
-            onColorSliderChange = {},
-            onDifficultyChange = {},
-            onShowDatePicker = {},
-            onDueDateChange = {},
-            onShowTimePicker = {},
-            onEstimateChange = {},
-            onShowEstimatePicker = {},
-        )
+        Spacer(Modifier.height(5.dp))
+
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedTextFieldButton(
+                value = uiState.reminder?.scheduledDate?.format(dateFormatter) ?: "No Reminder Set",
+                modifier = Modifier.run {
+                    if (uiState.reminder != null) {
+                        width(160.dpScaledWith(16.sp)).weight(3f)
+                    } else {
+                        fillMaxWidth()
+                    }
+                },
+                label = if (uiState.reminder == null) "Remind Me At" else "Remind Me At Date",
+                onClick = onShowReminderDatePicker,
+                trailingIcon = uiState.reminder?.let {
+                    {
+                        IconButton(
+                            onClick = { onEvent(SessionFormEvent.ReminderDateChanged(null)) }
+                        ) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Clear selected date",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(23.dpScaledWith(16.sp))
+                            )
+                        }
+                    }
+                }
+            )
+
+            if (uiState.reminder != null) {
+                OutlinedTextFieldButton(
+                    value = uiState.reminder.scheduledTime.format(timeFormatter),
+                    modifier = Modifier.width(110.dpScaledWith(16.sp))
+                        .weight(2f),
+                    label = "Remind Me At Time",
+                    onClick = onShowReminderTimePicker,
+                )
+            }
+        }
     }
 }

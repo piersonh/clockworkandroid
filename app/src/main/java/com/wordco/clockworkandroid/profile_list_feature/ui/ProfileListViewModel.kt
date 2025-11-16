@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
+import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,14 +19,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileListViewModel(
-    profileRepository: ProfileRepository
+    getAllProfilesUseCase: GetAllProfilesUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProfileListUiState>(ProfileListUiState.Retrieving)
 
     val uiState: StateFlow<ProfileListUiState> = _uiState.asStateFlow()
 
-    private val _profiles = profileRepository.getProfiles()
+    private val _profiles = getAllProfilesUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
 
@@ -54,12 +54,12 @@ class ProfileListViewModel(
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val profileRepository = appContainer.profileRepository
+                val getAllProfilesUseCase = appContainer.getAllProfilesUseCase
                 //val timer = (this[APPLICATION_KEY] as MainApplication).timer
 
 
                 ProfileListViewModel (
-                    profileRepository = profileRepository,
+                    getAllProfilesUseCase = getAllProfilesUseCase
                     //timer = timer,
                     //savedStateHandle = savedStateHandle
                 )

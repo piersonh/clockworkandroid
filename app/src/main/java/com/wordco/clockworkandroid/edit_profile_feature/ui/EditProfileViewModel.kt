@@ -10,10 +10,11 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
-import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
+import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
+import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
 import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +25,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class EditProfileViewModel (
-    private val profileRepository: ProfileRepository,
     private val profileId: Long,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val updateProfileUseCase: UpdateProfileUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<EditProfileUiState>(
@@ -42,7 +44,7 @@ class EditProfileViewModel (
 
     init {
         viewModelScope.launch {
-            profileRepository.getProfile(profileId).first().run {
+            getProfileUseCase(profileId).first().run {
                 _loadedProfile = this
 
                 _uiState.update {
@@ -89,7 +91,7 @@ class EditProfileViewModel (
             }
 
             viewModelScope.launch {
-                profileRepository.updateProfile(
+                updateProfileUseCase(
                     Profile(
                         id = _loadedProfile.id,
                         name = name,
@@ -116,11 +118,13 @@ class EditProfileViewModel (
                 //val savedStateHandle = createSavedStateHandle()
                 val profileId = this[PROFILE_ID_KEY] as Long
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val profileRepository = appContainer.profileRepository
+                val getProfileUseCase = appContainer.getProfileUseCase
+                val updateProfileUseCase = appContainer.updateProfileUseCase
 
                 EditProfileViewModel (
-                    profileRepository = profileRepository,
                     profileId = profileId,
+                    getProfileUseCase = getProfileUseCase,
+                    updateProfileUseCase = updateProfileUseCase,
                     //savedStateHandle = savedStateHandle
                 )
             }

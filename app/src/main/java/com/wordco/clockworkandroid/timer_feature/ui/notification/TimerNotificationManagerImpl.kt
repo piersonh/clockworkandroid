@@ -16,7 +16,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import com.wordco.clockworkandroid.MainActivity
 import com.wordco.clockworkandroid.R
-import com.wordco.clockworkandroid.core.domain.model.Task
+import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.TimerState
 import com.wordco.clockworkandroid.core.domain.permission.PermissionRequestSignaller
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
@@ -31,10 +31,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.Instant
 import java.util.Locale
 
 class TimerNotificationManagerImpl(
@@ -51,6 +54,8 @@ class TimerNotificationManagerImpl(
         // every time the channel changes, the id needs to change
         // or it won't be reflected without a restart
         const val CHANNEL_ID = "TimerChannel_v2"
+
+        private val MARKER_ADDED_DURATION = Duration.ofSeconds(3)
     }
 
     private val notificationManager = NotificationManagerCompat.from(context)
@@ -87,6 +92,7 @@ class TimerNotificationManagerImpl(
             .flatMapLatest { taskId ->
                 if (taskId != null) {
                     sessionRepository.getTask(taskId)
+                        .filterIsInstance<StartedTask>()  // there should only be notifications for started tasks
                 } else {
                     flowOf(null)
                 }
@@ -113,7 +119,7 @@ class TimerNotificationManagerImpl(
 
     fun showNotification(
         timerState: TimerState.Active,
-        session: Task,
+        session: StartedTask,
     ) {
         val notification = buildNotification(timerState, session)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -150,12 +156,25 @@ class TimerNotificationManagerImpl(
 
     fun buildNotification(
         timerState: TimerState.Active,
-        session: Task,
+        session: StartedTask,
     ): Notification {
+
+        val latestMarkerTime = session.markers
+            .maxByOrNull { it.startTime }?.startTime
+
+        val isMarkerJustAdded = latestMarkerTime != null &&
+                Duration.between(latestMarkerTime, Instant.now()) < MARKER_ADDED_DURATION
+
+        val markerActionText = if (isMarkerJustAdded) {
+            "Marker Added"
+        } else {
+            "Add Marker"
+        }
+
         val markerIntent = timerNotificationActionProvider.getMarkerIntent()
         val markerAction = NotificationCompat.Action(
             null,
-            "Add Marker",
+            markerActionText,
             markerIntent
         )
         val resumePauseAction = when (timerState) {

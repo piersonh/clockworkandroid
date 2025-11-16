@@ -11,7 +11,7 @@ fun CompletedTask.toCompletedSessionListItem() : CompletedSessionListItem {
         name = name,
         color = color,
         totalTime = totalTime,
-        error = totalTime.minus(userEstimate?: Duration.ZERO),
+        error = totalTime.minus(userEstimate?: Duration.ZERO), // FIXME
         completedAt = completedAt
     )
 }

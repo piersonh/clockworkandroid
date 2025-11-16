@@ -29,4 +29,6 @@ data class CompletedTask(
     val completedAt: Instant = segments.maxBy { it.startTime }.let {
         it.startTime.plus(it.duration!!)
     }
+
+    val totalTime = breakTime + workTime
 }

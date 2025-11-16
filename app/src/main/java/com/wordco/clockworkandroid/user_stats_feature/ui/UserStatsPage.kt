@@ -1,5 +1,9 @@
 package com.wordco.clockworkandroid.user_stats_feature.ui
 
+//import ir.ehsannarmani.compose_charts.models.DotProperties
+//import ir.ehsannarmani.compose_charts.models.DotProperties
+import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -39,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
@@ -49,8 +56,15 @@ import com.wordco.clockworkandroid.user_stats_feature.ui.composables.CompletedTa
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.ExportDataError
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.user_stats_feature.ui.util.Result
+import ir.ehsannarmani.compose_charts.LineChart
+import ir.ehsannarmani.compose_charts.models.AnimationMode
+import ir.ehsannarmani.compose_charts.models.DotProperties
+import ir.ehsannarmani.compose_charts.models.DrawStyle
+import ir.ehsannarmani.compose_charts.models.Line
+import ir.ehsannarmani.compose_charts.models.PopupProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun UserStatsPage(
@@ -79,6 +93,7 @@ private fun UserStatsPage(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
 
     Scaffold(
         topBar = {
@@ -132,7 +147,6 @@ private fun UserStatsPage(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
 
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .padding(paddingValues)
@@ -141,11 +155,60 @@ private fun UserStatsPage(
         {
             when (uiState) {
                 is UserStatsUiState.Retrieved if uiState.completedTasks.isEmpty() -> EmptyTaskList()
-                is UserStatsUiState.Retrieved -> CompletedSessionList(
-                    uiState,
-                    onTaskClick = onCompletedSessionClick,
-                )
+                is UserStatsUiState.Retrieved ->
+                    Column (
+                        modifier = Modifier
+                    ) {
 
+                        LineChart(
+                            modifier = Modifier
+                                .fillMaxHeight(0.3f)
+                                .fillMaxWidth()
+                                .padding(horizontal = 5.dp, vertical = 10.dp),
+                            data = remember(uiState.accuracyChartData) {
+                                listOf(
+                                    Line(
+                                        label = "Completed tasks accuracy",
+                                        values = uiState.accuracyChartData,
+                                        color = SolidColor(Color(0xFF23af92)),
+                                        firstGradientFillColor = Color(0xFF2BC0A1).copy(alpha = .5f),
+                                        secondGradientFillColor = Color.Transparent,
+                                        strokeAnimationSpec = tween(2000, easing = EaseInOutCubic),
+                                        gradientAnimationDelay = 1000,
+                                        drawStyle = DrawStyle.Stroke(width = 2.dp),
+                                        dotProperties = DotProperties(
+                                            enabled = true,
+                                            color = SolidColor(Color(0xFF23af92))
+                                        ),
+                                        popupProperties = PopupProperties(
+                                            textStyle = TextStyle(
+                                                color = Color.White
+                                            ),
+                                            contentBuilder = {
+                                                String.format(
+                                                    Locale.getDefault(),
+                                                    "%.0f%%",
+                                                    it.value
+                                                )
+                                            }
+                                        )
+                                    )
+                                )
+                            },
+                            animationMode = AnimationMode.Together(delayBuilder = {
+                                it * 500L
+                            }),
+                            minValue = 0.0,
+                            maxValue = 100.0,
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        CompletedSessionList(
+                            uiState,
+                            onTaskClick = onCompletedSessionClick,
+                        )
+                    }
                 UserStatsUiState.Retrieving -> Text("Loading...")
             }
         }
@@ -214,27 +277,38 @@ private fun CompletedSessionList(
 
         items(
             items = uiState.completedTasks,
-            key = { it.taskId}
+            key = { it.taskId }
         ) { session ->
             CompletedTaskUIListItem(
                 task = session,
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 onClick = { onTaskClick(session.taskId) },
-            )
+                )
+            }
         }
     }
-}
+
 
 
 @AspectRatioPreviews
 @Composable
 private fun UserStatsPagePreview() {
+    val calculateEstimateAccuracyUseCase = remember { CalculateEstimateAccuracyUseCase() }
+
     ClockworkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
                 completedTasks = DummyData.SESSIONS
-                    .filter { it is CompletedTask }
-                    .map { (it as CompletedTask).toCompletedSessionListItem() }
+                    .filterIsInstance<CompletedTask>()
+                    .map { it.toCompletedSessionListItem() },
+                accuracyChartData = DummyData.SESSIONS
+                    .filterIsInstance<CompletedTask>()
+                    .mapNotNull {
+                        it.userEstimate?.let { userEstimate ->
+                            calculateEstimateAccuracyUseCase(it.workTime.plus(it.breakTime),
+                                userEstimate)
+                        }
+                    }
             ),
             navBar = {
                 NavBar(
@@ -256,7 +330,8 @@ private fun UserStatsNoCompletedSessionsPagePreview() {
     ClockworkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
-                completedTasks = emptyList()
+                completedTasks = emptyList(),
+                accuracyChartData = emptyList(),
             ),
             navBar = {
                 NavBar(

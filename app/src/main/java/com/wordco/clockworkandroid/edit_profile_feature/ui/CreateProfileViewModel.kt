@@ -9,8 +9,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.Profile
-import com.wordco.clockworkandroid.core.domain.repository.ProfileRepository
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
+import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.CreateProfileUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class CreateProfileViewModel (
-    private val profileRepository: ProfileRepository,
+    private val createProfileUseCase: CreateProfileUseCase,
 ) : ViewModel() {
 
     private val _fieldDefaults = object : ProfileFormUiState {
@@ -76,7 +76,7 @@ class CreateProfileViewModel (
             }
 
             viewModelScope.launch {
-                profileRepository.insertProfile(
+                createProfileUseCase(
                     Profile(
                         id = 0,
                         name = name,
@@ -100,10 +100,10 @@ class CreateProfileViewModel (
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val profileRepository = appContainer.profileRepository
+                val createProfileUseCase = appContainer.createProfileUseCase
 
                 CreateProfileViewModel (
-                    profileRepository = profileRepository
+                    createProfileUseCase = createProfileUseCase
                     //savedStateHandle = savedStateHandle
                 )
             }

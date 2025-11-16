@@ -42,3 +42,33 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_TaskEntity_profileId` ON `TaskEntity`(`profileId`)")
     }
 }
+
+/**
+ * Migration from database version 13 to 14.
+ *
+ * This migration adds the new `ReminderEntity` table and its index.
+ */
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Step 1: Create the new ReminderEntity table.
+        // The schema is taken directly from your 14.json file.
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `ReminderEntity` (" +
+                    "`reminderId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`sessionId` INTEGER NOT NULL, " +
+                    "`workRequestId` TEXT NOT NULL, " +
+                    "`scheduledTime` INTEGER NOT NULL, " +
+                    "`status` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`sessionId`) REFERENCES `TaskEntity`(`taskId`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE" +
+                    ")"
+        )
+
+        // Step 2: Create the index for the ReminderEntity table.
+        // This is also from 14.json and improves query performance on `sessionId`.
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_ReminderEntity_sessionId` " +
+                    "ON `ReminderEntity` (`sessionId`)"
+        )
+    }
+}

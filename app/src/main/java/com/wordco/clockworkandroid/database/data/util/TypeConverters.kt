@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.toArgb
 import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
+import com.wordco.clockworkandroid.core.domain.model.Reminder
 import com.wordco.clockworkandroid.core.domain.model.Segment
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
@@ -75,4 +76,12 @@ fun toOptionalAppEstimate(low: Long?, high: Long?) : AppEstimate? {
             high = Duration.ofMillis(high!!)
         )
     }
+}
+
+fun fromReminderStatus(variant: Reminder.Status) : Int {
+    return variant.ordinal
+}
+
+fun toReminderStatus(ordinal: Int) : Reminder.Status {
+    return Reminder.Status.entries[ordinal]
 }

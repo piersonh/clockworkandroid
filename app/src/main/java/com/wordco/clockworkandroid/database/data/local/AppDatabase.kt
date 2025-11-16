@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.wordco.clockworkandroid.database.data.local.entities.MarkerEntity
 import com.wordco.clockworkandroid.database.data.local.entities.ProfileEntity
+import com.wordco.clockworkandroid.database.data.local.entities.ReminderEntity
 import com.wordco.clockworkandroid.database.data.local.entities.SegmentEntity
 import com.wordco.clockworkandroid.database.data.local.entities.TaskEntity
 import com.wordco.clockworkandroid.database.data.util.UserDataPackage
@@ -20,12 +21,15 @@ import kotlinx.coroutines.launch
         SegmentEntity::class,
         MarkerEntity::class,
         ProfileEntity::class,
+        ReminderEntity::class,
                ],
-    version = 13)
+    version = 14)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
 
     abstract fun profileDao() : ProfileDao
+
+    abstract fun reminderDao() : ReminderDao
 
     companion object {
         @Volatile
@@ -37,7 +41,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context, AppDatabase::class.java, "clockwork_db"
                 )
                     //.fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
-                    .addMigrations(MIGRATION_12_13) // Add your migration strategies here
+                    .addMigrations(
+                        MIGRATION_12_13,
+                        MIGRATION_13_14
+                    ) // Add your migration strategies here
                     .addCallback(object: Callback() {
 
 

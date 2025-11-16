@@ -42,6 +42,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -336,6 +337,30 @@ private fun SuspendedTimerPagePreview() {
                     .plusMinutes(3)
                     .seconds.toInt(),
                 false
+            ),
+            snackbarHostState = remember { SnackbarHostState() },
+            onBackClick = {},
+            onEditClick = {},
+            onDeleteClick = {},
+            onInitClick = {},
+            onBreakClick = {},
+            onSuspendClick = {},
+            onResumeClick = {},
+            onMarkClick = {},
+            onFinishClick = {}
+        )
+    }
+}
+
+@Preview(name = "2. 37:18", showBackground = true, device = "spec:width=360dp,height=740dp,dpi=420")
+@Composable
+private fun PosterScreenShot() {
+    ClockworkTheme {
+        TimerPage(
+            uiState = TimerUiState.Running(
+                taskName = "Implement Linked List in Rust",
+                totalElapsedSeconds = 1234,
+                currentSegmentElapsedSeconds = 321
             ),
             snackbarHostState = remember { SnackbarHostState() },
             onBackClick = {},
