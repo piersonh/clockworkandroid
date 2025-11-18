@@ -202,10 +202,10 @@ private fun SessionFormPageRetrieved(
 
     LaunchedEffect(uiState.reminder) {
         uiState.reminder?.let {
-            dueDatePickerState.selectedDateMillis = it.scheduledDate.atStartOfDay(ZoneOffset.UTC)
+            reminderDatePickerState.selectedDateMillis = it.scheduledDate.atStartOfDay(ZoneOffset.UTC)
                 .toInstant().toEpochMilli()
-            dueTimePickerState.hour = it.scheduledTime.hour
-            dueTimePickerState.minute = it.scheduledTime.minute
+            reminderTimePickerState.hour = it.scheduledTime.hour
+            reminderTimePickerState.minute = it.scheduledTime.minute
         }
     }
 
