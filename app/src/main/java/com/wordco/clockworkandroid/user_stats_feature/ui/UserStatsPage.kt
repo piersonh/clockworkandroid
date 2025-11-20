@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,7 +30,9 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
@@ -69,6 +75,7 @@ fun UserStatsPage(
     viewModel: UserStatsViewModel,
     navBar: @Composable () -> Unit,
     onCompletedSessionClick: (Long) -> Unit,
+
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -88,10 +95,9 @@ private fun UserStatsPage(
     navBar: @Composable () -> Unit,
     onCompletedSessionClick: (Long) -> Unit,
     onExportUserData: suspend () -> Result<String, ExportDataError>,
-) {
+    ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
 
     Scaffold(
         topBar = {
@@ -111,8 +117,7 @@ private fun UserStatsPage(
                     TextButton(
                         onClick = {
                             scope.launch (Dispatchers.IO) {
-                                val result = onExportUserData()
-                                val message = when (result) {
+                                val message = when (val result = onExportUserData()) {
                                     is Result.Error<ExportDataError> -> {
                                         when (result.error) {
                                             ExportDataError.NO_URI -> "Export Failed: No URI"
@@ -157,7 +162,6 @@ private fun UserStatsPage(
                     Column (
                         modifier = Modifier
                     ) {
-
                         LineChart(
                             modifier = Modifier
                                 .fillMaxHeight(0.3f)
@@ -202,6 +206,8 @@ private fun UserStatsPage(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
+                       // Profile selector
+
                         CompletedSessionList(
                             uiState,
                             onTaskClick = onCompletedSessionClick,
@@ -212,6 +218,7 @@ private fun UserStatsPage(
         }
     }
 }
+
 
 @Composable
 private fun EmptyTaskList (
@@ -257,7 +264,6 @@ private fun EmptyTaskList (
     }
 }
 
-
 @Composable
 private fun CompletedSessionList(
     uiState: UserStatsUiState.Retrieved,
@@ -283,7 +289,7 @@ private fun CompletedSessionList(
                 onClick = { onTaskClick(session.taskId) },
                 )
             }
-        }
+    }
     }
 
 
@@ -301,12 +307,14 @@ private fun UserStatsPagePreview() {
                     .map { it.toCompletedSessionListItem() },
                 accuracyChartData = DummyData.SESSIONS
                     .filterIsInstance<CompletedTask>()
-                    .mapNotNull { 
+                    .mapNotNull {
                         it.userEstimate?.let { userEstimate ->
                             calculateEstimateAccuracyUseCase(it.workTime.plus(it.breakTime),
                                 userEstimate)
-                        } 
-                    }
+                        }
+                    },
+                allProfiles = DummyData.PROFILES,
+                selectedProfileId = DummyData.PROFILES.first().id
             ),
             navBar = {
                 NavBar(
@@ -330,6 +338,8 @@ private fun UserStatsNoCompletedSessionsPagePreview() {
             uiState = UserStatsUiState.Retrieved(
                 completedTasks = emptyList(),
                 accuracyChartData = emptyList(),
+                allProfiles = emptyList(),
+                selectedProfileId = null
             ),
             navBar = {
                 NavBar(

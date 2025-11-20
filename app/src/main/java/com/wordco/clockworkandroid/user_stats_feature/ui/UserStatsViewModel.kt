@@ -24,8 +24,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -47,22 +47,39 @@ class UserStatsViewModel(
 
     val uiState: StateFlow<UserStatsUiState> = _uiState.asStateFlow()
 
+    private val _selectedProfileId = MutableStateFlow<Long?>(null)
 
-    // TODO: make a getCompletedTasks (?)
+
     private val _tasks = taskRepository.getCompletedTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
+    private val _profiles = profileRepository.getProfiles()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
+
+
     init {
         viewModelScope.launch {
-            _tasks.map { tasks ->
-                if (tasks == null) {
+            combine(_tasks, _profiles, _selectedProfileId) { tasks, profiles, selectedProfileId ->
+                if (tasks == null || profiles == null) {
                     UserStatsUiState.Retrieving
                 } else {
+                    val filteredTasks = when (selectedProfileId) {
+                        null -> {
+                            tasks
+                        }
+                        0L -> {
+                            tasks.filter { it.profileId == null }
+                        }
+                        else -> {
+                            tasks.filter { it.profileId == selectedProfileId }
+                        }
+                    }
+
                     UserStatsUiState.Retrieved(
-                        completedTasks = tasks
+                        completedTasks = filteredTasks
                             .map { it.toCompletedSessionListItem() }
                             .sortedByDescending { it.completedAt },
-                        accuracyChartData = tasks
+                        accuracyChartData = filteredTasks
                             .sortedBy { it.completedAt }
                             .mapNotNull { session ->
                                 session.userEstimate?.let { userEstimate ->
@@ -70,13 +87,19 @@ class UserStatsViewModel(
                                         session.workTime.plus(session.breakTime),
                                         userEstimate
                                     )
-                            }}
+                            }},
+                        allProfiles = profiles,
+                        selectedProfileId = selectedProfileId
                     )
                 }
             }.collect { uiState ->
                 _uiState.update { uiState }
             }
         }
+    }
+
+    fun profileSelected(profileId: Long?) {
+        _selectedProfileId.value = profileId
     }
 
     suspend fun onExportUserData() : Result<String, ExportDataError> {
