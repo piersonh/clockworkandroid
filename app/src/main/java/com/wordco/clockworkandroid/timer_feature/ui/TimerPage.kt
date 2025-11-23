@@ -49,6 +49,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
@@ -320,7 +321,7 @@ private fun TimerPage(
                     }
                 }
 
-                TimerUiState.Retrieving -> Text("Loading task...")
+                TimerUiState.Retrieving -> SpinningLoader()
             }
         }
     }

@@ -30,7 +30,7 @@ fun AccentRectangleTextButton(
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
             //.fillMaxWidth()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
             .heightIn(minHeight, maxHeight)
             .aspectRatio(aspectRatio,true),
         content = content,

@@ -36,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
@@ -104,16 +105,7 @@ private fun SessionFormPage(
     onEvent: (SessionFormEvent) -> Unit,
 ) {
     when (uiState) {
-        is SessionFormUiState.Retrieving -> SessionFormPageScaffold(
-            title = uiState.title,
-            onBackClick = onBackClick,
-            snackbarHostState = snackbarHostState,
-            content = { paddingValues ->
-                Box(modifier = Modifier.padding(paddingValues)) {
-                    Text("Loading...")
-                }
-            },
-        )
+        is SessionFormUiState.Retrieving -> SpinningLoader()
 
         is SessionFormUiState.Retrieved -> SessionFormPageRetrieved(
             uiState = uiState,
@@ -380,6 +372,22 @@ private fun SessionFormPagePreview() {
                 averageSessionDuration = Duration.ofSeconds(1234),
                 averageEstimateError = null,
                 reminder = null,
+            ),
+            snackbarHostState = SnackbarHostState(),
+            onBackClick = {},
+            onCreateNewProfileClick = {},
+            onEvent = {}
+        )
+    }
+}
+
+@AspectRatioPreviews
+@Composable
+private fun LoadingSessionFormPagePreview() {
+    ClockworkTheme {
+        SessionFormPage (
+            uiState = SessionFormUiState.Retrieving(
+                title = "Preview"
             ),
             snackbarHostState = SnackbarHostState(),
             onBackClick = {},

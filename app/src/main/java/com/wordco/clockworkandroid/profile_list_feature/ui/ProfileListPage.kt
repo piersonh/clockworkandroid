@@ -42,6 +42,7 @@ import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
@@ -118,7 +119,7 @@ private fun ProfileListPage (
                     onProfileClick = onProfileClick
                 )
 
-                ProfileListUiState.Retrieving -> Text("Loading...")
+                ProfileListUiState.Retrieving -> SpinningLoader()
             }
         }
     }
@@ -144,7 +145,7 @@ private fun EmptyProfileList(
                 painter = painterResource(id = R.drawable.fanned_cards),
                 contentDescription = "Templates",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.height(170.dp),
+                modifier = Modifier.height(100.dp),
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
             )
         }
@@ -152,17 +153,35 @@ private fun EmptyProfileList(
         Spacer(modifier = Modifier.height(40.dp))
 
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 "You Don't Have Any Task Templates!",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 textAlign = TextAlign.Center,
-                lineHeight = 40.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Keep similar tasks organized by creating a new template.",
+                fontFamily = LATO,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         }
 
@@ -179,7 +198,7 @@ private fun EmptyProfileList(
                     text = "Create Template",
                     fontFamily = LATO,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp
+                    fontSize = 22.sp
                 )
             }
         }

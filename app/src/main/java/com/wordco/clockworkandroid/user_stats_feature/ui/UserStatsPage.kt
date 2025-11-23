@@ -48,6 +48,7 @@ import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
@@ -209,7 +210,7 @@ private fun UserStatsPage(
                             onTaskClick = onCompletedSessionClick,
                         )
                     }
-                UserStatsUiState.Retrieving -> Text("Loading...")
+                UserStatsUiState.Retrieving -> SpinningLoader()
             }
         }
     }

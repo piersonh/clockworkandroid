@@ -34,7 +34,7 @@ import com.wordco.clockworkandroid.user_stats_feature.ui.userStatsPage
 val topLevelDestinations = listOf(
     TopLevelDestination(
         route = UserStatsRoute,
-        icon = R.drawable.user,
+        icon = R.drawable.statistics,
         label = "Statistics",
     ),
     TopLevelDestination(
@@ -44,10 +44,9 @@ val topLevelDestinations = listOf(
     ),
     TopLevelDestination(
         route = ProfileListRoute,
-        icon = R.drawable.fanned_cards,
+        icon = R.drawable.templates,
         label = "Templates",
     ),
-
 )
 
 @Composable

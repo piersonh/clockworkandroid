@@ -10,7 +10,7 @@ data object FakeDestination
 val FAKE_TOP_LEVEL_DESTINATIONS = listOf(
     TopLevelDestination(
         route = FakeDestination::class,
-        icon = R.drawable.user,
+        icon = R.drawable.statistics,
         label = "Statistics",
     ),
     TopLevelDestination(
@@ -20,7 +20,7 @@ val FAKE_TOP_LEVEL_DESTINATIONS = listOf(
     ),
     TopLevelDestination(
         route = FakeDestination::class,
-        icon = R.drawable.fanned_cards,
+        icon = R.drawable.templates,
         label = "Templates",
     ),
 )

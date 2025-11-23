@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
@@ -168,7 +169,7 @@ private fun EditProfilePage(
                     }
 
                 }
-                EditProfileUiState.Retrieving -> Text("Loading...")
+                EditProfileUiState.Retrieving -> SpinningLoader()
             }
         }
     }

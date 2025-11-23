@@ -85,7 +85,7 @@ class EditProfileViewModel (
         return _uiState.getIfType<EditProfileUiState.Retrieved>()?.run {
             if (name.isBlank()) {
                 viewModelScope.launch {
-                    _snackbarEvent.emit("Failed to save template: Missing Name")
+                    _snackbarEvent.emit("Please give the template a name.")
                 }
                 return@run false
             }
