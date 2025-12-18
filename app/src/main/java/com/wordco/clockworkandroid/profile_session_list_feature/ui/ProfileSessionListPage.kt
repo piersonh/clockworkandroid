@@ -549,7 +549,8 @@ private fun EmptyTodoList(
                         contentDescription = "Pencil Writing",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxWidth()
-                            .weight(1f, fill = false),
+                            .weight(1f, fill = false)
+                            .heightIn(max = 120.dp),
                         colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
                     )
                 }
@@ -597,7 +598,7 @@ private fun EmptyTodoList(
                         text = "Create New Session",
                         fontFamily = LATO,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 25.sp
+                        fontSize = 22.sp
                     )
                 }
 
@@ -784,7 +785,7 @@ private fun ProfileSessionListPageEmptyTodoPreview() {
     ClockworkTheme {
         ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
-                profileName = "PreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreviewPreview",
+                profileName = "Preview",
                 profileColor = Color.Yellow,
                 todoSessions = emptyList(),
                 completeSessions = emptyList(),

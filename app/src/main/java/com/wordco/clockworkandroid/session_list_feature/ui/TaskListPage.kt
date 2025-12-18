@@ -48,6 +48,7 @@ import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
@@ -140,7 +141,7 @@ private fun TaskListPage(
                     onTaskClick = onTaskClick,
                 )
 
-                TaskListUiState.Retrieving -> Text("Loading...")
+                TaskListUiState.Retrieving -> SpinningLoader()
             }
         }
     }
@@ -159,14 +160,14 @@ private fun EmptyTaskList(
         //Spacer(modifier = Modifier.weight(0.04f))
 
         Box (
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.todo_list),
+                painter = painterResource(id = R.drawable.todo_list_big),
                 contentDescription = "To-Do List",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.height(170.dp),
+                modifier = Modifier.height(100.dp),
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
             )
         }
@@ -174,17 +175,33 @@ private fun EmptyTaskList(
         //Spacer(modifier = Modifier.height(40.dp))
 
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 "Your To-Do List is Empty!",
                 fontFamily = LATO,
                 fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 textAlign = TextAlign.Center,
-                lineHeight = 40.sp,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "Start tracking your tasks by creating a new session.",
+                fontFamily = LATO,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         }
 
@@ -207,7 +224,7 @@ private fun EmptyTaskList(
                     ),
                     maxLines = 1,
                     autoSize = TextAutoSize.StepBased(
-                        maxFontSize = 50.sp
+                        maxFontSize = 22.sp
                     )
                 )
             }
@@ -241,7 +258,6 @@ private fun TaskList(
                 fontFamily = LATO,
                 fontSize = 25.sp,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(horizontal = 20.dp)
             )
         }
         if (uiState is TaskListUiState.TimerActive) {
@@ -311,7 +327,6 @@ private fun TaskList(
                 fontFamily = LATO,
                 fontSize = 25.sp,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(horizontal = 20.dp)
             )
         }
 

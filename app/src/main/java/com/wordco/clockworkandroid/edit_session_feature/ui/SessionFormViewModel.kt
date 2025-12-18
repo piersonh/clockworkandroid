@@ -401,7 +401,7 @@ class SessionFormViewModel(
             if (taskName.isBlank()) {
                 viewModelScope.launch {
                     _effect.emit(SessionFormEffect.ShowSnackbar(
-                        "Failed to save session: Missing Name"
+                        "Please give the session a name."
                     ))
                 }
                 return
