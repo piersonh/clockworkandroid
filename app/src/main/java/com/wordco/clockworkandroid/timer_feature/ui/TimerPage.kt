@@ -72,12 +72,12 @@ fun TimerPage(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        timerViewModel.events.collect { event ->
-            when (event) {
+        timerViewModel.effects.collect { effect ->
+            when (effect) {
                 is TimerUiEvent.ShowSnackbar -> {
                     launch {
                         snackbarHostState.currentSnackbarData?.dismiss()
-                        snackbarHostState.showSnackbar(event.message)
+                        snackbarHostState.showSnackbar(effect.message)
                     }
                 }
                 is TimerUiEvent.NavigateBack -> {

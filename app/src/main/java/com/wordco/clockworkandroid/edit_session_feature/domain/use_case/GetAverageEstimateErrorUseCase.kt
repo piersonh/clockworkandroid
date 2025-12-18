@@ -18,7 +18,6 @@ class GetAverageEstimateErrorUseCase(
         val recency = Instant.now().minus(RECENCY_WINDOW)
         val sessions = sessionRepository.getCompletedSessionsForProfile(profileId).first()
             .filter { it.completedAt > recency && it.userEstimate != null }
-            .sortedByDescending { it.completedAt }
 
         if (sessions.isEmpty()) return null
 
@@ -41,12 +40,15 @@ class GetAverageEstimateErrorUseCase(
 
     private fun CompletedTask.getRelativeError(): Double {
         val sessionMillis = totalTime.toMillis().toDouble()
-        val estimateMillis = userEstimate?.toMillis()?.toDouble() ?:
-        error("You must filter the sessions for null estimates before calling getLinearRegression")
+
+        if (sessionMillis <= 0.0) return 0.0
+
+        val estimateMillis = userEstimate?.toMillis()?.toDouble()
+            ?: error("You must filter the sessions for null estimates before calling getLinearRegression")
 
         val percentOfTruth =  estimateMillis / sessionMillis
 
-        return 1 - percentOfTruth
+        return 1.0 - percentOfTruth
     }
 
 

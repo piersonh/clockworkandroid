@@ -24,7 +24,10 @@ class TimerRepositoryImpl(
         var collectorJob: Job? = null
 
         val connection = object : ServiceConnection {
-            override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            override fun onServiceConnected(
+                className: ComponentName,
+                service: IBinder,
+            ) {
                 val binder = service as TimerService.TimerBinder
                 val timerService = binder.getService()
 

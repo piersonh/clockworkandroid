@@ -234,7 +234,7 @@ class TimerService() : Service() {
         ))
     }
 
-    private suspend fun createStartedSessionStateFlow(taskId: Long) : StateFlow<StartedTask> {
+    private suspend fun createStartedSessionStateFlow(taskId: Long): StateFlow<StartedTask> {
         val flow = getSessionUseCase(taskId)
         val session = flow.first()
 

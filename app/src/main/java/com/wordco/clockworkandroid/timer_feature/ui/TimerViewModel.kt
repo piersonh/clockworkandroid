@@ -43,8 +43,8 @@ class TimerViewModel (
     private val _uiState = MutableStateFlow<TimerUiState>(TimerUiState.Retrieving)
     val uiState: StateFlow<TimerUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<TimerUiEvent>()
-    val events = _events.asSharedFlow()
+    private val _effects = MutableSharedFlow<TimerUiEvent>()
+    val effects = _effects.asSharedFlow()
 
     private val loadedTask = getSessionUseCase(taskId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
@@ -60,8 +60,7 @@ class TimerViewModel (
             combine(
                 loadedTask,
                 timerState
-            ) {
-                task, timerState ->
+            ) { task, timerState ->
 
                 if (task == null || timerState == null) {
                     return@combine TimerUiState.Retrieving
@@ -125,7 +124,7 @@ class TimerViewModel (
     fun onDeleteClick() {
         viewModelScope.launch {
             deleteSessionUseCase(taskId)
-            _events.emit(TimerUiEvent.NavigateBack)
+            _effects.emit(TimerUiEvent.NavigateBack)
         }
     }
 
@@ -155,7 +154,7 @@ class TimerViewModel (
                 Instant.now()
             )
 
-            _events.emit(
+            _effects.emit(
                 TimerUiEvent.ShowSnackbar("Added $markerName to Timeline")
             )
         }
@@ -176,7 +175,7 @@ class TimerViewModel (
                 )
             }
 
-            _events.emit(TimerUiEvent.FinishSession)
+            _effects.emit(TimerUiEvent.FinishSession)
         }
     }
 

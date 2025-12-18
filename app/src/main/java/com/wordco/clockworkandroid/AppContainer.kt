@@ -11,6 +11,7 @@ import com.wordco.clockworkandroid.core.domain.repository.ReminderNotificationMa
 import com.wordco.clockworkandroid.core.domain.repository.ReminderRepository
 import com.wordco.clockworkandroid.core.domain.repository.SessionReminderScheduler
 import com.wordco.clockworkandroid.core.domain.repository.TaskRepository
+import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
 import com.wordco.clockworkandroid.core.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
@@ -88,7 +89,7 @@ class AppContainer(
         )
     }
 
-    val timerRepository: TimerRepositoryImpl by lazy {
+    val timerRepository: TimerRepository by lazy {
         TimerRepositoryImpl(
             context,
             intentFactory = timerServiceIntentFactory

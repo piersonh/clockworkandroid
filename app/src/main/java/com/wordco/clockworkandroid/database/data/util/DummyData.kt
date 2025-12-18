@@ -1141,4 +1141,46 @@ object DummyData {
             orphanSessions = emptyList()
         )
     }
+
+    val package4_30seconds by lazy {
+        UserDataPackage.factory(
+            profiles = emptyList(),
+            orphanSessions = listOf(
+                CompletedTask(
+                    taskId = 0,
+                    name = "Laundry 3",
+                    dueDate = null,
+                    difficulty = 0,
+                    color = Color.hsv(34f,1f,1f),
+                    userEstimate = Duration.ofMinutes(15),
+                    segments = listOf(
+                        Segment(
+                            segmentId = 0,
+                            taskId = 0,
+                            startTime = Instant.parse("2025-09-29T18:45:30.00Z"),
+                            duration = Duration.ofSeconds(30),
+                            type = Segment.Type.WORK
+                        ),
+                        Segment(
+                            segmentId = 0,
+                            taskId = 0,
+                            startTime = Instant.parse("2025-09-29T18:46:00.00Z"),
+                            duration = Duration.ofSeconds(30),
+                            type = Segment.Type.BREAK
+                        ),
+                        Segment(
+                            segmentId = 0,
+                            taskId = 0,
+                            startTime = Instant.parse("2025-09-29T18:46:30.00Z"),
+                            duration = Duration.ofSeconds(30),
+                            type = Segment.Type.WORK
+                        )
+                    ),
+                    markers = emptyList(),
+                    profileId = 0,
+                    appEstimate = null
+                ),
+            )
+        )
+    }
 }

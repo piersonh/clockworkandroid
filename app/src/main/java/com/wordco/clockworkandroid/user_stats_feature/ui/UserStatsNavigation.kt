@@ -29,7 +29,7 @@ fun NavGraphBuilder.userStatsPage(
 
         val userStatsViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = UserStatsViewModel.Companion.Factory,
+            factory = UserStatsViewModel.Factory,
             extras = entry.defaultViewModelCreationExtras
         )[UserStatsViewModel::class]
 

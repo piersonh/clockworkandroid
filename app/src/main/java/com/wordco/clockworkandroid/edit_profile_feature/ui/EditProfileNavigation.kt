@@ -55,7 +55,7 @@ fun NavGraphBuilder.editProfilePage(
 
         val editProfileViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = EditProfileViewModel.Companion.Factory,
+            factory = EditProfileViewModel.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {

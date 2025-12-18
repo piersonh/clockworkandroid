@@ -69,11 +69,11 @@ fun NavGraphBuilder.timerPage(
 
         val timerViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = TimerViewModel.Companion.Factory,
+            factory = TimerViewModel.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {
-                set(TimerViewModel.Companion.TASK_ID_KEY, taskId)
+                set(TimerViewModel.TASK_ID_KEY, taskId)
             }
         )[TimerViewModel::class]
 
