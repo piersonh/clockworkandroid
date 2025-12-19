@@ -1,8 +1,0 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui.old
-
-data class CreateProfileUiState(
-    override val name: String,
-    override val colorSliderPos: Float,
-    override val difficulty: Float,
-    val hasFieldChanges: Boolean,
-) : ProfileFormUiState
