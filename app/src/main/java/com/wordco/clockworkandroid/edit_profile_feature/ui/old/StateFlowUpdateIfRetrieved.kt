@@ -1,7 +1,6 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui.util
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 import com.wordco.clockworkandroid.core.ui.util.getIfType
-import com.wordco.clockworkandroid.edit_profile_feature.ui.EditProfileUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 

@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 data class CreateProfileUiState(
     override val name: String,

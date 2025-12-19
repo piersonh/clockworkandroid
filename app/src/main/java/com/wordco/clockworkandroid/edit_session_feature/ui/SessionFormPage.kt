@@ -73,7 +73,7 @@ fun SessionFormPage(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    SessionFormPage(
+    DelegateSessionFormPage(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onBackClick = onBackClick,
@@ -97,7 +97,7 @@ fun SessionFormPage(
 
 
 @Composable
-private fun SessionFormPage(
+private fun DelegateSessionFormPage(
     uiState: SessionFormUiState,
     snackbarHostState: SnackbarHostState,
     onBackClick: () -> Unit,
@@ -385,7 +385,7 @@ private fun SessionFormPagePreview() {
 @Composable
 private fun LoadingSessionFormPagePreview() {
     ClockworkTheme {
-        SessionFormPage (
+        DelegateSessionFormPage (
             uiState = SessionFormUiState.Retrieving(
                 title = "Preview"
             ),

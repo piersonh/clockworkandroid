@@ -40,7 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context, AppDatabase::class.java, "clockwork_db"
                 )
-                    .fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
+                    //.fallbackToDestructiveMigration(true) // Only for development - clears database on schema change
                     .addMigrations(
                         MIGRATION_12_13,
                         MIGRATION_13_14

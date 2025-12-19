@@ -1,5 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
-
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 sealed interface EditProfileUiState {
     data object Retrieving : EditProfileUiState

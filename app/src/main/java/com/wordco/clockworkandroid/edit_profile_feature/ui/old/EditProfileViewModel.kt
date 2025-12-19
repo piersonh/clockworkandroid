@@ -1,9 +1,8 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
@@ -15,7 +14,6 @@ import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
-import com.wordco.clockworkandroid.edit_profile_feature.ui.util.updateIfRetrieved
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -95,7 +93,7 @@ class EditProfileViewModel (
                     Profile(
                         id = _loadedProfile.id,
                         name = name,
-                        color = Color.fromSlider(colorSliderPos),
+                        color = Color.Companion.fromSlider(colorSliderPos),
                         defaultDifficulty = difficulty.toInt(),
                         sessions = _loadedProfile.sessions,
                     )
@@ -117,11 +115,12 @@ class EditProfileViewModel (
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val profileId = this[PROFILE_ID_KEY] as Long
-                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val appContainer =
+                    (this[ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY] as MainApplication).appContainer
                 val getProfileUseCase = appContainer.getProfileUseCase
                 val updateProfileUseCase = appContainer.updateProfileUseCase
 
-                EditProfileViewModel (
+                EditProfileViewModel(
                     profileId = profileId,
                     getProfileUseCase = getProfileUseCase,
                     updateProfileUseCase = updateProfileUseCase,

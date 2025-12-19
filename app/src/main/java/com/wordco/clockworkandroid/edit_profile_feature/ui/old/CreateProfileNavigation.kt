@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally

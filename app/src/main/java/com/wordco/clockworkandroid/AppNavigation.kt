@@ -10,10 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
-import com.wordco.clockworkandroid.edit_profile_feature.ui.createProfilePage
-import com.wordco.clockworkandroid.edit_profile_feature.ui.editProfilePage
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
+import com.wordco.clockworkandroid.edit_profile_feature.ui.profileFormPage
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewSession
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEditSession
 import com.wordco.clockworkandroid.edit_session_feature.ui.sessionFormPage
@@ -127,13 +126,10 @@ fun NavHost(
             onCreateNewProfileClick = navController::navigateToCreateProfile,
         )
 
-        createProfilePage(
+        profileFormPage(
             onBackClick = navController::popBackStack
         )
 
-        editProfilePage(
-            onBackClick = navController::popBackStack
-        )
 
         profileSessionListPage(
             onBackClick = navController::popBackStack,

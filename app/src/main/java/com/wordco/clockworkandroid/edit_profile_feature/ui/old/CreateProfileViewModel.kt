@@ -1,9 +1,8 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -25,17 +24,19 @@ class CreateProfileViewModel (
 
     private val _fieldDefaults = object : ProfileFormUiState {
         override val name: String = ""
-        override val colorSliderPos: Float = Random.nextFloat()
+        override val colorSliderPos: Float = Random.Default.nextFloat()
         override val difficulty: Float = 0f
 
     }
 
-    private val _uiState = MutableStateFlow(CreateProfileUiState(
-        name = _fieldDefaults.name,
-        colorSliderPos = _fieldDefaults.colorSliderPos,
-        difficulty = _fieldDefaults.difficulty,
-        hasFieldChanges = false,
-    ))
+    private val _uiState = MutableStateFlow(
+        CreateProfileUiState(
+            name = _fieldDefaults.name,
+            colorSliderPos = _fieldDefaults.colorSliderPos,
+            difficulty = _fieldDefaults.difficulty,
+            hasFieldChanges = false,
+        )
+    )
 
     val uiState = _uiState.asStateFlow()
 
@@ -80,7 +81,7 @@ class CreateProfileViewModel (
                     Profile(
                         id = 0,
                         name = name,
-                        color = Color.fromSlider(colorSliderPos),
+                        color = Color.Companion.fromSlider(colorSliderPos),
                         defaultDifficulty = difficulty.toInt(),
                         sessions = emptyList(),
                     )
@@ -99,10 +100,11 @@ class CreateProfileViewModel (
 
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
-                val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
+                val appContainer =
+                    (this[ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY] as MainApplication).appContainer
                 val createProfileUseCase = appContainer.createProfileUseCase
 
-                CreateProfileViewModel (
+                CreateProfileViewModel(
                     createProfileUseCase = createProfileUseCase
                     //savedStateHandle = savedStateHandle
                 )

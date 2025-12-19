@@ -195,14 +195,14 @@ class SessionFormViewModel(
     }
 
 
-    fun getFieldDefaults(
+    private fun getFieldDefaults(
         profile: Profile?
     ): SessionFormDefaults {
         return if (profile == null) {
             SessionFormDefaults(
                 taskName = "",
                 profileName = null,
-                colorSliderPos = Random.Default.nextFloat(),
+                colorSliderPos = Random.nextFloat(),
                 difficulty = 0f,
                 dueTime = LocalTime.of(23, 59),
                 estimate = null,

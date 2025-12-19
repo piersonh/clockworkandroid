@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
@@ -19,7 +19,10 @@ fun NavController.navigateToEditProfile(
     id: Long,
     navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
 ) {
-    navigate(route = EditProfileRoute(id)) {
+    navigate(route = _root_ide_package_.com.wordco.clockworkandroid.edit_profile_feature.ui.EditProfileRoute(
+        id
+    )
+    ) {
         navOptions()
     }
 }
@@ -28,7 +31,7 @@ fun NavController.navigateToEditProfile(
 fun NavGraphBuilder.editProfilePage(
     onBackClick: () -> Unit
 ) {
-    composable<EditProfileRoute>(
+    composable<com.wordco.clockworkandroid.edit_profile_feature.ui.EditProfileRoute>(
         enterTransition = {
             slideInHorizontally(
                 initialOffsetX = { it }, animationSpec = tween(300)
@@ -51,11 +54,11 @@ fun NavGraphBuilder.editProfilePage(
         }
     ) {
             entry ->
-        val taskId = entry.toRoute<EditProfileRoute>().id
+        val taskId = entry.toRoute<com.wordco.clockworkandroid.edit_profile_feature.ui.EditProfileRoute>().id
 
         val editProfileViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = EditProfileViewModel.Factory,
+            factory = EditProfileViewModel.Companion.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {

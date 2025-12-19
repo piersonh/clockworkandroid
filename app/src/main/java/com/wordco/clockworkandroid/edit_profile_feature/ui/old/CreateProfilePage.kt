@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.edit_profile_feature.ui.old
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
@@ -34,8 +34,7 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.EditProfileForm
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.Modal
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileFormModal
 
 @Composable
 fun CreateProfilePage(
@@ -77,18 +76,18 @@ private fun CreateProfilePage(
     val scrollState = rememberScrollState()
 
 
-    var currentModal by remember { mutableStateOf<Modal?>(null) }
+    var currentModal by remember { mutableStateOf<ProfileFormModal?>(null) }
 
     val onBackClickCheckChanges = {
         if (uiState.hasFieldChanges) {
-            currentModal = Modal.Discard
+            currentModal = ProfileFormModal.Discard
         } else {
             onBackClick()
         }
     }
 
     BackHandler(enabled = uiState.hasFieldChanges) {
-        currentModal = Modal.Discard
+        currentModal = ProfileFormModal.Discard
     }
 
     Scaffold(
@@ -146,7 +145,7 @@ private fun CreateProfilePage(
         Box(
             modifier = Modifier.padding(paddingValues)
         ) {
-            EditProfileForm(
+            ProfileForm(
                 uiState = uiState,
                 modifier = Modifier
                     .padding(
@@ -161,7 +160,7 @@ private fun CreateProfilePage(
             )
         }
 
-        if (currentModal == Modal.Discard) {
+        if (currentModal == ProfileFormModal.Discard) {
             DiscardAlert(
                 onDismiss = { currentModal = null },
                 onConfirm = onBackClick

@@ -7,7 +7,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
 
 @Composable
 fun SpinningLoader(
@@ -22,5 +24,14 @@ fun SpinningLoader(
             color = MaterialTheme.colorScheme.secondary,
             strokeWidth = 14.dp
         )
+    }
+}
+
+
+@Preview
+@Composable
+private fun SpinningLoaderPreview() {
+    ClockworkTheme {
+        SpinningLoader()
     }
 }
