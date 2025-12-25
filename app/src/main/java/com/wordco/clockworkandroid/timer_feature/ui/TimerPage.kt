@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.AlertDialog
@@ -25,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -37,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -126,7 +131,7 @@ private fun TimerPage(
     var showDeleteDialog by remember {mutableStateOf(false)}
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        containerColor = MaterialTheme.colorScheme.primary,
         topBar = {
             TopAppBar(
                 title = {
@@ -217,44 +222,41 @@ private fun TimerPage(
     ) { innerPadding ->
         Box(
             modifier = Modifier
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.primaryContainer),
+                .padding(innerPadding),
             contentAlignment = Alignment.TopEnd
         ) {
 
             when (uiState) {
                 is TimerUiState.Retrieved -> {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(30.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .background(color = MaterialTheme.colorScheme.primaryContainer)
                             .padding(horizontal = 10.dp)
+                            .fillMaxSize()
                     ) {
-                        Spacer(
-                            modifier = Modifier.height(10.dp)
-                        )
 
-                        BasicText(
-                            text = uiState.taskName,
-                            autoSize = TextAutoSize.StepBased(
-                                minFontSize = 24.sp,
-                                maxFontSize = 48.sp
-                            ),
-                            style = TextStyle(
-                                fontFamily = LATO,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontSize = 48.sp
-                            ),
-                            modifier = Modifier.heightIn(max=60.dp),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-
+                        // Task Title Badge
+                        Surface(
+                            color = Color(0xFFE6DAFF),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        ) {
+                            Text(
+                                text = uiState.taskName,
+                                color = MaterialTheme.colorScheme.secondary,
+                                // possible autosizing needed
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                            )
+                        }
 
                         TimeDisplay(uiState)
 
+                        Spacer(modifier = Modifier.weight(1f))
 
                         TimerControls(
                             modifier = Modifier

@@ -131,11 +131,11 @@ private fun EmptyProfileList(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxHeight()
-            .padding(horizontal = 15.dp)
-        ,
+            .fillMaxSize()
+            .padding(horizontal = 15.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Spacer(modifier = Modifier.weight(0.04f))
 
         Box (
             modifier = Modifier.fillMaxWidth(),
@@ -203,7 +203,6 @@ private fun EmptyProfileList(
             }
         }
 
-        Spacer(modifier = Modifier.weight(0.15f))
     }
 }
 
