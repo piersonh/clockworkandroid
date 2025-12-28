@@ -3,7 +3,7 @@
 
 Jan-Dec 2025 Florida Tech Senior Project
 
-**Authors:**
+**Authors:**  
 Anthony Menendez  
 Christian Ott  
 Pierson Hendricks  
