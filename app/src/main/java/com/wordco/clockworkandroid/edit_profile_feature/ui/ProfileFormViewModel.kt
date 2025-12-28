@@ -58,6 +58,7 @@ class ProfileFormViewModel(
         }
     }
 
+    // TODO: Copy exception to clipboard
     private inner class ErrorBehavior(
         val error: Exception,
     ): PageBehavior {
@@ -78,8 +79,8 @@ class ProfileFormViewModel(
         override fun handle(event: ProfileFormUiEvent) {
             when(event) {
                 ProfileFormUiEvent.BackClicked -> handleBackClick()
-                is ProfileFormUiEvent.ColorSliderChanged -> updateDifficulty(event.newValue)
-                is ProfileFormUiEvent.DifficultySliderChanged -> updateColor(event.newValue)
+                is ProfileFormUiEvent.ColorSliderChanged -> updateColor(event.newValue)
+                is ProfileFormUiEvent.DifficultySliderChanged -> updateDifficulty(event.newValue)
                 ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
                 ProfileFormUiEvent.ModalDismissed -> closeModals()
                 is ProfileFormUiEvent.NameChanged -> updateName(event.newName)
@@ -117,8 +118,8 @@ class ProfileFormViewModel(
         override fun handle(event: ProfileFormUiEvent) {
             when(event) {
                 ProfileFormUiEvent.BackClicked -> handleBackClick()
-                is ProfileFormUiEvent.ColorSliderChanged -> updateDifficulty(event.newValue)
-                is ProfileFormUiEvent.DifficultySliderChanged -> updateColor(event.newValue)
+                is ProfileFormUiEvent.ColorSliderChanged -> updateColor(event.newValue)
+                is ProfileFormUiEvent.DifficultySliderChanged -> updateDifficulty(event.newValue)
                 ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
                 ProfileFormUiEvent.ModalDismissed -> closeModals()
                 is ProfileFormUiEvent.NameChanged -> updateName(event.newName)

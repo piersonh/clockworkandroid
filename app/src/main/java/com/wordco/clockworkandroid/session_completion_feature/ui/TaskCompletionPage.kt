@@ -56,7 +56,6 @@ import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.session_completion_feature.ui.util.toHourMinuteString
 import java.time.Duration
 import kotlin.math.roundToInt
@@ -561,7 +560,7 @@ private fun TaskCompletionPagePreview() {
 @PreviewLightDark
 @Composable
 private fun TaskCompletionPagePreviewNoEstimate() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskCompletionPage(
             uiState = TaskCompletionUiState.Retrieved(
                 name = "Preview Task",
