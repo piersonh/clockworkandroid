@@ -46,6 +46,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -258,19 +260,19 @@ private fun SessionReport(
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(all = 10.dp)
+                .padding(horizontal = 16.dp)
                 .fillMaxHeight()
                 .verticalScroll(scrollState)
         ) {
             // Task Title Badge
             Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3F),
+                color = Color(0xFFE6DAFF),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
             ) {
                 Text(
                     text = uiState.name,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.secondary,
                     // possible autosizing needed
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
@@ -280,26 +282,9 @@ private fun SessionReport(
                 )
             }
 
-//            BasicText(
-//                text = uiState.name,
-//                autoSize = TextAutoSize.StepBased(
-//                    minFontSize = 24.sp,
-//                    maxFontSize = 40.sp
-//                ),
-//                style = TextStyle(
-//                    fontFamily = LATO,
-//                    textAlign = TextAlign.Center,
-//                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-//                    fontSize = 48.sp
-//                ),
-//                modifier = Modifier.heightIn(max=60.dp),
-//                maxLines = 2,
-//                overflow = TextOverflow.Ellipsis,
-//            )
             Spacer(modifier = Modifier.weight(0.004f))
 
             // Circular Progress
-
             if (uiState.estimate != null) {
                 val estimateText = uiState.estimate.toHourMinuteString()
                 val totalTimeFloat = uiState.totalTime.seconds.toFloat()
@@ -313,9 +298,9 @@ private fun SessionReport(
                 ) {
                     CircularProgressIndicator(
                         progress = { totalTimeFloat / estimateFloat },
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.size(270.dp),
                         color = MaterialTheme.colorScheme.secondary,
-                        strokeWidth = 14.dp,
+                        strokeWidth = 18.dp,
                         trackColor = MaterialTheme.colorScheme.primaryContainer,
                         strokeCap = StrokeCap.Round
                     )
@@ -339,19 +324,42 @@ private fun SessionReport(
                     }
                 }
             } else {
-                "No estimate provided"
+                Box(
+                    modifier = Modifier
+                        .size(300.dp)
+                        .padding(bottom = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        progress = { 1f / 1f },
+                        modifier = Modifier.size(270.dp),
+                        color = MaterialTheme.colorScheme.secondary,
+                        strokeWidth = 18.dp,
+                        trackColor = MaterialTheme.colorScheme.primaryContainer,
+                        strokeCap = StrokeCap.Round,
+                    )
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Text(
+                            text = uiState.totalTime.toHourMinuteString(),
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text(
+                            text = "spent on this task",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
 
-//            Text(
-//                text = uiState.totalTime.toHourMinuteString(),
-//                style = TextStyle(fontSize = 60.sp),
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier,
-//                color = MaterialTheme.colorScheme.surfaceVariant
-//            )
-
             Spacer(modifier = Modifier.weight(0.03f))
-
 
             // Stats Grid
             Row(
@@ -378,86 +386,62 @@ private fun SessionReport(
                     iconColor = MaterialTheme.colorScheme.tertiary
                 )
             }
-//
-//            Text(
-//                text = "Work time: ${uiState.workTime.toHourMinuteString()}",
-//                style = TextStyle(fontSize = 26.sp),
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier,
-//                color = MaterialTheme.colorScheme.onPrimary
-//            )
-//
-//            Spacer(modifier = Modifier.weight(0.03f))
-//
-//            Text (
-//                text = "Break time: ${uiState.breakTime.toHourMinuteString()}",
-//                style = TextStyle(fontSize = 26.sp),
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier,
-//                color = MaterialTheme.colorScheme.onPrimary
-//            )
 
-
-
-            uiState.totalTimeAccuracy?.let {
-                // Accuracy Card
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp),
-                    color = Color(0xFF8EC1FF),
-                    shape = RoundedCornerShape(16.dp)
+            // Accuracy Card
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                color = Color(0xFF8EC1FF),
+                shape = RoundedCornerShape(16.dp),
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    color = Color(0xFF3B65D7),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .background(
-                                        color = Color(0xFF3B65D7),
-                                        shape = CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.bullseye),
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            Icon(
+                                painter = painterResource(id = R.drawable.bullseye),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
 
-                            Column {
-                                Text(
-                                    text = "Your Accuracy",
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF262A31),
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = "${uiState.totalTimeAccuracy.roundToInt()}%",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1F2937)
-                                )
-                            }
+                        Column {
+                            Text(
+                                text = "Your Accuracy",
+                                fontSize = 14.sp,
+                                color = Color(0xFF262A31),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text =
+                                    if (uiState.totalTimeAccuracy != null)
+                                        "${uiState.totalTimeAccuracy.roundToInt()}%"
+                                    else
+                                        "N/A",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1F2937)
+                            )
                         }
                     }
                 }
-//                Text (
-//                    text = "Your accuracy: ${uiState.totalTimeAccuracy.roundToInt()}%",
-//                    style = TextStyle(fontSize = 26.sp),
-//                    textAlign = TextAlign.Center,
-//                    modifier = Modifier,
-//                    color = MaterialTheme.colorScheme.onPrimary
-//                )
             }
 
             Spacer(modifier = Modifier.weight(0.03f))
@@ -475,17 +459,6 @@ private fun SessionReport(
 //            }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-//            AccentRectangleTextButton(
-//                onClick = onContinueClick,
-//            ) {
-//                Text(
-//                    text = "Continue",
-//                    fontFamily = LATO,
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 36.sp
-//                )
-//            }
 
             // Buttons
             TextButton(
@@ -521,7 +494,8 @@ fun StatCard(
     Surface(
         modifier = modifier,
         color = backgroundColor,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        shadowElevation = 8.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -563,18 +537,39 @@ fun StatCard(
     }
 }
 
-@AspectRatioPreviews
+@Preview
 @Composable
 private fun TaskCompletionPagePreview() {
     ClockWorkTheme {
         TaskCompletionPage(
             uiState = TaskCompletionUiState.Retrieved(
-                name = "Preview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview Task",
+                name = "Preview Task",
                 estimate = Duration.ofMinutes(10).plusHours(1),
                 workTime = Duration.ofMinutes(30),
                 breakTime = Duration.ofMinutes(20),
                 totalTime = Duration.ofMinutes(50),
                 totalTimeAccuracy = 80.0,
+            ),
+            onBackClick = {},
+            onContinueClick = {},
+            onEditClick = {},
+            onDeleteClick = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun TaskCompletionPagePreviewNoEstimate() {
+    ClockworkTheme {
+        TaskCompletionPage(
+            uiState = TaskCompletionUiState.Retrieved(
+                name = "Preview Task",
+                estimate = null, //Duration.ofMinutes(10).plusHours(1),
+                workTime = Duration.ofMinutes(30),
+                breakTime = Duration.ofMinutes(20),
+                totalTime = Duration.ofMinutes(50),
+                totalTimeAccuracy = null,
             ),
             onBackClick = {},
             onContinueClick = {},
