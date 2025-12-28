@@ -4,10 +4,10 @@
 Jan-Dec 2025 Florida Tech Senior Project
 
 **Authors:**
-Anthony Menendez
-Christian Ott
-Pierson Hendricks
-Peter Stelzer
+Anthony Menendez  
+Christian Ott  
+Pierson Hendricks  
+Peter Stelzer  
 
 **Client/Advisor:** Dr. David Luginbuhl
 
