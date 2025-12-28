@@ -31,7 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.user_stats_feature.ui.model.LineChartDataPoint
 import kotlin.math.roundToInt
 
@@ -334,7 +334,7 @@ fun LineChart(
 @Preview
 @Composable
 private fun LineChartPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         val data = listOf(
             LineChartDataPoint(0.9f, 10f),
             LineChartDataPoint(1.2f, 49f),

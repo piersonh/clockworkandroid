@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.CompletedSessionListItem
@@ -133,7 +133,7 @@ fun CompletedSessionUiListItem(
 @Preview
 @Composable
 private fun Preview() {
-    ClockworkTheme { 
+    ClockWorkTheme {
         CompletedSessionUiListItem(
             session = CompletedSessionListItem(
                 id = 0,

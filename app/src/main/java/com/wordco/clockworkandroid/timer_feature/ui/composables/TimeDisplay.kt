@@ -23,7 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.theme.TIME_DISPLAY
 import com.wordco.clockworkandroid.timer_feature.ui.TimerUiState
@@ -131,7 +131,7 @@ fun TimeDisplay(
 @Preview
 @Composable
 private fun TimerDisplayPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TimeDisplay(
             uiState = TimerUiState.Suspended(
                 taskName = "Preview",

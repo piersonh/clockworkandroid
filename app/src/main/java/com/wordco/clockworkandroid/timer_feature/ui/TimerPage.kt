@@ -50,7 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.timer_feature.ui.composables.TimeDisplay
@@ -330,7 +330,7 @@ private fun TimerPage(
 @AspectRatioPreviews
 @Composable
 private fun SuspendedTimerPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TimerPage(
             uiState = TimerUiState.Suspended(
                 taskName = "Ooga Booga",
@@ -356,7 +356,7 @@ private fun SuspendedTimerPagePreview() {
 @Preview(name = "2. 37:18", showBackground = true, device = "spec:width=360dp,height=740dp,dpi=420")
 @Composable
 private fun PosterScreenShot() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TimerPage(
             uiState = TimerUiState.Running(
                 taskName = "Implement Linked List in Rust",

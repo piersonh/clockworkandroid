@@ -127,8 +127,6 @@ class SessionFormViewModel(
                 profileId?.let { id -> profilesList.first { it.id == id } }
             )
 
-            println(fieldDefaults.difficulty.toInt())
-
             _uiState.update {
                 when (val state = internalState) {
                     is InternalState.Create -> {

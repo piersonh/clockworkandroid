@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.asHHMM
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
@@ -285,7 +285,7 @@ fun rememberEstimatePickerState(
 @Preview
 @Composable
 private fun EstimatePickerModalPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         Scaffold { paddingValues ->
             Box(
                 modifier = Modifier.padding(paddingValues)

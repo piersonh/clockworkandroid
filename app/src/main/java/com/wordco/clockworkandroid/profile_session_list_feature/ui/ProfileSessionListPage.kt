@@ -68,7 +68,7 @@ import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.CompletedSessionUiListItem
@@ -738,7 +738,7 @@ private fun ProfileSessionListPageRetrieving(
 @PreviewLightDark
 @Composable
 private fun ProfileSessionListPageRetrievedPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",
@@ -767,7 +767,7 @@ private fun ProfileSessionListPageRetrievedPreview() {
 @PreviewLightDark
 @Composable
 private fun ProfileSessionListPageRetrievingPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfileSessionListPageRetrieving (
             onBackClick = {},
             navBar = { NavBar(
@@ -782,7 +782,7 @@ private fun ProfileSessionListPageRetrievingPreview() {
 @Preview(heightDp = 900)
 @Composable
 private fun ProfileSessionListPageEmptyTodoPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfileSessionListPageRetrieved(
             uiState = ProfileSessionListUiState.Retrieved(
                 profileName = "Preview",

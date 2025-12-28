@@ -17,4 +17,10 @@ sealed interface ProfileFormUiState {
         val hasFormChanges: Boolean,
         val currentModal: ProfileFormModal?
     ): ProfileFormUiState
+
+    data class Error(
+        override val title: String,
+        val header: String,
+        val message: String,
+    ) : ProfileFormUiState
 }

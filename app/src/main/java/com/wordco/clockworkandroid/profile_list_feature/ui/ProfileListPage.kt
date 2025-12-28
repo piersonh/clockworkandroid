@@ -43,7 +43,7 @@ import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.profile_list_feature.ui.elements.ProfileListItemUi
@@ -241,7 +241,7 @@ private fun ProfileList(
 @Preview
 @Composable
 private fun ProfileListPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfileListPage(
             uiState = ProfileListUiState.Retrieved(
                 profiles = DummyData.PROFILES.map { it.toProfileListItem() }
@@ -260,7 +260,7 @@ private fun ProfileListPagePreview() {
 @Preview
 @Composable
 private fun EmptyProfileListPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfileListPage(
             uiState = ProfileListUiState.Retrieved(
                 profiles = emptyList()

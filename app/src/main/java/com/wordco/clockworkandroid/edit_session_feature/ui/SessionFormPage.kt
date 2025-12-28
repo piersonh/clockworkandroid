@@ -37,7 +37,7 @@ import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormEvent.DueDateChanged
@@ -351,7 +351,7 @@ private fun SessionFormPageRetrieved(
 @AspectRatioPreviews
 @Composable
 private fun SessionFormPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         SessionFormPageRetrieved(
             uiState = SessionFormUiState.Retrieved(
                 title = "Preview",
@@ -384,7 +384,7 @@ private fun SessionFormPagePreview() {
 @AspectRatioPreviews
 @Composable
 private fun LoadingSessionFormPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         DelegateSessionFormPage (
             uiState = SessionFormUiState.Retrieving(
                 title = "Preview"

@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ReminderListItem
 
 @Composable
@@ -31,7 +31,7 @@ fun ReminderList(
 @Preview
 @Composable
 private fun ReminderListPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ReminderList(
             reminders = emptyList()
         )

@@ -49,7 +49,7 @@ import com.wordco.clockworkandroid.core.domain.use_case.CalculateEstimateAccurac
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
@@ -296,7 +296,7 @@ private fun CompletedSessionList(
 private fun UserStatsPagePreview() {
     val calculateEstimateAccuracyUseCase = remember { CalculateEstimateAccuracyUseCase() }
 
-    ClockworkTheme {
+    ClockWorkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
                 completedTasks = DummyData.SESSIONS
@@ -328,7 +328,7 @@ private fun UserStatsPagePreview() {
 @AspectRatioPreviews
 @Composable
 private fun UserStatsNoCompletedSessionsPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         UserStatsPage(
             uiState = UserStatsUiState.Retrieved(
                 completedTasks = emptyList(),

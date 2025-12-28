@@ -49,7 +49,7 @@ import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
@@ -390,7 +390,7 @@ private fun TaskList(
 @AspectRatioPreviews
 @Composable
 private fun TaskListPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
                 newTasks = DummyData.SESSIONS
@@ -421,7 +421,7 @@ private fun TaskListPagePreview() {
 @AspectRatioPreviews
 @Composable
 private fun EmptyTaskListPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
                 newTasks = emptyList(),
@@ -441,7 +441,7 @@ private fun EmptyTaskListPagePreview() {
 @AspectRatioPreviews
 @Composable
 private fun NoNewTasksListPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
                 newTasks = emptyList(),
@@ -470,7 +470,7 @@ private fun NoNewTasksListPagePreview() {
 @AspectRatioPreviews
 @Composable
 private fun NoStartedTasksListPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerDormant(
                 newTasks = DummyData.SESSIONS
@@ -492,7 +492,7 @@ private fun NoStartedTasksListPagePreview() {
 @Preview(name = "2. 37:18", showBackground = true, device = "spec:width=360dp,height=740dp,dpi=420")
 @Composable
 private fun PosterScreenShot() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskListPage(
             uiState = TaskListUiState.TimerActive(
                 newTasks = listOf(

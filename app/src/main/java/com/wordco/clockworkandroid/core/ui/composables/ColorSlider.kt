@@ -22,7 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 
 private val brush = Brush.horizontalGradient(
@@ -95,7 +95,7 @@ fun ColorSlider(
 @Preview
 @Composable
 private fun ColorSliderPreview(){
-    ClockworkTheme {
+    ClockWorkTheme {
         ColorSlider(
             label = "Preview",
             value = 0.5f,

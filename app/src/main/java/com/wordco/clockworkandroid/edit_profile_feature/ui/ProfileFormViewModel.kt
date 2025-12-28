@@ -46,48 +46,166 @@ class ProfileFormViewModel(
     private val _uiEffect = Channel<ProfileFormUiEffect>()
     val uiEffect = _uiEffect.receiveAsFlow()
 
-    private sealed interface InternalState {
-        data object Create : InternalState
-        data class Edit(val profile: Profile): InternalState
+    private var currentBehavior: PageBehavior = LoadingBehavior()
+
+    private interface PageBehavior {
+        fun handle(event: ProfileFormUiEvent)
     }
 
-    private lateinit var internalState: InternalState
+    private inner class LoadingBehavior: PageBehavior {
+        override fun handle(event: ProfileFormUiEvent) {
+            // do nothing
+        }
+    }
 
-    private var fieldDefaults = getFieldDefaults()
-
-    init {
-        when(formMode) {
-            ProfileFormMode.Create -> {
-                internalState = InternalState.Create
-                _uiState.update {
-                    ProfileFormUiState.Retrieved(
-                        title = "Create Profile",
-                        name = fieldDefaults.name,
-                        colorSliderPos = fieldDefaults.colorSliderPos,
-                        difficulty = fieldDefaults.difficulty,
-                        hasFormChanges = false,
-                        currentModal = null,
-                    )
-                }
+    private inner class ErrorBehavior(
+        val error: Exception,
+    ): PageBehavior {
+        override fun handle(event: ProfileFormUiEvent) {
+            when(event) {
+                ProfileFormUiEvent.BackClicked -> handleBackClick()
+                is ProfileFormUiEvent.ColorSliderChanged -> { }
+                is ProfileFormUiEvent.DifficultySliderChanged -> { }
+                ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
+                ProfileFormUiEvent.ModalDismissed -> closeModals()
+                is ProfileFormUiEvent.NameChanged -> { }
+                ProfileFormUiEvent.SaveClicked -> { }
             }
-            
-            is ProfileFormMode.Edit -> {
-                viewModelScope.launch {
-                    val profile = getProfileUseCase(formMode.profileId).first()
-                    internalState = InternalState.Edit(profile)
-                    
-                    _uiState.update {
-                        ProfileFormUiState.Retrieved(
-                            title = "EditProfile",
-                            name = profile.name,
-                            colorSliderPos = profile.color.hue() / 360,
-                            difficulty = profile.defaultDifficulty.toFloat(),
-                            hasFormChanges = false,
-                            currentModal = null,
-                        )
+        }
+    }
+
+    private inner class CreateFormBehavior: PageBehavior {
+        override fun handle(event: ProfileFormUiEvent) {
+            when(event) {
+                ProfileFormUiEvent.BackClicked -> handleBackClick()
+                is ProfileFormUiEvent.ColorSliderChanged -> updateDifficulty(event.newValue)
+                is ProfileFormUiEvent.DifficultySliderChanged -> updateColor(event.newValue)
+                ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
+                ProfileFormUiEvent.ModalDismissed -> closeModals()
+                is ProfileFormUiEvent.NameChanged -> updateName(event.newName)
+                ProfileFormUiEvent.SaveClicked -> {
+                    _uiState.withRetrieved {
+                        if (name.isBlank()) {
+                            sendEffect(ProfileFormUiEffect.ShowSnackbar(
+                                "Please give the template a name."
+                            ))
+                            return@withRetrieved
+                        }
+
+                        viewModelScope.launch {
+                            createProfileUseCase(
+                                Profile(
+                                    id = 0,
+                                    name = name,
+                                    color = Color.fromSlider(colorSliderPos),
+                                    defaultDifficulty = difficulty.toInt(),
+                                    sessions = emptyList(),
+                                )
+                            )
+                            //sendEffect(ProfileFormUiEffect.ShowSnackbar("Template Saved"))
+                            sendEffect(ProfileFormUiEffect.NavigateBack)
+                        }
                     }
                 }
             }
+        }
+    }
+
+    private inner class EditFormBehavior(
+        val profile: Profile,
+    ): PageBehavior {
+        override fun handle(event: ProfileFormUiEvent) {
+            when(event) {
+                ProfileFormUiEvent.BackClicked -> handleBackClick()
+                is ProfileFormUiEvent.ColorSliderChanged -> updateDifficulty(event.newValue)
+                is ProfileFormUiEvent.DifficultySliderChanged -> updateColor(event.newValue)
+                ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
+                ProfileFormUiEvent.ModalDismissed -> closeModals()
+                is ProfileFormUiEvent.NameChanged -> updateName(event.newName)
+                ProfileFormUiEvent.SaveClicked -> {
+                    _uiState.withRetrieved {
+                        if (name.isBlank()) {
+                            sendEffect(ProfileFormUiEffect.ShowSnackbar(
+                                "Please give the template a name."
+                            ))
+                            return@withRetrieved
+                        }
+
+                        viewModelScope.launch {
+                            updateProfileUseCase(
+                                Profile(
+                                    id = profile.id,
+                                    name = name,
+                                    color = Color.fromSlider(colorSliderPos),
+                                    defaultDifficulty = difficulty.toInt(),
+                                    sessions = profile.sessions,
+                                )
+                            )
+                            //sendEffect(ProfileFormUiEffect.ShowSnackbar("Template Saved"))
+                            sendEffect(ProfileFormUiEffect.NavigateBack)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var fieldDefaults = getFieldDefaults()
+
+    /**
+     * Initialize the viewModel and page state
+     */
+    init {
+        viewModelScope.launch {
+            try {
+                when(formMode) {
+                    ProfileFormMode.Create -> setupCreateMode()
+                    is ProfileFormMode.Edit -> setupEditMode(formMode.profileId)
+                }
+            } catch (e: Exception) {
+                setFailure(e)
+            }
+        }
+    }
+
+    private fun setupCreateMode() {
+        currentBehavior = CreateFormBehavior()
+        _uiState.update {
+            ProfileFormUiState.Retrieved(
+                title = "Create Profile",
+                name = fieldDefaults.name,
+                colorSliderPos = fieldDefaults.colorSliderPos,
+                difficulty = fieldDefaults.difficulty,
+                hasFormChanges = false,
+                currentModal = null,
+            )
+        }
+    }
+
+    private suspend fun setupEditMode(profileId: Long) {
+        val profile = getProfileUseCase(profileId).first()
+        currentBehavior = EditFormBehavior(profile)
+
+        _uiState.update {
+            ProfileFormUiState.Retrieved(
+                title = "EditProfile",
+                name = profile.name,
+                colorSliderPos = profile.color.hue() / 360,
+                difficulty = profile.defaultDifficulty.toFloat(),
+                hasFormChanges = false,
+                currentModal = null,
+            )
+        }
+    }
+
+    private fun setFailure(error: Exception) {
+        currentBehavior = ErrorBehavior(error)
+        _uiState.update { currentState ->
+            ProfileFormUiState.Error(
+                currentState.title,
+                "Failed to load",
+                error.message ?: "No message given"
+            )
         }
     }
 
@@ -100,16 +218,7 @@ class ProfileFormViewModel(
     }
 
     fun onEvent(event: ProfileFormUiEvent) {
-        when (event) {
-            is ProfileFormUiEvent.BackClicked -> handleBackClick()
-            ProfileFormUiEvent.ModalDismissed -> closeModals()
-            ProfileFormUiEvent.SaveClicked -> validateAndSave()
-            ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
-
-            is ProfileFormUiEvent.ColorSliderChanged -> updateColor(event.newValue)
-            is ProfileFormUiEvent.DifficultySliderChanged -> updateDifficulty(event.newValue)
-            is ProfileFormUiEvent.NameChanged -> updateName(event.newName)
-        }
+        currentBehavior.handle(event)
     }
 
     private fun sendEffect(effect: ProfileFormUiEffect) {
@@ -140,46 +249,6 @@ class ProfileFormViewModel(
 
     private fun closeModals() {
         _uiState.updateRetrieved { copy(currentModal = null) }
-    }
-
-    private fun validateAndSave() {
-        _uiState.withRetrieved {
-            if (name.isBlank()) {
-                sendEffect(ProfileFormUiEffect.ShowSnackbar(
-                    "Please give the template a name."
-                ))
-                return@withRetrieved
-            }
-
-            viewModelScope.launch {
-                when (val state = internalState) {
-                    InternalState.Create -> {
-                        createProfileUseCase(
-                            Profile(
-                                id = 0,
-                                name = name,
-                                color = Color.fromSlider(colorSliderPos),
-                                defaultDifficulty = difficulty.toInt(),
-                                sessions = emptyList(),
-                            )
-                        )
-                    }
-                    is InternalState.Edit -> {
-                        updateProfileUseCase(
-                            Profile(
-                                id = state.profile.id,
-                                name = name,
-                                color = Color.fromSlider(colorSliderPos),
-                                defaultDifficulty = difficulty.toInt(),
-                                sessions = state.profile.sessions,
-                            )
-                        )
-                    }
-                }
-                //sendEffect(ProfileFormUiEffect.ShowSnackbar("Template Saved"))
-                sendEffect(ProfileFormUiEffect.NavigateBack)
-            }
-        }
     }
 
     private fun discardAndClose() {

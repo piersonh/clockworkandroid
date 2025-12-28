@@ -52,7 +52,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.session_completion_feature.ui.util.toHourMinuteString
@@ -566,7 +566,7 @@ fun StatCard(
 @AspectRatioPreviews
 @Composable
 private fun TaskCompletionPagePreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         TaskCompletionPage(
             uiState = TaskCompletionUiState.Retrieved(
                 name = "Preview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview TaskPreview Task",

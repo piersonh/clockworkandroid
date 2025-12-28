@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 
 @Composable
@@ -74,7 +74,7 @@ fun NavBar(
 @Preview
 @Composable
 private fun NavBarPreview() {
-    ClockworkTheme { 
+    ClockWorkTheme {
         NavBar(
             items = FAKE_TOP_LEVEL_DESTINATIONS,
             currentDestination = Unit,

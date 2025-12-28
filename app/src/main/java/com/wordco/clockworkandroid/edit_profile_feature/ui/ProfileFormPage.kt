@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
@@ -38,8 +37,10 @@ import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.ErrorReport
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.ProfileForm
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileFormModal
 import kotlinx.coroutines.launch
@@ -170,10 +171,17 @@ private fun ProfileFormPageContent(
                         onEvent = onEvent,
                     )
 
-
                     ModalManager(
                         currentModal = currentState.currentModal,
                         onEvent = onEvent,
+                    )
+                }
+
+                is ProfileFormUiState.Error -> {
+                    ErrorReport(
+                        state,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 30.dp)
                     )
                 }
             }
@@ -209,16 +217,21 @@ class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
             difficulty = 3f,
             hasFormChanges = true,
             currentModal = null,
+        ),
+        ProfileFormUiState.Error(
+            title = "Preview",
+            header = "Failed to load",
+            message = "message here",
         )
     )
 }
 
-@Preview(showBackground = true)
+@AspectRatioPreviews
 @Composable
 fun PreviewFormScreen(
     @PreviewParameter(FormStateProvider::class) state: ProfileFormUiState
 ) {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfileFormPageContent(
             state = state,
             snackbarHostState = remember { SnackbarHostState() },

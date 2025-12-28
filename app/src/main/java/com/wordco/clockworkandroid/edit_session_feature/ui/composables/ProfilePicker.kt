@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
@@ -189,7 +189,7 @@ private fun ProfilePickerNoProfiles(
 @Preview
 @Composable
 private fun ProfilePickerPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfilePicker(
             profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
             onProfileClick = {},
@@ -201,7 +201,7 @@ private fun ProfilePickerPreview() {
 @Preview
 @Composable
 private fun ProfilePickerNoProfilesPreview() {
-    ClockworkTheme {
+    ClockWorkTheme {
         ProfilePicker(
             profiles = emptyList(),
             onProfileClick = {},

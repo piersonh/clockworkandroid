@@ -23,7 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.wordco.clockworkandroid.core.domain.model.PermissionRequest
-import com.wordco.clockworkandroid.core.ui.theme.ClockworkTheme
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()  // FIXME we probably do not want this
         setContent {
-            ClockworkTheme {
+            ClockWorkTheme {
                 NavHost()
             }
 
