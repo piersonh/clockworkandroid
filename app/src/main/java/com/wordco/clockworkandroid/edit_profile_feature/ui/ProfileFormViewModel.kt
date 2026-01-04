@@ -54,7 +54,15 @@ class ProfileFormViewModel(
 
     private inner class LoadingBehavior: PageBehavior {
         override fun handle(event: ProfileFormUiEvent) {
-            // do nothing
+            when(event) {
+                ProfileFormUiEvent.BackClicked -> handleBackClick()
+                is ProfileFormUiEvent.ColorSliderChanged -> { }
+                is ProfileFormUiEvent.DifficultySliderChanged -> { }
+                ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
+                ProfileFormUiEvent.ModalDismissed -> closeModals()
+                is ProfileFormUiEvent.NameChanged -> { }
+                ProfileFormUiEvent.SaveClicked -> { }
+            }
         }
     }
 
