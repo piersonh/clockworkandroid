@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
@@ -20,6 +21,7 @@ import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileFormUiState
 fun ErrorReport(
     state: ProfileFormUiState.Error,
     modifier: Modifier = Modifier,
+    onCopyErrorInfoClick: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -31,7 +33,7 @@ fun ErrorReport(
             fontWeight = FontWeight.Bold,
             fontSize = 96.sp,
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(30.dp))
         Text(
             state.header,
             fontFamily = LATO,
@@ -46,6 +48,18 @@ fun ErrorReport(
             fontSize = 24.sp,
             textAlign = TextAlign.Center,
         )
+        Spacer(modifier = Modifier.height(50.dp))
+        AccentRectangleTextButton(
+            onClick = onCopyErrorInfoClick,
+            maxHeight = 56.dp,
+        ) {
+            Text(
+                "Copy Error Info",
+                fontFamily = LATO,
+                fontWeight = FontWeight.Bold,
+                fontSize = 25.sp,
+            )
+        }
     }
 }
 
@@ -58,7 +72,8 @@ private fun ErrorReportPreview() {
                 title = "Preview",
                 header = "Failed to load",
                 message = "message here",
-            )
+            ),
+            onCopyErrorInfoClick = {},
         )
     }
 }
