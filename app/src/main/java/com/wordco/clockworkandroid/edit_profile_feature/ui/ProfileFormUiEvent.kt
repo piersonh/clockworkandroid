@@ -14,6 +14,6 @@ sealed interface ProfileFormUiEvent {
     data object CopyErrorClicked: ErrorEvent
 
     data class NameChanged(val newName: String): FormEvent
-    data class ColorSliderChanged(val newValue: Float): FormEvent
-    data class DifficultySliderChanged(val newValue: Float): FormEvent
+    data class ColorSliderChanged(val newPos: Float): FormEvent
+    data class DifficultySliderChanged(val newPos: Float): FormEvent
 }

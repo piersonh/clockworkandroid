@@ -43,10 +43,10 @@ class ProfileFormViewModel(
     }
 
     private inner class LoadingBehavior(
-        initialState: ProfileFormUiState.Retrieving
+        initialUiState: ProfileFormUiState.Retrieving
     ): PageBehavior {
-        private val _state = MutableStateFlow(initialState)
-        override val uiState = _state.asStateFlow()
+        private val _uiState = MutableStateFlow(initialUiState)
+        override val uiState = _uiState.asStateFlow()
 
         override suspend fun handle(event: ProfileFormUiEvent) {
             when(event as? ProfileFormUiEvent.LoadingEvent) {
@@ -57,11 +57,11 @@ class ProfileFormViewModel(
     }
 
     private inner class ErrorBehavior(
-        initialState: ProfileFormUiState.Error,
+        initialUiState: ProfileFormUiState.Error,
         val stackTrace: String?,
     ): PageBehavior {
-        private val _state = MutableStateFlow(initialState)
-        override val uiState = _state.asStateFlow()
+        private val _uiState = MutableStateFlow(initialUiState)
+        override val uiState = _uiState.asStateFlow()
 
         override suspend fun handle(event: ProfileFormUiEvent) {
             when(event as? ProfileFormUiEvent.ErrorEvent) {
@@ -73,8 +73,8 @@ class ProfileFormViewModel(
 
         suspend fun copyError() {
             val clipboardContent = """
-                    Title: ${_state.value.title}
-                    Message: ${_state.value.message}
+                    Title: ${_uiState.value.title}
+                    Message: ${_uiState.value.message}
                     --- StackTrace ---
                     $stackTrace
                 """.trimIndent()
@@ -85,52 +85,70 @@ class ProfileFormViewModel(
     }
 
     private abstract inner class FormBehavior(
-        initialState: ProfileFormUiState.Retrieved
+        initialUiState: ProfileFormUiState.Retrieved
     ) : PageBehavior {
-        private val _formState = MutableStateFlow(initialState)
-        override val uiState: StateFlow<ProfileFormUiState> = _formState.asStateFlow()
+        private val _uiState = MutableStateFlow(initialUiState)
+        override val uiState = _uiState.asStateFlow()
 
         abstract suspend fun save(state: ProfileFormUiState.Retrieved)
 
         override suspend fun handle(event: ProfileFormUiEvent) {
             when (val e = event as? ProfileFormUiEvent.FormEvent) {
                 ProfileFormUiEvent.BackClicked -> handleBackClick()
-                is ProfileFormUiEvent.NameChanged -> _formState.update { it.copy(name = e.newName, hasFormChanges = true) }
-                is ProfileFormUiEvent.ColorSliderChanged -> _formState.update { it.copy(colorSliderPos = e.newValue, hasFormChanges = true) }
-                is ProfileFormUiEvent.DifficultySliderChanged -> _formState.update { it.copy(difficulty = e.newValue, hasFormChanges = true) }
+                is ProfileFormUiEvent.NameChanged -> updateName(e.newName)
+                is ProfileFormUiEvent.ColorSliderChanged -> updateColorSliderPos(e.newPos)
+                is ProfileFormUiEvent.DifficultySliderChanged -> updateDifficultySliderPos(e.newPos)
                 ProfileFormUiEvent.DiscardConfirmed -> discardAndClose()
-                ProfileFormUiEvent.ModalDismissed -> _formState.update { it.copy(currentModal = null) }
+                ProfileFormUiEvent.ModalDismissed -> closeModals()
                 ProfileFormUiEvent.SaveClicked -> validateAndSave()
                 null -> { }
             }
         }
 
+        private fun updateName(newName: String) {
+            _uiState.update { it.copy(name = newName, hasFormChanges = true) }
+        }
+
+        private fun updateColorSliderPos(newPos: Float) {
+            _uiState.update { it.copy(colorSliderPos = newPos, hasFormChanges = true) }
+        }
+
+        private fun updateDifficultySliderPos(newPos: Float) {
+            _uiState.update { it.copy(difficulty = newPos, hasFormChanges = true) }
+        }
+
+        private fun closeModals() {
+            _uiState.update { it.copy(currentModal = null) }
+        }
+
         private suspend fun validateAndSave() {
-            val state = _formState.value
+            val state = _uiState.value
             if (state.name.isBlank()) {
-                _uiEffect.send(ProfileFormUiEffect.ShowSnackbar("Please give the template a name."))
+                _uiEffect.send(ProfileFormUiEffect.ShowSnackbar(
+                    "Please give the template a name."
+                ))
                 return
             }
             save(state)
         }
 
         private suspend fun handleBackClick() {
-            if (_formState.value.hasFormChanges) {
-                _formState.update { it.copy(currentModal = ProfileFormModal.Discard) }
+            if (_uiState.value.hasFormChanges) {
+                _uiState.update { it.copy(currentModal = ProfileFormModal.Discard) }
             } else {
                 sendEffect(ProfileFormUiEffect.NavigateBack)
             }
         }
 
         private suspend fun discardAndClose() {
-            _formState.update { it.copy(currentModal = null) }
+            _uiState.update { it.copy(currentModal = null) }
             sendEffect(ProfileFormUiEffect.NavigateBack)
         }
     }
 
     private inner class CreateFormBehavior(
-        initialState: ProfileFormUiState.Retrieved
-    ): FormBehavior(initialState) {
+        initialUiState: ProfileFormUiState.Retrieved
+    ): FormBehavior(initialUiState) {
         override suspend fun save(state: ProfileFormUiState.Retrieved) {
             createProfileUseCase(
                 Profile(
@@ -147,9 +165,9 @@ class ProfileFormViewModel(
     }
 
     private inner class EditFormBehavior(
-        initialState: ProfileFormUiState.Retrieved,
+        initialUiState: ProfileFormUiState.Retrieved,
         val profile: Profile,
-    ): FormBehavior(initialState) {
+    ): FormBehavior(initialUiState) {
         override suspend fun save(state: ProfileFormUiState.Retrieved) {
             updateProfileUseCase(
                 Profile(
@@ -167,7 +185,7 @@ class ProfileFormViewModel(
 
 
     private val _currentBehavior = MutableStateFlow<PageBehavior>(LoadingBehavior(
-        initialState = ProfileFormUiState.Retrieving(
+        initialUiState = ProfileFormUiState.Retrieving(
             title = when(formMode) {
                 ProfileFormMode.Create -> "Create Template"
                 is ProfileFormMode.Edit -> "Edit Template"
@@ -213,7 +231,7 @@ class ProfileFormViewModel(
     private fun setupCreateMode() {
         _currentBehavior.update {
             CreateFormBehavior(
-                initialState = ProfileFormUiState.Retrieved(
+                initialUiState = ProfileFormUiState.Retrieved(
                     title = "Create Template",
                     name = fieldDefaults.name,
                     colorSliderPos = fieldDefaults.colorSliderPos,
@@ -230,7 +248,7 @@ class ProfileFormViewModel(
 
         _currentBehavior.update {
             EditFormBehavior(
-                initialState = ProfileFormUiState.Retrieved(
+                initialUiState = ProfileFormUiState.Retrieved(
                     title = "Edit Template",
                     name = profile.name,
                     colorSliderPos = profile.color.hue() / 360,
@@ -248,7 +266,7 @@ class ProfileFormViewModel(
             val pageTitle = currentBehavior.uiState.value.title
 
             ErrorBehavior(
-                initialState = ProfileFormUiState.Error(pageTitle, alert, message),
+                initialUiState = ProfileFormUiState.Error(pageTitle, alert, message),
                 stackTrace = stackTrace
             )
         }
