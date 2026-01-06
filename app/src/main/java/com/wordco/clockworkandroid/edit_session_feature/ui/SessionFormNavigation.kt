@@ -4,7 +4,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -19,6 +21,14 @@ data class CreateNewSessionRoute(val profileId: Long? = null)
 
 @Serializable
 data class EditSessionRoute(val sessionId: Long)
+
+@Serializable
+data class ProfilePickerRoute(val selectedProfileId: Long?) {
+    companion object {
+        // The key used to pass the result back
+        const val RESULT_PROFILE_ID = "result_profile_id"
+    }
+}
 
 
 fun NavController.navigateToCreateNewSession(
@@ -44,6 +54,8 @@ fun NavController.navigateToEditSession(
 fun NavGraphBuilder.sessionFormPage(
     onBackClick: () -> Unit,
     onCreateNewProfileClick: () -> Unit,
+    onNavigateToProfilePicker: (Long?) -> Unit,
+    onProfileSelected: (Long?) -> Unit,
 ) {
     composable<CreateNewSessionRoute>(
         enterTransition = {
@@ -72,10 +84,14 @@ fun NavGraphBuilder.sessionFormPage(
 
         val viewModel = createViewModel(entry, SessionFormMode.Create(profileId = profileId))
 
+        LaunchedEffect(entry) {
+            entry.savedStateHandle.getLiveData<Long?>(ProfilePickerRoute.RESULT_PROFILE_ID)
+                .asFlow().collect { println("Found: $it") }
+        }
         SessionFormPage(
             onBackClick = onBackClick,
-            onCreateProfileClick = onCreateNewProfileClick,
             viewModel = viewModel,
+            onNavigateToProfilePicker = { id -> onNavigateToProfilePicker(id) },
         )
     }
 
@@ -109,8 +125,50 @@ fun NavGraphBuilder.sessionFormPage(
 
         SessionFormPage(
             onBackClick = onBackClick,
-            onCreateProfileClick = onCreateNewProfileClick,
             viewModel = viewModel,
+            onNavigateToProfilePicker = { id -> onNavigateToProfilePicker(id) },
+        )
+    }
+
+    composable<ProfilePickerRoute>(
+        enterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { -it }, animationSpec = tween(300)
+            )
+        },
+        exitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { it }, animationSpec = tween(300)
+            )
+        },
+        popExitTransition = {
+            slideOutHorizontally(
+                targetOffsetX = { -it }, animationSpec = tween(300)
+            )
+        },
+        popEnterTransition = {
+            slideInHorizontally(
+                initialOffsetX = { it }, animationSpec = tween(300)
+            )
+        }
+    ) { entry ->
+        val selectedProfileId = entry.toRoute<ProfilePickerRoute>().selectedProfileId
+
+        val viewModel = ViewModelProvider.create(
+            store = entry.viewModelStore,
+            factory = ProfilePickerViewModel.Factory,
+            extras = MutableCreationExtras(entry.defaultViewModelCreationExtras).apply {
+                set(ProfilePickerViewModel.SELECTED_PROFILE_KEY, selectedProfileId)
+            }
+        )[ProfilePickerViewModel::class]
+
+        ProfilePickerPage(
+            viewModel = viewModel,
+            onBackClick = onBackClick,
+            onProfileSelected = { resultId ->
+                onProfileSelected(resultId)
+            },
+            onNavigateToCreateProfile = onCreateNewProfileClick
         )
     }
 }

@@ -40,11 +40,11 @@ import androidx.lifecycle.flowWithLifecycle
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
+import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
-import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.ErrorReport
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.ProfileForm
 import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileFormModal
 import kotlinx.coroutines.launch
@@ -55,7 +55,7 @@ fun ProfileFormPage(
     onBackClick: () -> Unit,
 ) {
 
-    val state by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -93,7 +93,7 @@ fun ProfileFormPage(
     }
 
     ProfileFormPageContent(
-        state = state,
+        uiState = uiState,
         snackbarHostState = snackbarHostState,
         onEvent = viewModel::onEvent,
     )
@@ -103,7 +103,7 @@ fun ProfileFormPage(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileFormPageContent(
-    state: ProfileFormUiState,
+    uiState: ProfileFormUiState,
     snackbarHostState: SnackbarHostState,
     onEvent: (ProfileFormUiEvent) -> Unit,
 ) {
@@ -113,7 +113,7 @@ private fun ProfileFormPageContent(
             TopAppBar(
                 title = {
                     Text(
-                        state.title,
+                        uiState.title,
                         fontFamily = LATO,
                         fontWeight = FontWeight.Black,
                     )
@@ -134,7 +134,7 @@ private fun ProfileFormPageContent(
             )
         },
         bottomBar = {
-            if (state is ProfileFormUiState.Retrieved) {
+            if (uiState is ProfileFormUiState.Retrieved) {
                 BottomAppBar(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
@@ -166,19 +166,19 @@ private fun ProfileFormPageContent(
         Box(
             modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
-            when (val currentState = state) {
+            when (uiState) {
                 is ProfileFormUiState.Retrieving -> {
                     SpinningLoader()
                 }
                 is ProfileFormUiState.Retrieved -> {
-                    BackHandler(enabled = currentState.hasFormChanges) {
+                    BackHandler(enabled = uiState.hasFormChanges) {
                         onEvent(ProfileFormUiEvent.BackClicked)
                     }
 
                     val scrollState = rememberScrollState()
 
                     ProfileForm(
-                        uiState = currentState,
+                        uiState = uiState,
                         modifier = Modifier
                             .padding(
                                 horizontal = 30.dp,
@@ -189,7 +189,7 @@ private fun ProfileFormPageContent(
                     )
 
                     ModalManager(
-                        currentModal = currentState.currentModal,
+                        currentModal = uiState.currentModal,
                         onEvent = onEvent,
                     )
                 }
@@ -199,7 +199,8 @@ private fun ProfileFormPageContent(
                         modifier = Modifier.padding(top = 40.dp)
                     ) {
                         ErrorReport(
-                            state,
+                            uiState.header,
+                            uiState.message,
                             onCopyErrorInfoClick = { onEvent(ProfileFormUiEvent.CopyErrorClicked) },
                             modifier = Modifier.fillMaxWidth()
                                 .padding(top = 30.dp)
@@ -255,7 +256,7 @@ fun PreviewFormScreen(
 ) {
     ClockWorkTheme {
         ProfileFormPageContent(
-            state = state,
+            uiState = state,
             snackbarHostState = remember { SnackbarHostState() },
             onEvent = {}
         )

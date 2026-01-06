@@ -22,7 +22,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -38,6 +37,9 @@ class ProfileFormViewModel(
     private val updateProfileUseCase: UpdateProfileUseCase,
 ) : ViewModel() {
     private interface PageBehavior {
+        // There is no need for a private mutable backing field (_uiState) because
+        //  1) the interface erases the mutability and
+        //  2) the public exposure from the viewmodel transforms it using stateIn
         val uiState: StateFlow<ProfileFormUiState>
         suspend fun handle(event: ProfileFormUiEvent)
     }
@@ -45,8 +47,7 @@ class ProfileFormViewModel(
     private inner class LoadingBehavior(
         initialUiState: ProfileFormUiState.Retrieving
     ): PageBehavior {
-        private val _uiState = MutableStateFlow(initialUiState)
-        override val uiState = _uiState.asStateFlow()
+        override val uiState = MutableStateFlow(initialUiState)
 
         override suspend fun handle(event: ProfileFormUiEvent) {
             when(event as? ProfileFormUiEvent.LoadingEvent) {
@@ -60,8 +61,7 @@ class ProfileFormViewModel(
         initialUiState: ProfileFormUiState.Error,
         val stackTrace: String?,
     ): PageBehavior {
-        private val _uiState = MutableStateFlow(initialUiState)
-        override val uiState = _uiState.asStateFlow()
+        override val uiState = MutableStateFlow(initialUiState)
 
         override suspend fun handle(event: ProfileFormUiEvent) {
             when(event as? ProfileFormUiEvent.ErrorEvent) {
@@ -73,8 +73,8 @@ class ProfileFormViewModel(
 
         suspend fun copyError() {
             val clipboardContent = """
-                    Title: ${_uiState.value.title}
-                    Message: ${_uiState.value.message}
+                    Title: ${uiState.value.header}
+                    Message: ${uiState.value.message}
                     --- StackTrace ---
                     $stackTrace
                 """.trimIndent()
@@ -87,8 +87,7 @@ class ProfileFormViewModel(
     private abstract inner class FormBehavior(
         initialUiState: ProfileFormUiState.Retrieved
     ) : PageBehavior {
-        private val _uiState = MutableStateFlow(initialUiState)
-        override val uiState = _uiState.asStateFlow()
+        override val uiState = MutableStateFlow(initialUiState)
 
         abstract suspend fun save(state: ProfileFormUiState.Retrieved)
 
@@ -106,23 +105,23 @@ class ProfileFormViewModel(
         }
 
         private fun updateName(newName: String) {
-            _uiState.update { it.copy(name = newName, hasFormChanges = true) }
+            uiState.update { it.copy(name = newName, hasFormChanges = true) }
         }
 
         private fun updateColorSliderPos(newPos: Float) {
-            _uiState.update { it.copy(colorSliderPos = newPos, hasFormChanges = true) }
+            uiState.update { it.copy(colorSliderPos = newPos, hasFormChanges = true) }
         }
 
         private fun updateDifficultySliderPos(newPos: Float) {
-            _uiState.update { it.copy(difficulty = newPos, hasFormChanges = true) }
+            uiState.update { it.copy(difficulty = newPos, hasFormChanges = true) }
         }
 
         private fun closeModals() {
-            _uiState.update { it.copy(currentModal = null) }
+            uiState.update { it.copy(currentModal = null) }
         }
 
         private suspend fun validateAndSave() {
-            val state = _uiState.value
+            val state = uiState.value
             if (state.name.isBlank()) {
                 _uiEffect.send(ProfileFormUiEffect.ShowSnackbar(
                     "Please give the template a name."
@@ -133,15 +132,15 @@ class ProfileFormViewModel(
         }
 
         private suspend fun handleBackClick() {
-            if (_uiState.value.hasFormChanges) {
-                _uiState.update { it.copy(currentModal = ProfileFormModal.Discard) }
+            if (uiState.value.hasFormChanges) {
+                uiState.update { it.copy(currentModal = ProfileFormModal.Discard) }
             } else {
                 sendEffect(ProfileFormUiEffect.NavigateBack)
             }
         }
 
         private suspend fun discardAndClose() {
-            _uiState.update { it.copy(currentModal = null) }
+            uiState.update { it.copy(currentModal = null) }
             sendEffect(ProfileFormUiEffect.NavigateBack)
         }
     }

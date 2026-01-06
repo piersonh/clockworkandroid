@@ -1,9 +1,12 @@
 package com.wordco.clockworkandroid.edit_session_feature.ui
 
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
@@ -16,32 +19,32 @@ import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
-import com.wordco.clockworkandroid.core.ui.util.getIfType
 import com.wordco.clockworkandroid.core.ui.util.hue
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetRemindersForSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormUiEffect.NavigateToProfilePicker
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.ReminderListItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormDefaults
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
+import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormModal
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toReminderListItem
 import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.util.updateIfRetrieved
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -50,6 +53,7 @@ import kotlin.random.Random
 
 class SessionFormViewModel(
     formMode: SessionFormMode,
+    private val savedStateHandle: SavedStateHandle,
     private val getSessionUseCase: GetSessionUseCase,
     private val getAllProfilesUseCase: GetAllProfilesUseCase,
     private val createSessionUseCase: CreateSessionUseCase,
@@ -59,136 +63,448 @@ class SessionFormViewModel(
     private val getRemindersForSessionUseCase: GetRemindersForSessionUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<SessionFormUiState>(SessionFormUiState.Retrieving(
-        when(formMode) {
-            is SessionFormMode.Create -> "Create New Session"
-            is SessionFormMode.Edit -> "Edit Session"
-        }
-    ))
-    val uiState: StateFlow<SessionFormUiState> = _uiState.asStateFlow()
-
-    private val _effect = MutableSharedFlow<SessionFormEffect>()
-    val effect = _effect.asSharedFlow()
-
-
-    private sealed interface InternalState {
-        data object Create : InternalState
-        data class Edit(val session: Task) : InternalState
+    private interface PageBehavior {
+        val uiState: StateFlow<SessionFormUiState>
+        suspend fun handle(event: SessionFormUiEvent)
     }
 
-    private lateinit var internalState: InternalState
+    private inner class LoadingBehavior(
+        initialState: SessionFormUiState.Retrieving
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialState)
 
-    private lateinit var profiles: StateFlow<List<Profile>>
+        override suspend fun handle(event: SessionFormUiEvent) {
+            when (event as? SessionFormUiEvent.LoadingEvent) {
+                SessionFormUiEvent.BackClicked -> sendEffect(SessionFormUiEffect.NavigateBack)
+                null -> { }
+            }
+        }
+    }
 
-    private lateinit var fieldDefaults: SessionFormDefaults
+    private inner class ErrorBehavior(
+        initialState: SessionFormUiState.Error,
+        val stackTrace: String?
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialState)
 
-    private var profileId: Long? = null
+        override suspend fun handle(event: SessionFormUiEvent) {
+            when (event as? SessionFormUiEvent.ErrorEvent) {
+                SessionFormUiEvent.BackClicked -> _uiEffect.send(SessionFormUiEffect.NavigateBack)
+                SessionFormUiEvent.CopyErrorClicked -> copyError()
+                null -> { }
+            }
+        }
 
-    private var getAverageSessionDuration: ((Int) -> Duration)? = null
+        private suspend fun copyError() {
+            val clipboardContent = """
+                    Title: ${uiState.value.header}
+                    Message: ${uiState.value.message}
+                    --- StackTrace ---
+                    $stackTrace
+                """.trimIndent()
 
-    private var getAverageEstimateError: ((Int) -> Double)? = null
+            sendEffect(SessionFormUiEffect.CopyToClipboard(clipboardContent))
+            sendEffect(SessionFormUiEffect.ShowSnackbar("Error info copied"))
+        }
+    }
+
+    private abstract inner class SessionFormBehavior(
+        initialState: SessionFormUiState.Retrieved,
+        protected var profileId: Long?,
+        protected var getAverageSessionDuration: ((Int) -> Duration)?,
+        protected var getAverageEstimateError: ((Int) -> Double)?,
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialState)
+
+        // Cache for synchronous lookups
+        protected var cachedProfiles: List<Profile> = emptyList()
+
+        init {
+            // Keep profiles synced for lookups
+            viewModelScope.launch {
+                getAllProfilesUseCase().collect { profiles ->
+                    cachedProfiles = profiles
+                }
+            }
+
+            viewModelScope.launch {
+                savedStateHandle.getLiveData<Long?>(ProfilePickerRoute.RESULT_PROFILE_ID).asFlow()
+
+                    //.getStateFlow<Long?>(ProfilePickerRoute.RESULT_PROFILE_ID, null)
+                    .collect { newProfileId ->
+                        println("DEBUG: Flow collected profileId: $newProfileId")
+
+                        if (newProfileId != null) {
+                            handleProfileChanged(newProfileId)
+                            // Clear the result so it doesn't re-trigger on rotation
+                            savedStateHandle[ProfilePickerRoute.RESULT_PROFILE_ID] = null
+                        }
+                    }
+            }
+        }
+
+        protected abstract suspend fun save(state: SessionFormUiState.Retrieved)
+
+        override suspend fun handle(event: SessionFormUiEvent) {
+            when (val e = event as? SessionFormUiEvent.FormEvent) {
+                SessionFormUiEvent.BackClicked -> handleBackClick()
+                SessionFormUiEvent.ProfileFieldClicked -> sendEffect(NavigateToProfilePicker(profileId))
+                is SessionFormUiEvent.TaskNameChanged -> update { copy(taskName = e.newName, hasFormChanges = true) }
+                is SessionFormUiEvent.DifficultySliderChanged -> updateDifficulty(e.newPos)
+                is SessionFormUiEvent.ColorSliderChanged -> update { copy(colorSliderPos = e.newPos, hasFormChanges = true) }
+                is SessionFormUiEvent.DueDateChanged -> updateDueDate(e.newDate)
+                is SessionFormUiEvent.DueTimeChanged -> update { copy(dueTime = e.newTime, hasFormChanges = true) }
+                is SessionFormUiEvent.EstimateChanged -> update { copy(estimate = e.estimate, hasFormChanges = true) }
+                is SessionFormUiEvent.ReminderDateChanged -> updateReminderDate(e.newDate)
+                is SessionFormUiEvent.ReminderTimeChanged -> updateReminderTime(e.newTime)
+
+
+                SessionFormUiEvent.SaveClicked -> validateAndSave()
+                SessionFormUiEvent.DiscardConfirmed -> sendEffect(SessionFormUiEffect.NavigateBack)
+                SessionFormUiEvent.ModalDismissed -> update { copy(currentModal = null) }
+                null -> { }
+                SessionFormUiEvent.DueDateFieldClicked -> update { copy(currentModal = SessionFormModal.DueDate) }
+                SessionFormUiEvent.DueTimeFieldClicked -> update { copy(currentModal = SessionFormModal.DueTime) }
+                SessionFormUiEvent.EstimateFieldClicked -> update { copy(currentModal = SessionFormModal.Estimate) }
+                SessionFormUiEvent.ReminderDateFieldClicked -> update { copy(currentModal = SessionFormModal.ReminderDate) }
+                SessionFormUiEvent.ReminderTimeFieldClicked -> update { copy(currentModal = SessionFormModal.ReminderTime) }
+            }
+        }
+
+        private suspend fun handleBackClick() {
+            val state = uiState.value
+            if (state.hasFormChanges) {
+                uiState.update { it.copy(currentModal = SessionFormModal.Discard) }
+            } else {
+                sendEffect(SessionFormUiEffect.NavigateBack)
+            }
+        }
+
+        private suspend fun handleProfileChanged(newId: Long?) {
+            if (newId == this.profileId) return
+            this.profileId = newId
+
+            val newProfile = newId?.let { id -> cachedProfiles.find { it.id == id } }
+
+            getAverageSessionDuration = newId?.let { getAverageSessionDurationUseCase(it) }
+            getAverageEstimateError = newId?.let { getAverageEstimateErrorUseCase(it) }
+
+            applyProfileChange(newId, newProfile)
+        }
+
+        protected abstract suspend fun applyProfileChange(newId: Long?, newProfile: Profile?)
+
+        private fun updateDifficulty(newDifficulty: Float) {
+            val newAverageSessionDuration = getAverageSessionDuration?.invoke(newDifficulty.toInt())
+            val newAverageEstimateError = getAverageEstimateError?.invoke(newDifficulty.toInt())
+
+            update {
+                copy(
+                    difficulty = newDifficulty,
+                    hasFormChanges = true,
+                    averageSessionDuration = newAverageSessionDuration,
+                    averageEstimateError = newAverageEstimateError,
+                )
+            }
+        }
+
+        private fun updateDueDate(epoch: Long?) {
+            val date = epoch?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
+            update { copy(dueDate = date, hasFormChanges = true) }
+        }
+
+        private fun updateReminderDate(epoch: Long?) {
+            val date = epoch?.let { Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate() }
+            update {
+                val currentRem = reminder ?: ReminderListItem(date ?: LocalDate.now(), LocalTime.NOON)
+                copy(reminder = currentRem.copy(scheduledDate = date ?: LocalDate.now()), hasFormChanges = true)
+            }
+        }
+
+        private fun updateReminderTime(time: LocalTime) {
+            update {
+                val currentRem = reminder ?: ReminderListItem(LocalDate.now(), time)
+                copy(reminder = currentRem.copy(scheduledTime = time), hasFormChanges = true)
+            }
+        }
+
+        private suspend fun validateAndSave() {
+            val state = uiState.value
+            if (state.taskName.isBlank()) {
+                _uiEffect.send(SessionFormUiEffect.ShowSnackbar("Please give the session a name."))
+                return
+            }
+            save(state)
+        }
+
+        private fun update(block: SessionFormUiState.Retrieved.() -> SessionFormUiState.Retrieved) {
+            uiState.update(block)
+        }
+    }
+
+    private inner class CreateSessionBehavior(
+        initialState: SessionFormUiState.Retrieved,
+        initialProfileId: Long?,
+        getAverageSessionDuration: ((Int) -> Duration)?,
+        getAverageEstimateError: ((Int) -> Double)?,
+    ) : SessionFormBehavior(initialState, initialProfileId, getAverageSessionDuration, getAverageEstimateError) {
+
+        private var currentDefaults: SessionFormDefaults
+
+        init {
+            val startProfile = initialProfileId?.let { id -> cachedProfiles.find { it.id == id } }
+            currentDefaults = getFieldDefaults(startProfile)
+        }
+
+        override suspend fun applyProfileChange(newId: Long?, newProfile: Profile?) {
+            val newDefaults = getFieldDefaults(newProfile)
+            val oldDefaults = currentDefaults
+
+            val difficulty = uiState.value.difficulty.toInt()
+            val newAverageSessionDuration = getAverageSessionDuration?.invoke(difficulty)
+            val newAverageEstimateError = getAverageEstimateError?.invoke(difficulty)
+
+            uiState.update { state ->
+                val updatedTaskName = if (state.taskName == oldDefaults.taskName) {
+                    newDefaults.taskName
+                } else state.taskName
+
+                val updatedColor = if (state.colorSliderPos == oldDefaults.colorSliderPos) {
+                    newDefaults.colorSliderPos
+                } else state.colorSliderPos
+
+                val updatedDifficulty = if (state.difficulty == oldDefaults.difficulty) {
+                    newDefaults.difficulty
+                } else state.difficulty
+
+                state.copy(
+                    profileName = newProfile?.name,
+                    taskName = updatedTaskName,
+                    colorSliderPos = updatedColor,
+                    difficulty = updatedDifficulty,
+                    averageSessionDuration = newAverageSessionDuration,
+                    averageEstimateError = newAverageEstimateError,
+                    hasFormChanges = true
+                )
+            }
+
+            currentDefaults = newDefaults
+        }
+
+        override suspend fun save(state: SessionFormUiState.Retrieved) {
+            val newTask = NewTask(
+                taskId = 0,
+                name = state.taskName,
+                dueDate = buildInstant(state),
+                difficulty = state.difficulty.toInt(),
+                color = Color.hsv(state.colorSliderPos * 360, 1f, 1f),
+                userEstimate = state.estimate?.toDuration(),
+                profileId = profileId,
+                appEstimate = null
+            )
+            createSessionUseCase(newTask, extractReminders(state))
+            sendEffect(SessionFormUiEffect.NavigateBack)
+        }
+    }
+
+    private inner class EditSessionBehavior(
+        initialState: SessionFormUiState.Retrieved,
+        val originalSession: Task,
+        getAverageSessionDuration: ((Int) -> Duration)?,
+        getAverageEstimateError: ((Int) -> Double)?,
+    ) : SessionFormBehavior(initialState, originalSession.profileId, getAverageSessionDuration, getAverageEstimateError) {
+        override suspend fun applyProfileChange(newId: Long?, newProfile: Profile?) {
+            val difficulty = uiState.value.difficulty.toInt()
+            val newAverageSessionDuration = getAverageSessionDuration?.invoke(difficulty)
+            val newAverageEstimateError = getAverageEstimateError?.invoke(difficulty)
+
+            uiState.update { state ->
+                state.copy(
+                    profileName = newProfile?.name,
+                    averageSessionDuration = newAverageSessionDuration,
+                    averageEstimateError = newAverageEstimateError,
+                    hasFormChanges = true
+                )
+            }
+        }
+
+
+        override suspend fun save(state: SessionFormUiState.Retrieved) {
+            val updatedTask = when(originalSession) {
+                is NewTask -> originalSession.copy(
+                    name = state.taskName,
+                    dueDate = buildInstant(state),
+                    difficulty = state.difficulty.toInt(),
+                    color = Color.hsv(state.colorSliderPos * 360, 1f, 1f),
+                    userEstimate = state.estimate?.toDuration(),
+                    profileId = profileId
+                )
+                is StartedTask -> originalSession.copy(
+                    name = state.taskName,
+                    dueDate = buildInstant(state),
+                    difficulty = state.difficulty.toInt(),
+                    color = Color.hsv(state.colorSliderPos * 360, 1f, 1f),
+                    profileId = profileId
+                )
+                is CompletedTask -> originalSession.copy(
+                    name = state.taskName,
+                    dueDate = buildInstant(state),
+                    difficulty = state.difficulty.toInt(),
+                    color = Color.hsv(state.colorSliderPos * 360, 1f, 1f),
+                    profileId = profileId
+                )
+            }
+            updateSessionUseCase(updatedTask, extractReminders(state))
+            sendEffect(SessionFormUiEffect.NavigateBack)
+        }
+    }
+
+    private fun buildInstant(state: SessionFormUiState.Retrieved): Instant? {
+        val date = state.dueDate ?: return null
+        val time = state.dueTime
+
+        return LocalDateTime.of(date, time)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+    }
+
+    private fun extractReminders(state: SessionFormUiState.Retrieved): List<Instant> {
+        val reminder = state.reminder ?: return emptyList()
+
+        val instant = LocalDateTime.of(reminder.scheduledDate, reminder.scheduledTime)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+
+        return listOf(instant)
+    }
+
+    private val _currentBehavior = MutableStateFlow<PageBehavior>(
+        LoadingBehavior(SessionFormUiState.Retrieving(
+            when (formMode) {
+                is SessionFormMode.Create -> "Create New Session"
+                is SessionFormMode.Edit -> "Edit Session"
+            }
+        ))
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = _currentBehavior
+        .flatMapLatest { behavior -> behavior.uiState }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            _currentBehavior.value.uiState.value
+        )
+
+    private val _uiEffect = Channel<SessionFormUiEffect>()
+    val uiEffect = _uiEffect.receiveAsFlow()
+
 
     init {
         viewModelScope.launch {
-            profiles = getAllProfilesUseCase().run {
-                stateIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(),
-                    first()
-                )
-            }
+            try {
+                val initialProfiles = getAllProfilesUseCase().first()
 
-            val profilesList = profiles.value
-
-            when (formMode) {
-                is SessionFormMode.Create -> {
-                    profileId = formMode.profileId
-                    internalState = InternalState.Create
+                when (formMode) {
+                    is SessionFormMode.Create -> setupCreate(formMode, initialProfiles)
+                    is SessionFormMode.Edit -> setupEdit(formMode, initialProfiles)
                 }
-                is SessionFormMode.Edit -> {
-                    val session = getSessionUseCase(formMode.sessionId).first()
-                    profileId = session.profileId
-                    internalState = InternalState.Edit(session)
-                }
-            }
-
-            val profileId = profileId
-            if (profileId != null) {
-                getAverageSessionDuration = getAverageSessionDurationUseCase(
-                    profileId = profileId,
-                )
-
-                getAverageEstimateError = getAverageEstimateErrorUseCase(
-                    profileId = profileId,
+            } catch (e: Exception) {
+                setFailure(
+                    alert = "Failed to load session",
+                    message = e.message ?: "Unknown error",
+                    trace = e.stackTraceToString()
                 )
             }
+        }
+    }
 
-            fieldDefaults = getFieldDefaults(
-                profileId?.let { id -> profilesList.first { it.id == id } }
+    private suspend fun setupCreate(mode: SessionFormMode.Create, profiles: List<Profile>) {
+        val profile = mode.profileId?.let { id -> profiles.find { it.id == id } }
+
+        val defaults = getFieldDefaults(profile)
+
+        val getAverageSessionDuration = profile?.let { getAverageSessionDurationUseCase(it.id) }
+        val getAverageEstimateError = profile?.let { getAverageEstimateErrorUseCase(it.id) }
+
+        val initialState = SessionFormUiState.Retrieved(
+            title = "Create New Session",
+            taskName = defaults.taskName,
+            profileName = defaults.profileName,
+            colorSliderPos = defaults.colorSliderPos,
+            difficulty = defaults.difficulty,
+            dueDate = null,
+            dueTime = defaults.dueTime,
+            estimate = defaults.estimate,
+            isEstimateEditable = true,
+            averageSessionDuration = getAverageSessionDuration?.invoke(defaults.difficulty.toInt()),
+            averageEstimateError = getAverageEstimateError?.invoke(defaults.difficulty.toInt()),
+            reminder = null,
+            hasFormChanges = false
+        )
+
+        _currentBehavior.update {
+            CreateSessionBehavior(
+                initialState = initialState,
+                initialProfileId = profile?.id,
+                getAverageSessionDuration,
+                getAverageEstimateError,
             )
+        }
 
-            _uiState.update {
-                when (val state = internalState) {
-                    is InternalState.Create -> {
-                        val initialPage = if (profileId == null && profilesList.isNotEmpty()) 0 else 1
-                        SessionFormUiState.Retrieved(
-                            title = "Create New Session",
-                            profiles = profilesList.map { it.toProfilePickerItem() },
-                            initialPage = initialPage,
-                            taskName = fieldDefaults.taskName,
-                            profileName = fieldDefaults.profileName,
-                            colorSliderPos = fieldDefaults.colorSliderPos,
-                            difficulty = fieldDefaults.difficulty,
-                            dueDate = null,
-                            dueTime = fieldDefaults.dueTime,
-                            estimate = fieldDefaults.estimate,
-                            hasFieldChanges = false,
-                            isEstimateEditable = true,
-                            averageSessionDuration = getAverageSessionDuration?.invoke(
-                                fieldDefaults.difficulty.toInt()
-                            ),
-                            averageEstimateError = getAverageEstimateError?.invoke(
-                                fieldDefaults.difficulty.toInt()
-                            ),
-                            reminder = null
-                        )
-                    }
-                    is InternalState.Edit -> {
-                        val session = state.session
-                        SessionFormUiState.Retrieved(
-                            title = "Edit Session",
-                            initialPage = 1,
-                            profiles = profilesList.map { it.toProfilePickerItem() },
-                            taskName = session.name,
-                            profileName = fieldDefaults.profileName,
-                            colorSliderPos = session.color.hue() / 360,
-                            difficulty = session.difficulty.toFloat(),
-                            dueDate = session.dueDate?.atZone(ZoneId.systemDefault())
-                                ?.toLocalDate(),
-                            dueTime = session.dueDate?.run {
-                                atZone(ZoneId.systemDefault())?.toLocalTime()
-                            } ?: fieldDefaults.dueTime,
-                            estimate = session.userEstimate?.toEstimate(),
-                            isEstimateEditable = session is NewTask,
-                            hasFieldChanges = false,
-                            averageSessionDuration = getAverageSessionDuration?.invoke(
-                                session.difficulty
-                            ),
-                            averageEstimateError = getAverageEstimateError?.invoke(
-                                session.difficulty
-                            ),
-                            reminder = getRemindersForSessionUseCase(session.taskId)
-                                .first().firstOrNull()?.toReminderListItem()
-                        )
-                    }
-                }
-            }
+        if (profile == null) {
+            sendEffect(SessionFormUiEffect.NavigateToProfilePicker(null))
+        }
+    }
 
-            profiles.collect { profiles ->
-                _uiState.updateIfRetrieved { uiState ->
-                    uiState.copy(profiles = profiles.map { it.toProfilePickerItem() })
-                }
-            }
+    private suspend fun setupEdit(mode: SessionFormMode.Edit, profiles: List<Profile>) {
+        val session = getSessionUseCase(mode.sessionId).first()
+        val profile = profiles.find { it.id == session.profileId }
+
+        val existingReminder = getRemindersForSessionUseCase(session.taskId)
+            .first()
+            .firstOrNull()
+            ?.toReminderListItem()
+
+        val getAverageSessionDuration = profile?.let { getAverageSessionDurationUseCase(it.id) }
+        val getAverageEstimateError = profile?.let { getAverageEstimateErrorUseCase(it.id) }
+
+        val initialState = SessionFormUiState.Retrieved(
+            title = "Edit Session",
+            isEstimateEditable = session is NewTask,
+            taskName = session.name,
+            profileName = profile?.name,
+            colorSliderPos = session.color.hue() / 360f,
+            difficulty = session.difficulty.toFloat(),
+            dueDate = session.dueDate?.atZone(ZoneId.systemDefault())?.toLocalDate(),
+            dueTime = session.dueDate?.atZone(ZoneId.systemDefault())?.toLocalTime() ?: LocalTime.of(23, 59),
+            estimate = session.userEstimate?.toEstimate(),
+            averageSessionDuration = getAverageSessionDuration?.invoke(session.difficulty),
+            averageEstimateError = getAverageEstimateError?.invoke(session.difficulty),
+            reminder = existingReminder,
+            hasFormChanges = false
+        )
+
+        _currentBehavior.update {
+            EditSessionBehavior(
+                initialState = initialState,
+                originalSession = session,
+                getAverageSessionDuration,
+                getAverageEstimateError,
+            )
+        }
+    }
+
+    private fun setFailure(alert: String, message: String, trace: String) {
+        _currentBehavior.update { currentBehavior ->
+            ErrorBehavior(
+                SessionFormUiState.Error(
+                    title = currentBehavior.uiState.value.title,
+                    header = alert,
+                    message = message
+                ),
+                stackTrace = trace
+            )
         }
     }
 
@@ -221,262 +537,12 @@ class SessionFormViewModel(
         }
     }
 
-    fun onEvent(event: SessionFormEvent) {
-        when(event) {
-            is SessionFormEvent.ColorSliderChanged -> onColorSliderChange(event.position)
-            is SessionFormEvent.DifficultyChanged -> onDifficultyChange(event.difficulty)
-            is SessionFormEvent.DueDateChanged -> onDueDateChange(event.date)
-            is SessionFormEvent.DueTimeChanged -> onDueTimeChange(event.time)
-            is SessionFormEvent.EstimateChanged -> onEstimateChange(event.estimate)
-            is SessionFormEvent.ProfileChanged -> onProfileChange(event.id)
-            is SessionFormEvent.SaveClicked -> onSaveClick()
-            is SessionFormEvent.TaskNameChanged -> onTaskNameChange(event.name)
-            is SessionFormEvent.ReminderDateChanged -> onReminderDateChange(event.date)
-            is SessionFormEvent.ReminderTimeChanged -> onReminderTimeChange(event.time)
-        }
+    fun onEvent(event: SessionFormUiEvent) {
+        viewModelScope.launch { _currentBehavior.value.handle(event) }
     }
 
-
-    private fun onTaskNameChange(newName: String) {
-        _uiState.updateIfRetrieved { it.copy(
-            taskName = newName,
-            hasFieldChanges = true,
-        ) }
-    }
-
-    private fun onColorSliderChange(newPos: Float) {
-        _uiState.updateIfRetrieved { it.copy(
-            colorSliderPos = newPos,
-            hasFieldChanges = true,
-        ) }
-    }
-
-    private fun onDifficultyChange(newDifficulty: Float) {
-        _uiState.updateIfRetrieved {
-            it.copy(
-                difficulty = newDifficulty,
-                hasFieldChanges = true,
-                averageSessionDuration = getAverageSessionDuration?.invoke(
-                    newDifficulty.toInt()
-                ),
-                averageEstimateError = getAverageEstimateError?.invoke(
-                    newDifficulty.toInt()
-                ),
-            )
-        }
-    }
-
-    private fun onDueDateChange(newDate: Long?) {
-        _uiState.updateIfRetrieved { it.copy(dueDate = newDate?.let {
-            Instant.ofEpochMilli(newDate)
-                .atZone(ZoneOffset.UTC)
-                .toLocalDate()
-        },
-            hasFieldChanges = true,
-        ) }
-    }
-
-    private fun onDueTimeChange(newTime: LocalTime) {
-        _uiState.updateIfRetrieved { it.copy(
-            dueTime = newTime,
-            hasFieldChanges = true,
-        ) }
-    }
-
-    private fun onEstimateChange(newEstimate: UserEstimate?) {
-        _uiState.updateIfRetrieved { it.copy(
-            estimate = newEstimate,
-            hasFieldChanges = true,
-        ) }
-    }
-
-    private fun onProfileChange(newProfileId: Long?) {
-        if (newProfileId == profileId) return
-
-        viewModelScope.launch {
-
-            val oldDefaults = fieldDefaults
-            profileId = newProfileId
-
-            if (newProfileId != null) {
-                getAverageSessionDuration = getAverageSessionDurationUseCase(
-                    profileId = newProfileId,
-                )
-
-                getAverageEstimateError = getAverageEstimateErrorUseCase(
-                    profileId = newProfileId,
-                )
-            } else {
-                getAverageSessionDuration = null
-                getAverageEstimateError = null
-            }
-
-
-            fieldDefaults = getFieldDefaults(
-                newProfileId?.let { profiles.value.first { it.id == newProfileId } }
-            )
-
-            val profileName = fieldDefaults.profileName
-
-            _uiState.updateIfRetrieved { uiState ->
-
-                when(internalState) {
-                    is InternalState.Create -> {
-                        val taskName = if (uiState.taskName == oldDefaults.taskName) {
-                            fieldDefaults.taskName
-                        } else uiState.taskName
-
-                        val colorSliderPos = if (uiState.colorSliderPos == oldDefaults.colorSliderPos) {
-                            fieldDefaults.colorSliderPos
-                        } else uiState.colorSliderPos
-
-                        val difficulty = if (uiState.difficulty == oldDefaults.difficulty) {
-                            fieldDefaults.difficulty
-                        } else uiState.difficulty
-
-                        uiState.copy(
-                            profileName = profileName,
-                            taskName = taskName,
-                            colorSliderPos = colorSliderPos,
-                            difficulty = difficulty,
-                            hasFieldChanges = true,
-                            averageSessionDuration = getAverageSessionDuration?.invoke(
-                                difficulty.toInt()
-                            ),
-                            averageEstimateError = getAverageEstimateError?.invoke(
-                                difficulty.toInt()
-                            ),
-                        )
-                    }
-                    is InternalState.Edit -> {
-                        uiState.copy(
-                            profileName = profileName,
-                            hasFieldChanges = true,
-                            averageSessionDuration = getAverageSessionDuration?.invoke(
-                                uiState.difficulty.toInt()
-                            ),
-                            averageEstimateError = getAverageEstimateError?.invoke(
-                                uiState.difficulty.toInt()
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun onReminderDateChange(newDate: Long?) {
-        _uiState.updateIfRetrieved { uiState ->
-            uiState.copy(
-                reminder = newDate?.let {
-                    val date = Instant.ofEpochMilli(newDate)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate()
-                    uiState.reminder?.copy(scheduledDate = date)
-                        ?: ReminderListItem(
-                            scheduledDate = date,
-                            scheduledTime = fieldDefaults.reminderTime
-                        )
-                },
-                hasFieldChanges = true,
-            )
-        }
-    }
-
-    private fun onReminderTimeChange(newTime: LocalTime) {
-        _uiState.updateIfRetrieved { uiState ->
-            uiState.copy(
-                reminder = uiState.reminder?.copy(
-                    scheduledTime = newTime
-                ),
-                hasFieldChanges = true,
-            )
-        }
-    }
-
-    private fun onSaveClick() {
-        _uiState.getIfType<SessionFormUiState.Retrieved>()?.run {
-            if (taskName.isBlank()) {
-                viewModelScope.launch {
-                    _effect.emit(SessionFormEffect.ShowSnackbar(
-                        "Please give the session a name."
-                    ))
-                }
-                return
-            }
-
-            viewModelScope.launch {
-                when (internalState) {
-                    is InternalState.Create -> {
-                        val task = buildSession(this@run) as NewTask
-                        createSessionUseCase(
-                            task = task,
-                            reminderTimes = listOfNotNull(
-                                reminder?.run {
-                                    LocalDateTime.of(scheduledDate, scheduledTime)
-                                        .atZone(ZoneId.systemDefault()).toInstant()
-                                }
-                            )
-                        )
-                    }
-                    is InternalState.Edit -> {
-                        val newTask = buildSession(this@run)
-                        updateSessionUseCase(
-                            newTask,
-                            reminderTimes = listOfNotNull(
-                                reminder?.takeIf { newTask !is CompletedTask }?.run {
-                                    LocalDateTime.of(scheduledDate, scheduledTime)
-                                        .atZone(ZoneId.systemDefault()).toInstant()
-                                }
-                            ),
-                        )
-                    }
-                }
-
-                _uiState.updateIfRetrieved { it.copy(hasFieldChanges = false) }
-
-                _effect.emit(SessionFormEffect.NavigateBack)
-            }
-        } ?: error("Can only save if retrieved")
-    }
-
-    private fun buildSession(state: SessionFormUiState.Retrieved): Task {
-        val name = state.taskName
-        val dueDate = state.dueDate?.let {
-            LocalDateTime.of(it, state.dueTime).atZone(ZoneId.systemDefault()).toInstant()
-        }
-        val difficulty = state.difficulty.toInt()
-        val color = Color.hsv(state.colorSliderPos * 360, 1f, 1f)
-        val userEstimate = state.estimate?.toDuration()
-
-        return when (val state = internalState) {
-            is InternalState.Create -> NewTask(
-                taskId = 0, name, dueDate, difficulty, color,
-                userEstimate, profileId = profileId, appEstimate = null
-            )
-
-            is InternalState.Edit -> {
-                val oldSession = state.session
-                when (oldSession) {
-                    is NewTask -> NewTask(
-                        oldSession.taskId, name, dueDate, difficulty, color,
-                        userEstimate, profileId, oldSession.appEstimate
-                    )
-
-                    is StartedTask -> StartedTask(
-                        oldSession.taskId, name, dueDate, difficulty, color,
-                        userEstimate, oldSession.segments, oldSession.markers,
-                        profileId, oldSession.appEstimate
-                    )
-
-                    is CompletedTask -> CompletedTask(
-                        oldSession.taskId, name, dueDate, difficulty, color,
-                        userEstimate, oldSession.segments, oldSession.markers,
-                        profileId, oldSession.appEstimate
-                    )
-                }
-            }
-        }
+    private suspend fun sendEffect(effect: SessionFormUiEffect) {
+        _uiEffect.send(effect)
     }
 
 
@@ -489,6 +555,8 @@ class SessionFormViewModel(
 
                 val formMode = this[FORM_MODE_KEY] as SessionFormMode
 
+                val savedStateHandle = createSavedStateHandle()
+
                 SessionFormViewModel(
                     formMode = formMode,
                     getSessionUseCase = appContainer.getSessionUseCase,
@@ -498,6 +566,7 @@ class SessionFormViewModel(
                     getAverageSessionDurationUseCase = appContainer.getAverageSessionDurationUseCase,
                     getAverageEstimateErrorUseCase = appContainer.getAverageEstimateErrorUseCase,
                     getRemindersForSessionUseCase = appContainer.getRemindersForSessionUseCase,
+                    savedStateHandle = savedStateHandle,
                 )
             }
         }

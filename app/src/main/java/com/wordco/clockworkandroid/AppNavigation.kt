@@ -4,6 +4,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -13,6 +14,8 @@ import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.profileFormPage
+import com.wordco.clockworkandroid.edit_session_feature.ui.ProfilePickerRoute
+import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormViewModel
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewSession
 import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEditSession
 import com.wordco.clockworkandroid.edit_session_feature.ui.sessionFormPage
@@ -99,6 +102,16 @@ fun NavHost(
         sessionFormPage(
             onBackClick = navController::popBackStack,
             onCreateNewProfileClick = navController::navigateToCreateProfile,
+            onNavigateToProfilePicker = { selectedId ->
+                navController.navigate(ProfilePickerRoute(selectedProfileId = selectedId))
+            },
+            onProfileSelected = { resultId ->
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set(ProfilePickerRoute.RESULT_PROFILE_ID, resultId)
+                
+                navController.popBackStack()
+            },
         )
 
         taskListPage(
