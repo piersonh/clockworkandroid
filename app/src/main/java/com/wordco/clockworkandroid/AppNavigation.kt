@@ -4,7 +4,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,17 +13,16 @@ import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.profileFormPage
-import com.wordco.clockworkandroid.edit_session_feature.ui.ProfilePickerRoute
-import com.wordco.clockworkandroid.edit_session_feature.ui.SessionFormViewModel
-import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToCreateNewSession
-import com.wordco.clockworkandroid.edit_session_feature.ui.navigateToEditSession
-import com.wordco.clockworkandroid.edit_session_feature.ui.sessionFormPage
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
 import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToCompletion
 import com.wordco.clockworkandroid.session_completion_feature.ui.taskCompletionPage
+import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSession
+import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSessionWithPicker
+import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToEditSession
+import com.wordco.clockworkandroid.session_editor_feature.ui.sessionEditorGraph
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
 import com.wordco.clockworkandroid.timer_feature.ui.TimerRoute
@@ -99,25 +97,30 @@ fun NavHost(
             )
         }
 
-        sessionFormPage(
-            onBackClick = navController::popBackStack,
-            onCreateNewProfileClick = navController::navigateToCreateProfile,
-            onNavigateToProfilePicker = { selectedId ->
-                navController.navigate(ProfilePickerRoute(selectedProfileId = selectedId))
-            },
-            onProfileSelected = { resultId ->
-                navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.set(ProfilePickerRoute.RESULT_PROFILE_ID, resultId)
-                
-                navController.popBackStack()
-            },
+//        sessionFormPage(
+//            onBackClick = navController::popBackStack,
+//            onCreateNewProfileClick = navController::navigateToCreateProfile,
+//            onNavigateToProfilePicker = { selectedId ->
+//                navController.navigate(ProfilePickerRoute(selectedProfileId = selectedId))
+//            },
+//            onProfileSelected = { resultId ->
+//                navController.previousBackStackEntry
+//                    ?.savedStateHandle
+//                    ?.set(ProfilePickerRoute.RESULT_PROFILE_ID, resultId)
+//
+//                navController.popBackStack()
+//            },
+//        )
+
+        sessionEditorGraph(
+            navController = navController,
+            onNavigateToCreateProfile = navController::navigateToCreateProfile
         )
 
         taskListPage(
             navBar = { navBar(TaskListRoute) },
             onTaskClick = navController::navigateToTimer,
-            onCreateNewTaskClick = navController::navigateToCreateNewSession,
+            onCreateNewTaskClick = navController::navigateToCreateSessionWithPicker,
         )
 
 
@@ -148,7 +151,7 @@ fun NavHost(
             onBackClick = navController::popBackStack,
             onEditClick = navController::navigateToEditProfile,
             onSessionClick = navController::navigateToTimer,
-            onCreateNewSessionClick = navController::navigateToCreateNewSession,
+            onCreateNewSessionClick = navController::navigateToCreateSession,
             onCompletedSessionClick = navController::navigateToCompletion,
             navBar = { navBar(ProfileListRoute) },
         )
