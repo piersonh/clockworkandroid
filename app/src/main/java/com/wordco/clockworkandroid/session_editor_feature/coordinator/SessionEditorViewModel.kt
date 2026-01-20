@@ -50,7 +50,7 @@ class SessionEditorViewModel(
             
             SessionFormViewModel(
                 editorManager = editorManager,
-                getAllProfilesUseCase = appContainer.getAllProfilesUseCase,
+                getProfileUseCase = appContainer.getProfileUseCase,
                 getAverageSessionDurationUseCase = appContainer.getAverageSessionDurationUseCase,
                 getAverageEstimateErrorUseCase = appContainer.getAverageEstimateErrorUseCase
             )

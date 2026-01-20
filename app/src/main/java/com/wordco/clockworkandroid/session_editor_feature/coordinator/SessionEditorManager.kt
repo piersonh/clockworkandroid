@@ -17,7 +17,10 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
-sealed class SessionEditorManager() {
+sealed class SessionEditorManager(
+    private val sessionDraftFactory: SessionDraftFactory,
+    private val reminderDraftFactory: ReminderDraftFactory,
+) {
     protected val _state = MutableStateFlow<SessionEditorState>(SessionEditorState.Retrieving)
     val state = _state.asStateFlow()
 
@@ -40,10 +43,12 @@ sealed class SessionEditorManager() {
         }
     }
 
-    private fun updateReminder(block: List<ReminderDraft>.() -> List<ReminderDraft>) {
+    private fun updateReminder(
+        block: List<ReminderDraft>.(sessionDraft: SessionDraft) -> List<ReminderDraft>
+    ) {
         (state.value as? SessionEditorState.Retrieved)?.let { state ->
             _state.update {
-                val newDraft = block(state.reminders)
+                val newDraft = block(state.reminders, state.draft)
                 state.copy(
                     reminders = newDraft,
                     hasUnsavedChanges = true,
@@ -77,11 +82,15 @@ sealed class SessionEditorManager() {
     fun updateDueDate(newDate: LocalDate?) {
         updateDraft {
             val dueTime = dueDateTime?.toLocalTime()
-            val newDueDateTime = if (dueTime != null && newDate != null) {
-                newDate.atTime(dueTime)
-            } else {
+            val newDueDateTime = if (newDate == null) {
                 null
+            } else if (dueTime == null) {
+                val default = sessionDraftFactory.getDefaultDueDateTime(null) // TODO: inject profile
+                default.toLocalTime().atDate(newDate)
+            } else {
+                newDate.atTime(dueTime)
             }
+
             copy(
                 dueDateTime = newDueDateTime
             )
@@ -106,15 +115,23 @@ sealed class SessionEditorManager() {
         }
     }
     fun updateReminderDate(newDate: LocalDate?) {
-        updateReminder {
-            if (!isEmpty() && newDate != null) {
+        updateReminder { session ->
+            if (newDate == null) {
+                emptyList()
+            } else if (isEmpty()) {
+                val newReminderTime = reminderDraftFactory.getDefaultScheduledTime(
+                    sessionDueDateTime = session.dueDateTime
+                ).toLocalTime()
+                listOf(ReminderDraft(
+                    id = 0,
+                    scheduledTime = newDate.atTime(newReminderTime)
+                ))
+            } else {
                 val currentReminderTime = first().scheduledTime.toLocalTime()
                 listOf(ReminderDraft(
                     id = 0,
                     scheduledTime = newDate.atTime(currentReminderTime)
                 ))
-            } else {
-                emptyList()
             }
         }
     }
@@ -149,7 +166,7 @@ sealed class SessionEditorManager() {
         private val sessionDraftFactory: SessionDraftFactory,
         private val reminderDraftFactory: ReminderDraftFactory,
         private val getProfileUseCase: GetProfileUseCase,
-    ) : SessionEditorManager() {
+    ) : SessionEditorManager(sessionDraftFactory, reminderDraftFactory) {
         init {
             coroutineScope.launch {
                 try {
@@ -193,7 +210,7 @@ sealed class SessionEditorManager() {
         private val reminderDraftFactory: ReminderDraftFactory,
         private val getSessionUseCase: GetSessionUseCase,
         private val getRemindersForSessionUseCase: GetRemindersForSessionUseCase
-    ) : SessionEditorManager() {
+    ) : SessionEditorManager(sessionDraftFactory, reminderDraftFactory) {
 
         init {
             coroutineScope.launch {

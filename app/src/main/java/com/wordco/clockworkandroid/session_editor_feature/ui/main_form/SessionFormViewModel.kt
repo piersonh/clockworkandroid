@@ -2,7 +2,7 @@ package com.wordco.clockworkandroid.session_editor_feature.ui.main_form
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
+import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormModal
@@ -22,7 +22,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -35,7 +37,7 @@ import java.time.ZoneOffset
 
 class SessionFormViewModel(
     private val editorManager: SessionEditorManager,
-    private val getAllProfilesUseCase: GetAllProfilesUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val getAverageSessionDurationUseCase: GetAverageSessionDurationUseCase,
     private val getAverageEstimateErrorUseCase: GetAverageEstimateErrorUseCase,
 ) : ViewModel() {
@@ -244,19 +246,31 @@ class SessionFormViewModel(
     }
 
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun startCollection() {
-        val profileListFlow = getAllProfilesUseCase()
+        val activeProfileFlow = editorManager.state
+            .map { state ->
+                (state as? SessionEditorState.Retrieved)?.draft?.profileId
+            }
+            .distinctUntilChanged()
+            .flatMapLatest { profileId ->
+                if (profileId == null) {
+                    flowOf(null)
+                } else {
+                    getProfileUseCase(profileId)
+                }
+            }
             .map { Result.success(it) }
             .catch { e -> emit(Result.failure(e)) }
 
         combine(
             editorManager.state,
-            profileListFlow,
+            activeProfileFlow,
         ) { editorState, profileListResult ->
 
-            val profiles = profileListResult.getOrElse { e ->
+            val profile = profileListResult.getOrElse { e ->
                 setFailure(
-                    alert = "Failed to Load Templates",
+                    alert = "Failed to Load Template",
                     message = e.message ?: "No Message",
                     trace = e.stackTraceToString(),
                 )
@@ -273,7 +287,6 @@ class SessionFormViewModel(
                 is SessionEditorState.Retrieved -> {
                     val draft = editorState.draft
                     val reminders = editorState.reminders
-                    val profile = profiles.find { it.id == draft.profileId }
 
                     val currentBehavior = _currentBehavior.value
                     if (currentBehavior is SessionFormBehavior) {
