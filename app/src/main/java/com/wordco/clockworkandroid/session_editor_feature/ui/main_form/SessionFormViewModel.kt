@@ -20,13 +20,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -248,35 +244,7 @@ class SessionFormViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun startCollection() {
-        val activeProfileFlow = editorManager.state
-            .map { state ->
-                (state as? SessionEditorState.Retrieved)?.draft?.profileId
-            }
-            .distinctUntilChanged()
-            .flatMapLatest { profileId ->
-                if (profileId == null) {
-                    flowOf(null)
-                } else {
-                    getProfileUseCase(profileId)
-                }
-            }
-            .map { Result.success(it) }
-            .catch { e -> emit(Result.failure(e)) }
-
-        combine(
-            editorManager.state,
-            activeProfileFlow,
-        ) { editorState, profileListResult ->
-
-            val profile = profileListResult.getOrElse { e ->
-                setFailure(
-                    alert = "Failed to Load Template",
-                    message = e.message ?: "No Message",
-                    trace = e.stackTraceToString(),
-                )
-                return@combine
-            }
-
+        editorManager.state.onEach { editorState ->
             when (editorState) {
                 is SessionEditorState.Error -> setFailure(
                     alert = editorState.alert,
@@ -287,6 +255,7 @@ class SessionFormViewModel(
                 is SessionEditorState.Retrieved -> {
                     val draft = editorState.draft
                     val reminders = editorState.reminders
+                    val profile = editorState.activeProfile
 
                     val currentBehavior = _currentBehavior.value
                     if (currentBehavior is SessionFormBehavior) {

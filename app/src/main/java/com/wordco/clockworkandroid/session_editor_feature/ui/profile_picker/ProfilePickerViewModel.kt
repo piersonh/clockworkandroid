@@ -102,6 +102,7 @@ class ProfilePickerViewModel(
         override suspend fun handle(event: ProfilePickerUiEvent) {
             when (val e = event as? ProfilePickerUiEvent.PickerEvent) {
                 is ProfilePickerUiEvent.ProfileClicked -> {
+                    editorManager.updateProfile(e.id)
                     sendEffect(ProfilePickerUiEffect.FinishWithResult(e.id))
                 }
 

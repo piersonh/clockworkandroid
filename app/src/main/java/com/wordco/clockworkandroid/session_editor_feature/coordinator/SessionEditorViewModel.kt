@@ -39,7 +39,8 @@ class SessionEditorViewModel(
                 sessionDraftFactory = sessionDraftFactory,
                 reminderDraftFactory = reminderDraftFactory,
                 getSessionUseCase = getSessionUseCase,
-                getRemindersForSessionUseCase = getRemindersForSessionUseCase
+                getRemindersForSessionUseCase = getRemindersForSessionUseCase,
+                getProfileUseCase = getProfileUseCase,
             )
         }
     }

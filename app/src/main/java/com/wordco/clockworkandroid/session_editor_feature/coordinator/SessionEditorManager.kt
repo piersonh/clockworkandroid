@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.session_editor_feature.coordinator
 
 import com.wordco.clockworkandroid.core.domain.model.NewTask
+import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetRemindersForSessionUseCase
@@ -31,29 +32,36 @@ sealed class SessionEditorManager(
         _state.update { SessionEditorState.Error(alert, error) }
     }
 
-    private fun updateDraft(block: SessionDraft.() -> SessionDraft) {
+    protected fun updateRetrieved(
+        block: SessionEditorState.Retrieved.() -> SessionEditorState.Retrieved
+    ) {
         (state.value as? SessionEditorState.Retrieved)?.let { state ->
+            val newState = block(state)
             _state.update {
-                val newDraft = block(state.draft)
-                state.copy(
-                    draft = newDraft,
-                    hasUnsavedChanges = true,
-                )
+                newState
             }
         }
     }
 
-    private fun updateReminder(
+    protected fun updateDraft(block: SessionDraft.(currentProfile: Profile?) -> SessionDraft) {
+        updateRetrieved {
+            val newDraft = block(draft, activeProfile)
+            copy(
+                draft = newDraft,
+                hasUnsavedChanges = true,
+            )
+        }
+    }
+
+    protected fun updateReminder(
         block: List<ReminderDraft>.(sessionDraft: SessionDraft) -> List<ReminderDraft>
     ) {
-        (state.value as? SessionEditorState.Retrieved)?.let { state ->
-            _state.update {
-                val newDraft = block(state.reminders, state.draft)
-                state.copy(
-                    reminders = newDraft,
-                    hasUnsavedChanges = true,
-                )
-            }
+        updateRetrieved {
+            val newReminders = block(reminders, draft)
+            copy(
+                reminders = newReminders,
+                hasUnsavedChanges = true,
+            )
         }
     }
 
@@ -80,12 +88,12 @@ sealed class SessionEditorManager(
         }
     }
     fun updateDueDate(newDate: LocalDate?) {
-        updateDraft {
+        updateDraft { currentProfile ->
             val dueTime = dueDateTime?.toLocalTime()
             val newDueDateTime = if (newDate == null) {
                 null
             } else if (dueTime == null) {
-                val default = sessionDraftFactory.getDefaultDueDateTime(null) // TODO: inject profile
+                val default = sessionDraftFactory.getDefaultDueDateTime(currentProfile)
                 default.toLocalTime().atDate(newDate)
             } else {
                 newDate.atTime(dueTime)
@@ -162,7 +170,7 @@ sealed class SessionEditorManager(
 
     class Create(
         profileId: Long?,
-        coroutineScope: CoroutineScope,
+        private val coroutineScope: CoroutineScope,
         private val sessionDraftFactory: SessionDraftFactory,
         private val reminderDraftFactory: ReminderDraftFactory,
         private val getProfileUseCase: GetProfileUseCase,
@@ -191,11 +199,47 @@ sealed class SessionEditorManager(
                 reminders = reminders,
                 isEstimateEditable = true,
                 hasUnsavedChanges = false,
+                activeProfile = profile,
             ) }
         }
 
         override fun updateProfile(newProfileId: Long?) {
-            TODO("Not yet implemented")
+            if (newProfileId == (state.value as? SessionEditorState.Retrieved)?.draft?.profileId) {
+                return
+            }
+
+            coroutineScope.launch {
+                val newProfile = newProfileId?.let { getProfileUseCase(it).first() }
+                updateRetrieved {
+                    val oldDefaultName = sessionDraftFactory.getDefaultName(activeProfile)
+                    val updatedSessionName = if (draft.sessionName == oldDefaultName) {
+                        sessionDraftFactory.getDefaultName(newProfile)
+                    } else draft.sessionName
+
+                    val oldDefaultColor = sessionDraftFactory.getDefaultColor(activeProfile)
+                    val updatedColor = if (draft.colorHue == oldDefaultColor) {
+                        sessionDraftFactory.getDefaultColor(newProfile)
+                    } else draft.colorHue
+
+                    val oldDefaultDifficulty = sessionDraftFactory.getDefaultDifficulty(activeProfile)
+                    val updatedDifficulty = if (draft.difficulty == oldDefaultDifficulty) {
+                        sessionDraftFactory.getDefaultDifficulty(newProfile)
+                    } else draft.difficulty
+
+                    val newDraft = draft.copy(
+                        sessionName = updatedSessionName,
+                        profileId = newProfileId,
+                        colorHue = updatedColor,
+                        difficulty = updatedDifficulty
+                    )
+
+                    copy(
+                        draft = newDraft,
+                        activeProfile = newProfile,
+                        hasUnsavedChanges = true,
+                    )
+                }
+            }
         }
 
         override fun save() {
@@ -205,11 +249,12 @@ sealed class SessionEditorManager(
 
     class Edit(
         sessionId: Long,
-        coroutineScope: CoroutineScope,
+        private val coroutineScope: CoroutineScope,
         private val sessionDraftFactory: SessionDraftFactory,
         private val reminderDraftFactory: ReminderDraftFactory,
         private val getSessionUseCase: GetSessionUseCase,
-        private val getRemindersForSessionUseCase: GetRemindersForSessionUseCase
+        private val getRemindersForSessionUseCase: GetRemindersForSessionUseCase,
+        private val getProfileUseCase: GetProfileUseCase,
     ) : SessionEditorManager(sessionDraftFactory, reminderDraftFactory) {
 
         init {
@@ -229,6 +274,8 @@ sealed class SessionEditorManager(
             val session = getSessionUseCase(sessionId).first()
             val draft = sessionDraftFactory.createFromExisting(session)
 
+            val profile = session.profileId?.let { getProfileUseCase(it).first() }
+
             val reminders = getRemindersForSessionUseCase(sessionId).first()
                 .map { reminderDraftFactory.createFromExisting(it) }
 
@@ -237,11 +284,29 @@ sealed class SessionEditorManager(
                 reminders = reminders,
                 isEstimateEditable = session is NewTask,
                 hasUnsavedChanges = false,
+                activeProfile = profile,
             ) }
         }
 
         override fun updateProfile(newProfileId: Long?) {
-            TODO("Not yet implemented")
+            if (newProfileId == (state.value as? SessionEditorState.Retrieved)?.draft?.profileId) {
+                return
+            }
+
+            coroutineScope.launch {
+                val newProfile = newProfileId?.let { getProfileUseCase(it).first() }
+                updateRetrieved {
+                    val newDraft = draft.copy(
+                        profileId = newProfileId,
+                    )
+
+                    copy(
+                        draft = newDraft,
+                        activeProfile = newProfile,
+                        hasUnsavedChanges = true,
+                    )
+                }
+            }
         }
 
         override fun save() {
