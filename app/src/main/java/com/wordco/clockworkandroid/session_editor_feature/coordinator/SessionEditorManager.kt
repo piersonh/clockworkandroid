@@ -286,7 +286,6 @@ sealed class SessionEditorManager(
                     copy(
                         draft = newDraft,
                         activeProfile = newProfile,
-                        hasUnsavedChanges = true,
                     )
                 }
             }

@@ -12,7 +12,10 @@ import java.time.LocalTime
 import java.time.ZoneId
 import kotlin.random.Random
 
-class SessionDraftFactory {
+class SessionDraftFactory(
+    random: Random = Random
+) {
+    private val defaultNullProfileColor = random.nextFloat()
 
     fun createNew(profile: Profile?): SessionDraft {
         return SessionDraft(
@@ -55,7 +58,7 @@ class SessionDraftFactory {
     fun getDefaultColor(profile: Profile?): Float {
         return when (profile) {
             null -> {
-                Random.nextFloat()
+                defaultNullProfileColor
             }
             else -> {
                 profile.color.hue() / 360
