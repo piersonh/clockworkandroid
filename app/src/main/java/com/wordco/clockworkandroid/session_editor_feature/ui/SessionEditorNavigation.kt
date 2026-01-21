@@ -9,6 +9,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
@@ -40,16 +41,30 @@ private object EditorMainFormRoute
 private object EditorProfilePickerRoute
 
 
-fun NavController.navigateToCreateSessionWithPicker() {
-    navigate(SessionEditorGraphRoute())
+fun NavController.navigateToCreateSessionWithPicker(
+    navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
+) {
+    navigate(SessionEditorGraphRoute()) {
+        navOptions()
+    }
 }
 
-fun NavController.navigateToEditSession(sessionId: Long) {
-    navigate(SessionEditorGraphRoute(sessionId = sessionId))
+fun NavController.navigateToEditSession(
+    sessionId: Long,
+    navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
+) {
+    navigate(SessionEditorGraphRoute(sessionId = sessionId)) {
+        navOptions()
+    }
 }
 
-fun NavController.navigateToCreateSession(profileId: Long) {
-    navigate(SessionEditorGraphRoute(profileId = profileId))
+fun NavController.navigateToCreateSession(
+    profileId: Long,
+    navOptions: NavOptionsBuilder.() -> Unit = { launchSingleTop = true }
+) {
+    navigate(SessionEditorGraphRoute(profileId = profileId)) {
+        navOptions()
+    }
 }
 
 
@@ -115,7 +130,9 @@ fun NavGraphBuilder.sessionEditorGraph(
                 onBackClick = navController::popBackStack,
                 viewModel = formViewModel,
                 onNavigateToProfilePicker = {
-                    navController.navigate(EditorProfilePickerRoute)
+                    navController.navigate(EditorProfilePickerRoute) {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -135,6 +152,7 @@ fun NavGraphBuilder.sessionEditorGraph(
                 onProfileSelected = {
                     navController.navigate(EditorMainFormRoute) {
                         popUpTo(EditorProfilePickerRoute) { inclusive = true }
+                        launchSingleTop = true
                     }
                 },
                 onNavigateToCreateProfile = onNavigateToCreateProfile

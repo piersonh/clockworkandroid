@@ -2,7 +2,6 @@ package com.wordco.clockworkandroid.session_editor_feature.ui.main_form
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormModal
