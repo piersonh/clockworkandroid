@@ -10,37 +10,47 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetRemindersForSessionUseCase
+import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormViewModel
 import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.ProfilePickerViewModel
+import kotlinx.coroutines.CoroutineScope
 
 class SessionEditorViewModel(
     val sessionEditorMode: SessionEditorMode,
+    applicationScope: CoroutineScope,
     sessionDraftFactory: SessionDraftFactory,
     reminderDraftFactory: ReminderDraftFactory,
     getProfileUseCase: GetProfileUseCase,
     getSessionUseCase: GetSessionUseCase,
     getRemindersForSessionUseCase: GetRemindersForSessionUseCase,
+    createSessionUseCase: CreateSessionUseCase,
+    updateSessionUseCase: UpdateSessionUseCase,
 ) : ViewModel() {
     private val editorManager = when(sessionEditorMode) {
         is SessionEditorMode.Create -> {
             SessionEditorManager.Create(
                 profileId = sessionEditorMode.profileId,
-                coroutineScope = viewModelScope,
+                uiCoroutineScope = viewModelScope,
+                ioCoroutineScope = applicationScope,
                 sessionDraftFactory = sessionDraftFactory,
                 reminderDraftFactory = reminderDraftFactory,
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                createSessionUseCase = createSessionUseCase,
             )
         }
         is SessionEditorMode.Edit -> {
             SessionEditorManager.Edit(
                 sessionId = sessionEditorMode.sessionId,
-                coroutineScope = viewModelScope,
+                uiCoroutineScope = viewModelScope,
+                ioCoroutineScope = applicationScope,
                 sessionDraftFactory = sessionDraftFactory,
                 reminderDraftFactory = reminderDraftFactory,
                 getSessionUseCase = getSessionUseCase,
                 getRemindersForSessionUseCase = getRemindersForSessionUseCase,
                 getProfileUseCase = getProfileUseCase,
+                updateSessionUseCase = updateSessionUseCase
             )
         }
     }
@@ -80,11 +90,14 @@ class SessionEditorViewModel(
 
                 SessionEditorViewModel(
                     sessionEditorMode = editorMode,
+                    applicationScope = appContainer.applicationScope,
                     sessionDraftFactory = SessionDraftFactory(),
                     reminderDraftFactory = ReminderDraftFactory(),
                     getProfileUseCase = appContainer.getProfileUseCase,
                     getSessionUseCase = appContainer.getSessionUseCase,
                     getRemindersForSessionUseCase = appContainer.getRemindersForSessionUseCase,
+                    createSessionUseCase = appContainer.createSessionUseCase,
+                    updateSessionUseCase = appContainer.updateSessionUseCase,
                 )
             }
         }
