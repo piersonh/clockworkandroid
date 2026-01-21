@@ -33,7 +33,6 @@ import java.time.ZoneOffset
 
 class SessionFormViewModel(
     private val editorManager: SessionEditorManager,
-    private val getProfileUseCase: GetProfileUseCase,
     private val getAverageSessionDurationUseCase: GetAverageSessionDurationUseCase,
     private val getAverageEstimateErrorUseCase: GetAverageEstimateErrorUseCase,
 ) : ViewModel() {
@@ -184,7 +183,7 @@ class SessionFormViewModel(
                     copy(
                         taskName = draft.sessionName,
                         profileName = profileName,
-                        colorSliderPos = draft.colorHue / 360,
+                        colorSliderPos = draft.colorHue,
                         difficulty = draft.difficulty.toFloat(),
                         dueDate = draft.dueDateTime?.toLocalDate(),
                         dueTime = draft.dueDateTime?.toLocalTime(),
@@ -199,7 +198,7 @@ class SessionFormViewModel(
                     copy(
                         taskName = draft.sessionName,
                         profileName = profileName,
-                        colorSliderPos = draft.colorHue / 360,
+                        colorSliderPos = draft.colorHue,
                         difficulty = draft.difficulty.toFloat(),
                         dueDate = draft.dueDateTime?.toLocalDate(),
                         dueTime = draft.dueDateTime?.toLocalTime(),
@@ -277,7 +276,7 @@ class SessionFormViewModel(
                                     averageEstimateError = getAverageEstimateError?.invoke(draft.difficulty),
                                     taskName = draft.sessionName,
                                     profileName = profile?.name,
-                                    colorSliderPos = draft.colorHue / 360f,
+                                    colorSliderPos = draft.colorHue,
                                     difficulty = draft.difficulty.toFloat(),
                                     dueDate = draft.dueDateTime?.toLocalDate(),
                                     dueTime = draft.dueDateTime?.toLocalTime(),

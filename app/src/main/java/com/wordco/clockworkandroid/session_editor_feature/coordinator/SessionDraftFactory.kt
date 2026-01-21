@@ -32,7 +32,7 @@ class SessionDraftFactory {
             sessionId = session.taskId,
             sessionName = session.name,
             profileId = session.profileId,
-            colorHue = session.color.hue(),
+            colorHue = session.color.hue() / 360,
             difficulty = session.difficulty,
             dueDateTime = session.dueDate?.atZone(ZoneId.systemDefault())?.toLocalDateTime(),
             estimate = session.userEstimate?.toEstimate(),
@@ -55,10 +55,10 @@ class SessionDraftFactory {
     fun getDefaultColor(profile: Profile?): Float {
         return when (profile) {
             null -> {
-                Random.nextFloat() * 360
+                Random.nextFloat()
             }
             else -> {
-                profile.color.hue()
+                profile.color.hue() / 360
             }
         }
     }

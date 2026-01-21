@@ -301,7 +301,7 @@ sealed class SessionEditorManager(
                 name = draft.sessionName,
                 dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
                 difficulty = draft.difficulty,
-                color = Color.hsv(draft.colorHue, 1f, 1f),
+                color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                 userEstimate = draft.estimate?.toDuration(),
                 profileId = draft.profileId,
                 appEstimate = null,
@@ -466,7 +466,7 @@ sealed class SessionEditorManager(
                     name = draft.sessionName,
                     dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
                     difficulty = draft.difficulty,
-                    color = Color.hsv(draft.colorHue, 1f, 1f),
+                    color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                     userEstimate = draft.estimate?.toDuration(),
                     profileId = draft.profileId,
                 )
@@ -474,14 +474,14 @@ sealed class SessionEditorManager(
                     name = draft.sessionName,
                     dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
                     difficulty = draft.difficulty,
-                    color = Color.hsv(draft.colorHue, 1f, 1f),
+                    color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                     profileId = draft.profileId,
                 )
                 is CompletedTask -> originalSession.copy(
                     name = draft.sessionName,
                     dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
                     difficulty = draft.difficulty,
-                    color = Color.hsv(draft.colorHue, 1f, 1f),
+                    color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                     profileId = draft.profileId,
                 )
             }

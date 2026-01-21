@@ -74,9 +74,11 @@ fun SessionFormPage(
             .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .collect { effect ->
                 when (effect) {
-                    SessionFormUiEffect.NavigateBack -> onBackClick()
+                    SessionFormUiEffect.NavigateBack -> {
+                        onBackClick()
+                    }
                     is SessionFormUiEffect.ShowSnackbar -> {
-                        launch {
+                        coroutineScope.launch {
                             snackbarHostState.showSnackbar(
                                 message = effect.message,
                                 //actionLabel = effect.actionLabel,
@@ -173,7 +175,9 @@ private fun SessionFormPageContent(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
         Box(
-            modifier = Modifier.padding(paddingValues).fillMaxSize()
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
         ) {
             when(uiState) {
                 is SessionFormUiState.Retrieving -> {
@@ -187,7 +191,8 @@ private fun SessionFormPageContent(
                             uiState.header,
                             uiState.message,
                             onCopyErrorInfoClick = { onEvent(SessionFormUiEvent.CopyErrorClicked) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .padding(top = 30.dp)
                         )
                     }
