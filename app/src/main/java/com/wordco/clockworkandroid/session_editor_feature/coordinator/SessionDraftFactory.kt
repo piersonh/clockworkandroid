@@ -3,9 +3,9 @@ package com.wordco.clockworkandroid.session_editor_feature.coordinator
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.SessionDraft
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
+import com.wordco.clockworkandroid.session_editor_feature.domain.util.toEstimate
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

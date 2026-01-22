@@ -1,6 +1,7 @@
 package com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker
 
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.ProfilePickerItem
+import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.model.ProfilePickerItem
+
 
 sealed interface ProfilePickerUiState {
     data object Retrieving: ProfilePickerUiState

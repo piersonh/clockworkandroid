@@ -2,18 +2,18 @@ package com.wordco.clockworkandroid.session_editor_feature.ui.main_form
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageSessionDurationUseCase
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormModal
 import com.wordco.clockworkandroid.session_editor_feature.coordinator.SessionEditorManager
 import com.wordco.clockworkandroid.session_editor_feature.coordinator.SessionEditorState
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.DraftValidationError
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.ReminderDraft
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.SessionDraft
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetAverageEstimateErrorUseCase
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetAverageSessionDurationUseCase
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormUiState.Error
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormUiState.Retrieved
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormUiState.Retrieving
-import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.model.mapper.toReminderListItem
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.model.SessionFormModal
+import com.wordco.clockworkandroid.session_editor_feature.ui.reminder_list.model.mapper.toReminderListItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

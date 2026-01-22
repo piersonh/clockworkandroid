@@ -44,14 +44,14 @@ import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.DatePickerModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.EstimatePickerModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.TimerPickerModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.rememberEstimatePickerState
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
-import com.wordco.clockworkandroid.edit_session_feature.ui.util.toEstimate
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
+import com.wordco.clockworkandroid.session_editor_feature.domain.util.toEstimate
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.DatePickerModal
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.EstimatePickerModal
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.SessionForm
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.TimerPickerModal
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.rememberEstimatePickerState
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.model.SessionFormModal
 import kotlinx.coroutines.launch
 import java.time.ZoneOffset
 

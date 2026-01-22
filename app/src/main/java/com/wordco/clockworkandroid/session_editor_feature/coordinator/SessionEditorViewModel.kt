@@ -10,9 +10,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.CreateSessionUseCase
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetRemindersForSessionUseCase
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.UpdateSessionUseCase
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.CreateSessionUseCase
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetRemindersForSessionUseCase
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormViewModel
 import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.ProfilePickerViewModel
 import kotlinx.coroutines.CoroutineScope

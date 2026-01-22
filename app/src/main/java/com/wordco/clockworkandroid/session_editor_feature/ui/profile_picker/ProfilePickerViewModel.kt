@@ -3,9 +3,9 @@ package com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.mapper.toProfilePickerItem
 import com.wordco.clockworkandroid.session_editor_feature.coordinator.SessionEditorManager
 import com.wordco.clockworkandroid.session_editor_feature.coordinator.SessionEditorState
+import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.model.mapper.toProfilePickerItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,8 +1,8 @@
 package com.wordco.clockworkandroid.session_editor_feature.ui.main_form
 
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.ReminderListItem
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.SessionFormModal
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
+import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.model.SessionFormModal
+import com.wordco.clockworkandroid.session_editor_feature.ui.reminder_list.model.ReminderListItem
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime

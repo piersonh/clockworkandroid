@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.data.fake.FakeSessionRepository
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAverageEstimateErrorUseCase
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetAverageEstimateErrorUseCase
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.time.Duration

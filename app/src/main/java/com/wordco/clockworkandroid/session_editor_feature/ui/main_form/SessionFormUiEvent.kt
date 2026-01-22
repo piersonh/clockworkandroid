@@ -1,6 +1,6 @@
 package com.wordco.clockworkandroid.session_editor_feature.ui.main_form
 
-import com.wordco.clockworkandroid.edit_session_feature.ui.model.UserEstimate
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
 import java.time.LocalTime
 
 sealed interface SessionFormUiEvent {

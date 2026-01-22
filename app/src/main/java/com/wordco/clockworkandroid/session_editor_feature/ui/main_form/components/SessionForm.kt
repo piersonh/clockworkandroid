@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.OutlinedTextFieldButton
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormUiEvent
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.SessionFormUiState
 import java.time.format.DateTimeFormatter

@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.Segment
-import com.wordco.clockworkandroid.edit_session_feature.domain.use_case.GetAppEstimateUseCase
+import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetAppEstimateUseCase
 import org.junit.Test
 import java.time.Duration
 import java.time.Instant

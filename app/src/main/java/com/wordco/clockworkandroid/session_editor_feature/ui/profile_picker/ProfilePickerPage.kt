@@ -33,7 +33,7 @@ import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.edit_session_feature.ui.composables.ProfilePicker
+import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.components.ProfilePicker
 import kotlinx.coroutines.launch
 
 @Composable
