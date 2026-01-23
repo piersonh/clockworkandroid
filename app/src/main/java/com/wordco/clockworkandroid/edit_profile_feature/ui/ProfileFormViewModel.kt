@@ -165,7 +165,7 @@ class ProfileFormViewModel(
 
     private inner class EditFormBehavior(
         initialUiState: ProfileFormUiState.Retrieved,
-        val profile: Profile,
+        private val profile: Profile,
     ): FormBehavior(initialUiState) {
         override suspend fun save(state: ProfileFormUiState.Retrieved) {
             updateProfileUseCase(
