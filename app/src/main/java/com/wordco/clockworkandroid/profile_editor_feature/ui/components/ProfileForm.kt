@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui.elements
+package com.wordco.clockworkandroid.profile_editor_feature.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
-import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileEditorUiEvent
-import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileEditorUiState
+import com.wordco.clockworkandroid.profile_editor_feature.ui.ProfileEditorUiEvent
+import com.wordco.clockworkandroid.profile_editor_feature.ui.ProfileEditorUiState
 
 @Composable
 fun ProfileForm(

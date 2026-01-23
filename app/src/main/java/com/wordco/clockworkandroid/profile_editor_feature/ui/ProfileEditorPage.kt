@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.profile_editor_feature.ui
 
 import android.content.ClipData
 import androidx.activity.compose.BackHandler
@@ -45,8 +45,8 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
-import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.ProfileForm
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileEditorModal
+import com.wordco.clockworkandroid.profile_editor_feature.ui.components.ProfileForm
+import com.wordco.clockworkandroid.profile_editor_feature.ui.model.ProfileEditorModal
 import kotlinx.coroutines.launch
 
 @Composable

@@ -10,9 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
-import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
-import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
-import com.wordco.clockworkandroid.edit_profile_feature.ui.profileEditorPage
+import com.wordco.clockworkandroid.profile_editor_feature.ui.navigateToCreateProfile
+import com.wordco.clockworkandroid.profile_editor_feature.ui.navigateToEditProfile
+import com.wordco.clockworkandroid.profile_editor_feature.ui.profileEditorPage
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList

@@ -1,6 +1,6 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.profile_editor_feature.ui
 
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileEditorModal
+import com.wordco.clockworkandroid.profile_editor_feature.ui.model.ProfileEditorModal
 
 sealed interface ProfileEditorUiState {
     val title: String

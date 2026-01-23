@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.profile_editor_feature.ui
 
 
 sealed interface ProfileEditorUiEffect {

@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui.model
+package com.wordco.clockworkandroid.profile_editor_feature.ui.model
 
 data class ProfileFormDefaults(
     val name: String,

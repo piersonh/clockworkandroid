@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.edit_profile_feature.ui
+package com.wordco.clockworkandroid.profile_editor_feature.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -13,10 +13,10 @@ import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.core.ui.util.fromSlider
 import com.wordco.clockworkandroid.core.ui.util.hue
-import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.CreateProfileUseCase
-import com.wordco.clockworkandroid.edit_profile_feature.domain.use_case.UpdateProfileUseCase
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileFormDefaults
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileEditorModal
+import com.wordco.clockworkandroid.profile_editor_feature.domain.use_case.CreateProfileUseCase
+import com.wordco.clockworkandroid.profile_editor_feature.domain.use_case.UpdateProfileUseCase
+import com.wordco.clockworkandroid.profile_editor_feature.ui.model.ProfileEditorModal
+import com.wordco.clockworkandroid.profile_editor_feature.ui.model.ProfileFormDefaults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
