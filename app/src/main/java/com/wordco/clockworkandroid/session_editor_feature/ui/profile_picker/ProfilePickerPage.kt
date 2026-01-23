@@ -78,7 +78,7 @@ fun ProfilePickerPage(
                         }
                     }
                     is ProfilePickerUiEffect.ShowSnackbar -> {
-                        launch {
+                        coroutineScope.launch {
                             snackbarHostState.showSnackbar(
                                 message = effect.message,
                                 //actionLabel = effect.actionLabel,

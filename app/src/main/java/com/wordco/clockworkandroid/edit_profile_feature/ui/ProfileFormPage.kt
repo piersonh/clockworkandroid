@@ -70,7 +70,7 @@ fun ProfileFormPage(
                 when (effect) {
                     ProfileFormUiEffect.NavigateBack -> onBackClick()
                     is ProfileFormUiEffect.ShowSnackbar -> {
-                        launch {
+                        coroutineScope.launch {
                             snackbarHostState.showSnackbar(
                                 message = effect.message,
                                 //actionLabel = effect.actionLabel,
