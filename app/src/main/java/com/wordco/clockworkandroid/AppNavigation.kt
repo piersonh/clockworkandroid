@@ -17,8 +17,8 @@ import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
-import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToCompletion
-import com.wordco.clockworkandroid.session_completion_feature.ui.taskCompletionPage
+import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToSessionReport
+import com.wordco.clockworkandroid.session_completion_feature.ui.sessionReportPage
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSession
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSessionWithPicker
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToEditSession
@@ -127,7 +127,7 @@ fun NavHost(
         timerPage(
             onBackClick = navController::popBackStack,
             onFinishClick = { sessionId ->
-                navController.navigateToCompletion(sessionId) {
+                navController.navigateToSessionReport(sessionId) {
                     popUpTo(route = TimerRoute(sessionId)) {
                         inclusive = true
                     }
@@ -152,11 +152,11 @@ fun NavHost(
             onEditClick = navController::navigateToEditProfile,
             onSessionClick = navController::navigateToTimer,
             onCreateNewSessionClick = navController::navigateToCreateSession,
-            onCompletedSessionClick = navController::navigateToCompletion,
+            onCompletedSessionClick = navController::navigateToSessionReport,
             navBar = { navBar(ProfileListRoute) },
         )
 
-        taskCompletionPage(
+        sessionReportPage(
             onBackClick = navController::popBackStack,
             onContinueClick = navController::popBackStack,
             onEditClick = navController::navigateToEditSession,
@@ -164,7 +164,7 @@ fun NavHost(
 
         userStatsPage(
             navBar = { navBar(UserStatsRoute) },
-            onCompletedSessionClick = navController::navigateToCompletion
+            onCompletedSessionClick = navController::navigateToSessionReport
         )
     }
 }

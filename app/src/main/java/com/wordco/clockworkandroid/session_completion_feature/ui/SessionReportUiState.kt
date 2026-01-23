@@ -6,13 +6,13 @@ import com.wordco.clockworkandroid.session_completion_feature.ui.model.ViewModel
 import java.time.Duration
 
 
-sealed interface TaskCompletionUiState {
-    data object Retrieving : TaskCompletionUiState
+sealed interface SessionReportUiState {
+    data object Retrieving : SessionReportUiState
 
     data class Error(
         val header: String,
         val message: String,
-    ) : TaskCompletionUiState
+    ) : SessionReportUiState
 
     /**
      * Use Retrieved.from() to construct an instance
@@ -28,7 +28,7 @@ sealed interface TaskCompletionUiState {
         val totalTimeAccuracy: Double?,
         val isMenuOpen: Boolean,
         val currentModal: SessionReportModal?
-    ) : TaskCompletionUiState {
+    ) : SessionReportUiState {
         companion object {
             fun from(
                 session: CompletedTask,
@@ -53,5 +53,5 @@ sealed interface TaskCompletionUiState {
         }
     }
 
-    data object Deleting : TaskCompletionUiState
+    data object Deleting : SessionReportUiState
 }

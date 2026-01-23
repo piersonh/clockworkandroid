@@ -32,13 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.session_completion_feature.ui.SessionReportUiEvent
-import com.wordco.clockworkandroid.session_completion_feature.ui.TaskCompletionUiState
+import com.wordco.clockworkandroid.session_completion_feature.ui.SessionReportUiState
 import com.wordco.clockworkandroid.session_completion_feature.ui.util.toHourMinuteString
 import kotlin.math.roundToInt
 
 @Composable
 fun SessionReport(
-    uiState: TaskCompletionUiState.Retrieved,
+    uiState: SessionReportUiState.Retrieved,
     modifier: Modifier = Modifier,
     onEvent: (SessionReportUiEvent.ReportEvent) -> Unit,
 ) {

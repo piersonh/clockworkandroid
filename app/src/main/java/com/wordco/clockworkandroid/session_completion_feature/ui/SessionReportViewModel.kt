@@ -33,19 +33,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-class TaskCompletionViewModel (
+class SessionReportViewModel (
     private val taskId: Long,
     private val getSessionUseCase: GetSessionUseCase,
     private val deleteSessionUseCase: DeleteSessionUseCase,
     private val calculateEstimateAccuracyUseCase: CalculateEstimateAccuracyUseCase,
 ) : ViewModel() {
     private interface PageBehavior {
-        val uiState: StateFlow<TaskCompletionUiState>
+        val uiState: StateFlow<SessionReportUiState>
         suspend fun handle(event: SessionReportUiEvent)
     }
 
     private inner class LoadingBehavior(
-        initialUiState: TaskCompletionUiState.Retrieving
+        initialUiState: SessionReportUiState.Retrieving
     ) : PageBehavior {
         override val uiState = MutableStateFlow(initialUiState)
 
@@ -66,7 +66,7 @@ class TaskCompletionViewModel (
                     // triggers the upstream logic
                     val session = sharedSessionFlow.first()
 
-                    val initialReportState = TaskCompletionUiState.Retrieved.from(
+                    val initialReportState = SessionReportUiState.Retrieved.from(
                         session = session,
                         viewModelManagedUiState = ViewModelManagedUiState(
                             isMenuOpen = false,
@@ -85,7 +85,7 @@ class TaskCompletionViewModel (
                 } catch (e: Exception) {
                     currentBehavior.update {
                         ErrorBehavior(
-                            initialUiState = TaskCompletionUiState.Error(
+                            initialUiState = SessionReportUiState.Error(
                                 header = "Initialization Failed",
                                 message = e.message ?: "No Message"
                             ),
@@ -98,21 +98,21 @@ class TaskCompletionViewModel (
 
         override suspend fun handle(event: SessionReportUiEvent) {
             when (event as? SessionReportUiEvent.LoadingEvent) {
-                SessionReportUiEvent.BackClicked -> sendEffect(TaskCompletionUiEffect.NavigateBack)
+                SessionReportUiEvent.BackClicked -> sendEffect(SessionReportUiEffect.NavigateBack)
                 null -> {}
             }
         }
     }
 
     private inner class ErrorBehavior(
-        initialUiState: TaskCompletionUiState.Error,
+        initialUiState: SessionReportUiState.Error,
         val stackTrace: String?,
     ) : PageBehavior {
         override val uiState = MutableStateFlow(initialUiState)
 
         override suspend fun handle(event: SessionReportUiEvent) {
             when (event as? SessionReportUiEvent.ErrorEvent) {
-                SessionReportUiEvent.BackClicked -> sendEffect(TaskCompletionUiEffect.NavigateBack)
+                SessionReportUiEvent.BackClicked -> sendEffect(SessionReportUiEffect.NavigateBack)
                 SessionReportUiEvent.CopyErrorClicked -> copyError()
                 null -> {}
             }
@@ -126,13 +126,13 @@ class TaskCompletionViewModel (
                     $stackTrace
                 """.trimIndent()
 
-            sendEffect(TaskCompletionUiEffect.CopyToClipboard(clipboardContent))
-            sendEffect(TaskCompletionUiEffect.ShowSnackbar("Error info copied"))
+            sendEffect(SessionReportUiEffect.CopyToClipboard(clipboardContent))
+            sendEffect(SessionReportUiEffect.ShowSnackbar("Error info copied"))
         }
     }
 
     private inner class ReportBehavior(
-        initialUiState: TaskCompletionUiState.Retrieved,
+        initialUiState: SessionReportUiState.Retrieved,
         session: Flow<CompletedTask>,
     ) : PageBehavior {
         private val localState = MutableStateFlow(ViewModelManagedUiState(
@@ -144,7 +144,7 @@ class TaskCompletionViewModel (
             session,
             localState
         ){ session, localState ->
-            TaskCompletionUiState.Retrieved.from(
+            SessionReportUiState.Retrieved.from(
                 session = session,
                 viewModelManagedUiState = localState,
                 accuracyCalculator = calculateEstimateAccuracyUseCase::invoke
@@ -152,7 +152,7 @@ class TaskCompletionViewModel (
         }.catch { e ->
                 currentBehavior.update {
                     ErrorBehavior(
-                        initialUiState = TaskCompletionUiState.Error(
+                        initialUiState = SessionReportUiState.Error(
                             header = "Session Lost",
                             message = e.message ?: "Stream Interrupted"
                         ),
@@ -168,10 +168,10 @@ class TaskCompletionViewModel (
 
         override suspend fun handle(event: SessionReportUiEvent) {
             when (event as? SessionReportUiEvent.ReportEvent) {
-                SessionReportUiEvent.BackClicked -> sendEffect(TaskCompletionUiEffect.NavigateBack)
+                SessionReportUiEvent.BackClicked -> sendEffect(SessionReportUiEffect.NavigateBack)
                 SessionReportUiEvent.DeleteClicked -> showDeleteSessionConfirmationModal()
-                SessionReportUiEvent.ContinueClicked -> sendEffect(TaskCompletionUiEffect.NavigateToContinue)
-                SessionReportUiEvent.EditClicked -> sendEffect(TaskCompletionUiEffect.NavigateToEditSession)
+                SessionReportUiEvent.ContinueClicked -> sendEffect(SessionReportUiEffect.NavigateToContinue)
+                SessionReportUiEvent.EditClicked -> sendEffect(SessionReportUiEffect.NavigateToEditSession)
                 SessionReportUiEvent.DeleteConfirmed -> triggerDeleteSession()
                 SessionReportUiEvent.MenuClosed -> closeMenu()
                 SessionReportUiEvent.MenuOpened -> openMenu()
@@ -198,13 +198,13 @@ class TaskCompletionViewModel (
 
         fun triggerDeleteSession() {
             currentBehavior.update { DeletingBehavior(
-                initialUiState = TaskCompletionUiState.Deleting
+                initialUiState = SessionReportUiState.Deleting
             ) }
         }
     }
 
     private inner class DeletingBehavior(
-        initialUiState: TaskCompletionUiState.Deleting,
+        initialUiState: SessionReportUiState.Deleting,
     ) : PageBehavior {
         override val uiState = MutableStateFlow(initialUiState)
 
@@ -212,12 +212,12 @@ class TaskCompletionViewModel (
             viewModelScope.launch {
                 try {
                     deleteSessionUseCase(taskId)
-                    sendEffect(TaskCompletionUiEffect.NavigateBack)
+                    sendEffect(SessionReportUiEffect.NavigateBack)
 
                 } catch (e: Exception) {
                     currentBehavior.update {
                         ErrorBehavior(
-                            initialUiState = TaskCompletionUiState.Error(
+                            initialUiState = SessionReportUiState.Error(
                                 header = "Deletion Failed",
                                 message = e.message ?: "Could not delete task"
                             ),
@@ -237,7 +237,7 @@ class TaskCompletionViewModel (
     }
 
     private val currentBehavior = MutableStateFlow<PageBehavior>(LoadingBehavior(
-        initialUiState = TaskCompletionUiState.Retrieving
+        initialUiState = SessionReportUiState.Retrieving
     ))
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -248,7 +248,7 @@ class TaskCompletionViewModel (
             currentBehavior.value.uiState.value
         )
 
-    private val _uiEffect = Channel<TaskCompletionUiEffect>()
+    private val _uiEffect = Channel<SessionReportUiEffect>()
     val uiEffect = _uiEffect.receiveAsFlow()
 
 
@@ -258,12 +258,12 @@ class TaskCompletionViewModel (
         }
     }
 
-    suspend fun sendEffect(effect: TaskCompletionUiEffect) {
+    suspend fun sendEffect(effect: SessionReportUiEffect) {
         _uiEffect.send(effect)
     }
 
     companion object {
-        val TASK_ID_KEY = object : CreationExtras.Key<Long> {}
+        val SESSION_ID_KEY = object : CreationExtras.Key<Long> {}
         val Factory: ViewModelProvider.Factory = viewModelFactory {
 
             initializer {
@@ -271,9 +271,9 @@ class TaskCompletionViewModel (
                 val getSessionUseCase = appContainer.getSessionUseCase
                 val calculateEstimateAccuracyUseCase = appContainer.calculateEstimateAccuracyUseCase
                 val deleteSessionUseCase = appContainer.deleteSessionUseCase
-                val taskId = this[TASK_ID_KEY] as Long
+                val taskId = this[SESSION_ID_KEY] as Long
 
-                TaskCompletionViewModel(
+                SessionReportViewModel(
                     taskId,
                     getSessionUseCase = getSessionUseCase,
                     calculateEstimateAccuracyUseCase = calculateEstimateAccuracyUseCase,

@@ -50,11 +50,11 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 
 @Composable
-fun TaskCompletionPage(
+fun SessionReportPage(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
     onEditClick: () -> Unit,
-    viewModel: TaskCompletionViewModel
+    viewModel: SessionReportViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -69,19 +69,19 @@ fun TaskCompletionPage(
             .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .collect { effect ->
                 when (effect) {
-                    TaskCompletionUiEffect.NavigateBack -> {
+                    SessionReportUiEffect.NavigateBack -> {
                         onBackClick()
                     }
 
-                    TaskCompletionUiEffect.NavigateToContinue -> {
+                    SessionReportUiEffect.NavigateToContinue -> {
                         onContinueClick()
                     }
 
-                    TaskCompletionUiEffect.NavigateToEditSession -> {
+                    SessionReportUiEffect.NavigateToEditSession -> {
                         onEditClick()
                     }
 
-                    is TaskCompletionUiEffect.CopyToClipboard -> {
+                    is SessionReportUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
                             val clipData = ClipData.newPlainText(
                                 effect.content,
@@ -91,7 +91,7 @@ fun TaskCompletionPage(
                         }
                     }
 
-                    is TaskCompletionUiEffect.ShowSnackbar -> {
+                    is SessionReportUiEffect.ShowSnackbar -> {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
                                 message = effect.message,
@@ -104,7 +104,7 @@ fun TaskCompletionPage(
             }
     }
 
-    TaskCompletionPageContent(
+    SessionReportPageContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
         snackbarHostState = snackbarHostState
@@ -114,8 +114,8 @@ fun TaskCompletionPage(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TaskCompletionPageContent(
-    uiState: TaskCompletionUiState,
+private fun SessionReportPageContent(
+    uiState: SessionReportUiState,
     onEvent: (SessionReportUiEvent) -> Unit,
     snackbarHostState: SnackbarHostState,
 ) {
@@ -131,7 +131,7 @@ private fun TaskCompletionPageContent(
                     )
                 },
                 navigationIcon = {
-                    if (uiState !is TaskCompletionUiState.Deleting) {
+                    if (uiState !is SessionReportUiState.Deleting) {
                         IconButton(onClick = { onEvent(SessionReportUiEvent.DeleteClicked) }) {
                             BackImage()
                         }
@@ -142,7 +142,7 @@ private fun TaskCompletionPageContent(
                     titleContentColor = MaterialTheme.colorScheme.onSecondary,
                 ),
                 actions = {
-                    if (uiState is TaskCompletionUiState.Retrieved) {
+                    if (uiState is SessionReportUiState.Retrieved) {
                         Box {
                             IconButton(onClick = { onEvent(SessionReportUiEvent.MenuOpened) }) {
                                 Icon(
@@ -168,13 +168,13 @@ private fun TaskCompletionPageContent(
             modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
             when (uiState) {
-                TaskCompletionUiState.Retrieving -> {
+                SessionReportUiState.Retrieving -> {
                     SpinningLoader()
                 }
-                TaskCompletionUiState.Deleting -> {
+                SessionReportUiState.Deleting -> {
                     SpinningLoader()
                 }
-                is TaskCompletionUiState.Error -> {
+                is SessionReportUiState.Error -> {
                     Box(
                         modifier = Modifier.padding(top = 40.dp)
                     ) {
@@ -187,7 +187,7 @@ private fun TaskCompletionPageContent(
                         )
                     }
                 }
-                is TaskCompletionUiState.Retrieved -> {
+                is SessionReportUiState.Retrieved -> {
                     val scrollState = rememberScrollState()
 
                     SessionReport(
@@ -229,14 +229,14 @@ private fun ModalManager(
 }
 
 
-class UiStateProvider : PreviewParameterProvider<TaskCompletionUiState> {
+private class UiStateProvider : PreviewParameterProvider<SessionReportUiState> {
     override val values = sequenceOf(
-        TaskCompletionUiState.Retrieving,
-        TaskCompletionUiState.Error(
+        SessionReportUiState.Retrieving,
+        SessionReportUiState.Error(
             header = "Whoops!",
             message = "You need to put the CD..."
         ),
-        TaskCompletionUiState.Retrieved(
+        SessionReportUiState.Retrieved(
             name = "Preview",
             estimate = Duration.ofHours(1).plusMinutes(27),
             workTime = Duration.ofHours(1).plusMinutes(27),
@@ -246,17 +246,17 @@ class UiStateProvider : PreviewParameterProvider<TaskCompletionUiState> {
             isMenuOpen = true,
             currentModal = null,
         ),
-        TaskCompletionUiState.Deleting
+        SessionReportUiState.Deleting
     )
 }
 
 @AspectRatioPreviews
 @Composable
-fun PreviewFormScreen(
-    @PreviewParameter(UiStateProvider::class) state: TaskCompletionUiState
+private fun PreviewReportScreen(
+    @PreviewParameter(UiStateProvider::class) state: SessionReportUiState
 ) {
     ClockWorkTheme {
-        TaskCompletionPageContent(
+        SessionReportPageContent(
             uiState = state,
             onEvent = {},
             snackbarHostState = remember { SnackbarHostState() },

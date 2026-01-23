@@ -13,23 +13,23 @@ import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CompletionRoute(val id: Long)
+private data class SessionReportRoute(val id: Long)
 
-fun NavController.navigateToCompletion(
-    taskId: Long,
+fun NavController.navigateToSessionReport(
+    sessionId: Long,
     navOptions: NavOptionsBuilder.() -> Unit = {launchSingleTop = true}
 ) {
-    navigate(route = CompletionRoute(taskId)) {
+    navigate(route = SessionReportRoute(sessionId)) {
         navOptions()
     }
 }
 
-fun NavGraphBuilder.taskCompletionPage(
+fun NavGraphBuilder.sessionReportPage(
     onBackClick: () -> Unit,
     onContinueClick: () -> Unit,
     onEditClick: (Long) -> Unit
 ) {
-    composable<CompletionRoute> (
+    composable<SessionReportRoute> (
         enterTransition = {
             slideInHorizontally(
                 initialOffsetX = { it }, animationSpec = tween(300)
@@ -51,23 +51,23 @@ fun NavGraphBuilder.taskCompletionPage(
             )
         }
     ) { entry ->
-        val taskId = entry.toRoute<CompletionRoute>().id
+        val sessionId = entry.toRoute<SessionReportRoute>().id
 
-        val taskCompletionViewModel = ViewModelProvider.create(
+        val viewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = TaskCompletionViewModel.Companion.Factory,
+            factory = SessionReportViewModel.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {
-                set(TaskCompletionViewModel.Companion.TASK_ID_KEY, taskId)
+                set(SessionReportViewModel.SESSION_ID_KEY, sessionId)
             }
-        )[TaskCompletionViewModel::class]
+        )[SessionReportViewModel::class]
 
-        TaskCompletionPage(
-            viewModel = taskCompletionViewModel,
+        SessionReportPage(
+            viewModel = viewModel,
             onBackClick = onBackClick,
             onContinueClick = onContinueClick,
-            onEditClick = {onEditClick(taskId)},
+            onEditClick = { onEditClick(sessionId) },
         )
     }
 }
