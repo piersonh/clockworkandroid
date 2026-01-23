@@ -3,11 +3,11 @@ package com.wordco.clockworkandroid.session_editor_feature.coordinator
 import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.model.Task
 import com.wordco.clockworkandroid.core.ui.util.hue
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.DueDateTime
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.SessionDraft
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
 import com.wordco.clockworkandroid.session_editor_feature.domain.util.toEstimate
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import kotlin.random.Random
@@ -37,7 +37,12 @@ class SessionDraftFactory(
             profileId = session.profileId,
             colorHue = session.color.hue() / 360,
             difficulty = session.difficulty,
-            dueDateTime = session.dueDate?.atZone(ZoneId.systemDefault())?.toLocalDateTime(),
+            dueDateTime = session.dueDate?.atZone(ZoneId.systemDefault())?.toLocalDateTime()?.let {
+                DueDateTime(
+                    date = it.toLocalDate(),
+                    time = it.toLocalTime()
+                )
+            },
             estimate = session.userEstimate?.toEstimate(),
         )
     }
@@ -77,13 +82,19 @@ class SessionDraftFactory(
         }
     }
 
-    fun getDefaultDueDateTime(profile: Profile?): LocalDateTime {
+    fun getDefaultDueDateTime(profile: Profile?): DueDateTime {
         return when (profile) {
             null -> {
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59))
+                DueDateTime(
+                    date = LocalDate.now(),
+                    time = LocalTime.of(23, 59),
+                )
             }
             else -> {
-                LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59))
+                DueDateTime(
+                    date = LocalDate.now(),
+                    time = LocalTime.of(23, 59),
+                )
             }
         }
     }

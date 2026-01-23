@@ -230,7 +230,7 @@ private fun ModalManager(
 }
 
 
-class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
+private class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
     override val values = sequenceOf(
         ProfileFormUiState.Retrieving("Preview"),
         ProfileFormUiState.Retrieved(
@@ -251,7 +251,7 @@ class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
 
 @AspectRatioPreviews
 @Composable
-fun PreviewFormScreen(
+private fun PreviewFormScreen(
     @PreviewParameter(FormStateProvider::class) state: ProfileFormUiState
 ) {
     ClockWorkTheme {

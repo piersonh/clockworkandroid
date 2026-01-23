@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -43,7 +45,10 @@ import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.DiscardAlert
 import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.DueDateTime
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
 import com.wordco.clockworkandroid.session_editor_feature.domain.util.toEstimate
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.DatePickerModal
@@ -53,6 +58,8 @@ import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.component
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.components.rememberEstimatePickerState
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.model.SessionFormModal
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneOffset
 
 @Composable
@@ -243,7 +250,7 @@ private fun ModalManager(
         }
 
         SessionFormModal.DueDate -> {
-            val initialMillis = uiState.dueDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
+            val initialMillis = uiState.dueDateTime?.date?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli()
 
             key(initialMillis) {
                 val datePickerState = rememberDatePickerState(
@@ -259,8 +266,8 @@ private fun ModalManager(
         }
 
         SessionFormModal.DueTime -> {
-            val initialHour = uiState.dueTime?.hour ?: 0
-            val initialMinute = uiState.dueTime?.minute ?: 0
+            val initialHour = uiState.dueDateTime?.time?.hour ?: 0
+            val initialMinute = uiState.dueDateTime?.time?.minute ?: 0
 
             key(initialHour, initialMinute) {
                 val timePickerState = rememberTimePickerState(
@@ -328,5 +335,50 @@ private fun ModalManager(
                 )
             }
         }
+    }
+}
+
+private class FormStateProvider : PreviewParameterProvider<SessionFormUiState> {
+    override val values = sequenceOf(
+        SessionFormUiState.Retrieving("Preview"),
+        SessionFormUiState.Error(
+            title = "Preview",
+            header = "Error Occurred",
+            message = "This briefly explains the error blah blah",
+        ),
+        SessionFormUiState.Retrieved(
+            title = "Preview",
+            isEstimateEditable = true,
+            averageSessionDuration = null,
+            averageEstimateError = null,
+            taskName = "Evil Homework",
+            profileName = "Homework",
+            colorSliderPos = 0.1f,
+            difficulty = 1f,
+            dueDateTime = DueDateTime(
+                date = LocalDate.of(2025, 6, 7),
+                time = LocalTime.of(4, 20)
+            ),
+            estimate = UserEstimate(
+                minutes = 3,
+                hours = 3,
+            ),
+            reminder = null,
+            currentModal = null
+        )
+    )
+}
+
+@AspectRatioPreviews
+@Composable
+private fun PreviewFormScreen(
+    @PreviewParameter(FormStateProvider::class) state: SessionFormUiState
+) {
+    ClockWorkTheme {
+        SessionFormPageContent(
+            uiState = state,
+            snackbarHostState = remember { SnackbarHostState() },
+            onEvent = {}
+        )
     }
 }

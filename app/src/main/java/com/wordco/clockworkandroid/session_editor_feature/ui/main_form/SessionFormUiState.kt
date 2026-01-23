@@ -1,11 +1,10 @@
 package com.wordco.clockworkandroid.session_editor_feature.ui.main_form
 
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.DueDateTime
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
 import com.wordco.clockworkandroid.session_editor_feature.ui.main_form.model.SessionFormModal
 import com.wordco.clockworkandroid.session_editor_feature.ui.reminder_list.model.ReminderListItem
 import java.time.Duration
-import java.time.LocalDate
-import java.time.LocalTime
 
 
 sealed interface SessionFormUiState {
@@ -26,8 +25,7 @@ sealed interface SessionFormUiState {
         val profileName: String?,
         val colorSliderPos: Float,
         val difficulty: Float,
-        val dueDate: LocalDate?,
-        val dueTime: LocalTime?,
+        val dueDateTime: DueDateTime?,
         val estimate: UserEstimate?,
         val reminder: ReminderListItem?,
 

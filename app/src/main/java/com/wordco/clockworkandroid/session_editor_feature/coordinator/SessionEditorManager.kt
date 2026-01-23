@@ -12,6 +12,7 @@ import com.wordco.clockworkandroid.session_editor_feature.domain.model.DraftVali
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.ReminderDraft
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.SessionDraft
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.toLocalDateTime
 import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.CreateSessionUseCase
 import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetRemindersForSessionUseCase
 import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.UpdateSessionUseCase
@@ -66,14 +67,13 @@ sealed class SessionEditorManager(
     }
     fun updateDueDate(newDate: LocalDate?) {
         updateDraft { currentProfile ->
-            val dueTime = dueDateTime?.toLocalTime()
             val newDueDateTime = if (newDate == null) {
                 null
-            } else if (dueTime == null) {
+            } else if (dueDateTime == null) {
                 val default = sessionDraftFactory.getDefaultDueDateTime(currentProfile)
-                default.toLocalTime().atDate(newDate)
+                default.copy(date = newDate)
             } else {
-                newDate.atTime(dueTime)
+                dueDateTime.copy(date = newDate)
             }
 
             copy(
@@ -85,7 +85,7 @@ sealed class SessionEditorManager(
         updateDraft {
             if (dueDateTime != null) {
                 copy(
-                    dueDateTime = dueDateTime.toLocalDate().atTime(newTime)
+                    dueDateTime = dueDateTime.copy(time = newTime)
                 )
             } else {
                 this
@@ -298,7 +298,7 @@ sealed class SessionEditorManager(
             val newSession = NewTask(
                 taskId = draft.sessionId,
                 name = draft.sessionName,
-                dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
+                dueDate = draft.dueDateTime?.toLocalDateTime()?.atZone(ZoneId.systemDefault())?.toInstant(),
                 difficulty = draft.difficulty,
                 color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                 userEstimate = draft.estimate?.toDuration(),
@@ -463,7 +463,7 @@ sealed class SessionEditorManager(
             val updatedSession = when(val originalSession = state.originalSession) {
                 is NewTask -> originalSession.copy(
                     name = draft.sessionName,
-                    dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
+                    dueDate = draft.dueDateTime?.toLocalDateTime()?.atZone(ZoneId.systemDefault())?.toInstant(),
                     difficulty = draft.difficulty,
                     color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                     userEstimate = draft.estimate?.toDuration(),
@@ -471,14 +471,14 @@ sealed class SessionEditorManager(
                 )
                 is StartedTask -> originalSession.copy(
                     name = draft.sessionName,
-                    dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
+                    dueDate = draft.dueDateTime?.toLocalDateTime()?.atZone(ZoneId.systemDefault())?.toInstant(),
                     difficulty = draft.difficulty,
                     color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                     profileId = draft.profileId,
                 )
                 is CompletedTask -> originalSession.copy(
                     name = draft.sessionName,
-                    dueDate = draft.dueDateTime?.atZone(ZoneId.systemDefault())?.toInstant(),
+                    dueDate = draft.dueDateTime?.toLocalDateTime()?.atZone(ZoneId.systemDefault())?.toInstant(),
                     difficulty = draft.difficulty,
                     color = Color.hsv(draft.colorHue * 360, 1f, 1f),
                     profileId = draft.profileId,

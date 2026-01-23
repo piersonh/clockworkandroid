@@ -1,8 +1,10 @@
 package com.wordco.clockworkandroid.session_editor_feature.coordinator
 
 import com.wordco.clockworkandroid.core.domain.model.Reminder
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.DueDateTime
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.ReminderDraft
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.SessionDraft
+import com.wordco.clockworkandroid.session_editor_feature.domain.model.toLocalDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -22,13 +24,13 @@ class ReminderDraftFactory {
         )
     }
 
-    fun getDefaultScheduledTime(sessionDueDateTime: LocalDateTime?): LocalDateTime {
+    fun getDefaultScheduledTime(sessionDueDateTime: DueDateTime?): LocalDateTime {
         return when (sessionDueDateTime) {
             null -> {
                 LocalDate.now().plusDays(1).atTime(12,0)
             }
             else -> {
-                sessionDueDateTime.minusMinutes(30)
+                sessionDueDateTime.toLocalDateTime().minusMinutes(30)
             }
         }
     }

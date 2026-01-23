@@ -119,17 +119,17 @@ fun SessionForm(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedTextFieldButton(
-                value = uiState.dueDate?.format(dateFormatter) ?: "No Due Date",
+                value = uiState.dueDateTime?.date?.format(dateFormatter) ?: "No Due Date",
                 modifier = Modifier.run {
-                    if (uiState.dueDate != null) {
+                    if (uiState.dueDateTime != null) {
                         width(160.dpScaledWith(16.sp)).weight(3f)
                     } else {
                         fillMaxWidth()
                     }
                 },
-                label = if (uiState.dueDate == null) "Complete By" else "Complete By Date",
+                label = if (uiState.dueDateTime == null) "Complete By" else "Complete By Date",
                 onClick = { onEvent(SessionFormUiEvent.DueDateFieldClicked) },
-                trailingIcon = uiState.dueDate?.let {
+                trailingIcon = uiState.dueDateTime?.let {
                     {
                         IconButton(
                             onClick = { onEvent(SessionFormUiEvent.DueDateChanged(null)) }
@@ -145,9 +145,9 @@ fun SessionForm(
                 }
             )
 
-            if (uiState.dueDate != null) {
+            if (uiState.dueDateTime != null) {
                 OutlinedTextFieldButton(
-                    value = uiState.dueTime!!.format(timeFormatter),
+                    value = uiState.dueDateTime.time.format(timeFormatter),
                     modifier = Modifier.width(110.dpScaledWith(16.sp))
                         .weight(2f),
                     label = "Complete By Time",

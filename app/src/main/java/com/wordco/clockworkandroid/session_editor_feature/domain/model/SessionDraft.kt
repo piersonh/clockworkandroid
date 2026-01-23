@@ -1,7 +1,5 @@
 package com.wordco.clockworkandroid.session_editor_feature.domain.model
 
-import java.time.LocalDateTime
-
 /**
  * Represents the interim values of a Session in the editor before the it is committed to storage
  *
@@ -21,6 +19,6 @@ data class SessionDraft(
     val profileId: Long?,
     val colorHue: Float,
     val difficulty: Int,
-    val dueDateTime: LocalDateTime?,
+    val dueDateTime: DueDateTime?,
     val estimate: UserEstimate?,
 )

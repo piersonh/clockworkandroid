@@ -24,16 +24,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.flowWithLifecycle
+import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
 import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
+import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.components.ProfilePicker
+import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.model.mapper.toProfilePickerItem
 import kotlinx.coroutines.launch
 
 @Composable
@@ -165,5 +171,33 @@ private fun ProfilePickerPageContent(
                 }
             }
         }
+    }
+}
+
+
+private class PickerStateProvider : PreviewParameterProvider<ProfilePickerUiState> {
+    override val values = sequenceOf(
+        ProfilePickerUiState.Retrieving,
+        ProfilePickerUiState.Error(
+            header = "Encountered an Error",
+            message = "Something happened... Idk I wasn't watching"
+        ),
+        ProfilePickerUiState.Retrieved(
+            profiles = DummyData.PROFILES.map { it.toProfilePickerItem() },
+            selectedProfileId = 0
+        )
+    )
+}
+
+@AspectRatioPreviews
+@Composable
+private fun PreviewFormScreen(
+    @PreviewParameter(PickerStateProvider::class) state: ProfilePickerUiState
+) {
+    ClockWorkTheme {
+        ProfilePickerPageContent(
+            uiState = state,
+            onEvent = {}
+        )
     }
 }
