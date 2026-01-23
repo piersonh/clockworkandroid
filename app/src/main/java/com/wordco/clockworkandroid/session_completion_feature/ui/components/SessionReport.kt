@@ -1,0 +1,265 @@
+package com.wordco.clockworkandroid.session_completion_feature.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.wordco.clockworkandroid.R
+import com.wordco.clockworkandroid.session_completion_feature.ui.SessionReportUiEvent
+import com.wordco.clockworkandroid.session_completion_feature.ui.TaskCompletionUiState
+import com.wordco.clockworkandroid.session_completion_feature.ui.util.toHourMinuteString
+import kotlin.math.roundToInt
+
+@Composable
+fun SessionReport(
+    uiState: TaskCompletionUiState.Retrieved,
+    modifier: Modifier = Modifier,
+    onEvent: (SessionReportUiEvent.ReportEvent) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.SpaceEvenly,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        // Task Title Badge
+        Surface(
+            color = Color(0xFFE6DAFF),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.padding(vertical = 16.dp),
+        ) {
+            Text(
+                text = uiState.name,
+                color = MaterialTheme.colorScheme.secondary,
+                // possible autosizing needed
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(0.004f))
+
+        // Circular Progress
+        if (uiState.estimate != null) {
+            val estimateText = uiState.estimate.toHourMinuteString()
+            val totalTimeFloat = uiState.totalTime.seconds.toFloat()
+            val estimateFloat = uiState.estimate.seconds.toFloat()
+
+            Box(
+                modifier = Modifier
+                    .size(300.dp)
+                    .padding(bottom = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = { totalTimeFloat / estimateFloat },
+                    modifier = Modifier.size(270.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    strokeWidth = 18.dp,
+                    trackColor = MaterialTheme.colorScheme.primaryContainer,
+                    strokeCap = StrokeCap.Round
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = uiState.totalTime.toHourMinuteString(),
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Text(
+                        text = "of $estimateText estimated",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(300.dp)
+                    .padding(bottom = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = { 1f / 1f },
+                    modifier = Modifier.size(270.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    strokeWidth = 18.dp,
+                    trackColor = MaterialTheme.colorScheme.primaryContainer,
+                    strokeCap = StrokeCap.Round,
+                )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = uiState.totalTime.toHourMinuteString(),
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Text(
+                        text = "spent on this task",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(0.03f))
+
+        // Stats Grid
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp, top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            StatCard(
+                modifier = Modifier.weight(1f),
+                title = "Work Time",
+                value = uiState.workTime.toHourMinuteString(),
+                icon = painterResource(id = R.drawable.running),
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                iconColor = MaterialTheme.colorScheme.secondary
+            )
+
+            StatCard(
+                modifier = Modifier.weight(1f),
+                title = "Break Time",
+                value = uiState.breakTime.toHourMinuteString(),
+                icon = painterResource(id = R.drawable.mug),
+                backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                iconColor = MaterialTheme.colorScheme.tertiary
+            )
+        }
+
+        // Accuracy Card
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
+            color = Color(0xFF8EC1FF),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            shadowElevation = 8.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = Color(0xFF3B65D7),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.bullseye),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "Your Accuracy",
+                            fontSize = 14.sp,
+                            color = Color(0xFF262A31),
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text =
+                                if (uiState.totalTimeAccuracy != null)
+                                    "${uiState.totalTimeAccuracy.roundToInt()}%"
+                                else
+                                    "N/A",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1F2937)
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(0.03f))
+
+//            AccentRectangleTextButton(
+//                onClick = { /* TODO: Handle View Details */ },
+//                maxHeight = 58.dp,
+//            ) {
+//                Text(
+//                    text = "View Details",
+//                    fontFamily = LATO,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 36.sp
+//                )
+//            }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Buttons
+        TextButton(
+            onClick = { onEvent(SessionReportUiEvent.ContinueClicked) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            ),
+        ) {
+            Text(
+                text = "Continue",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}

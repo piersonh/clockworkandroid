@@ -1,64 +1,53 @@
 package com.wordco.clockworkandroid.session_completion_feature.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import android.content.ClipData
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.flowWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.ui.composables.BackImage
+import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
+import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.session_completion_feature.ui.util.toHourMinuteString
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.session_completion_feature.ui.components.DeleteSessionConfirmationModal
+import com.wordco.clockworkandroid.session_completion_feature.ui.components.SessionReport
+import com.wordco.clockworkandroid.session_completion_feature.ui.components.SessionReportDropdownMenu
+import com.wordco.clockworkandroid.session_completion_feature.ui.model.SessionReportModal
+import kotlinx.coroutines.launch
 import java.time.Duration
-import kotlin.math.roundToInt
 
 @Composable
 fun TaskCompletionPage(
@@ -68,42 +57,70 @@ fun TaskCompletionPage(
     viewModel: TaskCompletionViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    // see https://stackoverflow.com/questions/79692173/how-to-resolve-deprecated-clipboardmanager-in-jetpack-compose
+    val clipboard = LocalClipboard.current
 
-    TaskCompletionPage(
-        uiState = uiState,
-        onBackClick = onBackClick,
-        onContinueClick = onContinueClick,
-        onEditClick = onEditClick,
-        onDeleteClick = viewModel::onDeleteClick,
-    )
+    LaunchedEffect(viewModel.uiEffect, lifecycleOwner) {
+        // flowWithLifecycle ensures collection stops when app is in background
+        viewModel.uiEffect
+            .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .collect { effect ->
+                when (effect) {
+                    TaskCompletionUiEffect.NavigateBack -> {
+                        onBackClick()
+                    }
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                TaskCompletionUiEvent.NavigateBack -> {
-                    onBackClick()
+                    TaskCompletionUiEffect.NavigateToContinue -> {
+                        onContinueClick()
+                    }
+
+                    TaskCompletionUiEffect.NavigateToEditSession -> {
+                        onEditClick()
+                    }
+
+                    is TaskCompletionUiEffect.CopyToClipboard -> {
+                        coroutineScope.launch {
+                            val clipData = ClipData.newPlainText(
+                                effect.content,
+                                effect.content
+                            )
+                            clipboard.setClipEntry(clipData.toClipEntry())
+                        }
+                    }
+
+                    is TaskCompletionUiEffect.ShowSnackbar -> {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = effect.message,
+                                //actionLabel = effect.actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
                 }
             }
-        }
     }
+
+    TaskCompletionPageContent(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        snackbarHostState = snackbarHostState
+    )
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TaskCompletionPage(
+private fun TaskCompletionPageContent(
     uiState: TaskCompletionUiState,
-    onBackClick: () -> Unit,
-    onContinueClick: () -> Unit,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
+    onEvent: (SessionReportUiEvent) -> Unit,
+    snackbarHostState: SnackbarHostState,
 ) {
-
-    var isMenuExpanded by remember { mutableStateOf(false) }
-
-    var showDeleteDialog by remember {mutableStateOf(false)}
-
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        containerColor = MaterialTheme.colorScheme.primary,
         topBar = {
             TopAppBar(
                 title = {
@@ -114,8 +131,10 @@ private fun TaskCompletionPage(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        BackImage()
+                    if (uiState !is TaskCompletionUiState.Deleting) {
+                        IconButton(onClick = { onEvent(SessionReportUiEvent.DeleteClicked) }) {
+                            BackImage()
+                        }
                     }
                 },
                 colors = topAppBarColors(
@@ -125,7 +144,7 @@ private fun TaskCompletionPage(
                 actions = {
                     if (uiState is TaskCompletionUiState.Retrieved) {
                         Box {
-                            IconButton(onClick = { isMenuExpanded = true }) {
+                            IconButton(onClick = { onEvent(SessionReportUiEvent.MenuOpened) }) {
                                 Icon(
                                     painterResource(R.drawable.three_dots_vertical),
                                     contentDescription = "More options",
@@ -134,108 +153,57 @@ private fun TaskCompletionPage(
                                 )
                             }
 
-                            DropdownMenu(
-                                expanded = isMenuExpanded,
-                                onDismissRequest = { isMenuExpanded = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "Edit",
-                                            fontSize = 25.sp,
-                                            textAlign = TextAlign.Right,
-                                            fontFamily = LATO,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-                                    },
-                                    onClick = {
-                                        isMenuExpanded = false
-                                        onEditClick()
-                                    }
-                                )
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "Delete",
-                                            fontSize = 25.sp,
-                                            textAlign = TextAlign.Right,
-                                            fontFamily = LATO,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-                                    },
-                                    onClick = {
-                                        isMenuExpanded = false
-                                        showDeleteDialog = true
-                                    }
-                                )
-                            }
+                            SessionReportDropdownMenu(
+                                isMenuExpanded = uiState.isMenuOpen,
+                                onEvent = onEvent
+                            )
                         }
                     }
                 },
             )
         },
-    ) { innerPadding ->
-        when (uiState) {
-            TaskCompletionUiState.Retrieving -> Text("Retrieving...")
-            is TaskCompletionUiState.Retrieved -> Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .background(color = MaterialTheme.colorScheme.primary)
-            ) {
-                SessionReport(
-                    uiState = uiState,
-                    modifier = Modifier.fillMaxWidth(),
-                    onContinueClick = onContinueClick
-                )
-
-                if (showDeleteDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showDeleteDialog = false },
-                        title = {
-                            Text(
-                                "Delete Session?",
-                                fontFamily = LATO,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        },
-                        text = {
-                            Text(
-                                "Are you sure about that?",
-                                fontFamily = LATO,
-                            )
-                        },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    showDeleteDialog = false
-                                    onDeleteClick()
-                                },
-                            ) {
-                                Text(
-                                    "Confirm",
-                                    fontFamily = LATO,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(
-                                onClick = { showDeleteDialog = false },
-                            ) {
-                                Text(
-                                    "Cancel",
-                                    fontFamily = LATO,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        },
-                        properties = DialogProperties(
-                            dismissOnBackPress = true,
-                            dismissOnClickOutside = true,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier.padding(paddingValues).fillMaxSize()
+        ) {
+            when (uiState) {
+                TaskCompletionUiState.Retrieving -> {
+                    SpinningLoader()
+                }
+                TaskCompletionUiState.Deleting -> {
+                    SpinningLoader()
+                }
+                is TaskCompletionUiState.Error -> {
+                    Box(
+                        modifier = Modifier.padding(top = 40.dp)
+                    ) {
+                        ErrorReport(
+                            uiState.header,
+                            uiState.message,
+                            onCopyErrorInfoClick = { onEvent(SessionReportUiEvent.CopyErrorClicked) },
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(top = 30.dp)
                         )
+                    }
+                }
+                is TaskCompletionUiState.Retrieved -> {
+                    val scrollState = rememberScrollState()
+
+                    SessionReport(
+                        uiState = uiState,
+                        modifier = Modifier
+                            .padding(
+                                horizontal = 30.dp,
+                                vertical = 20.dp
+                            )
+                            .verticalScroll(scrollState),
+                        onEvent = onEvent,
+                    )
+
+                    ModalManager(
+                        currentModal = uiState.currentModal,
+                        onEvent = onEvent,
                     )
                 }
             }
@@ -245,335 +213,53 @@ private fun TaskCompletionPage(
 
 
 @Composable
-private fun SessionReport(
-    uiState: TaskCompletionUiState.Retrieved,
-    modifier: Modifier = Modifier,
-    onContinueClick: () -> Unit,
+private fun ModalManager(
+    currentModal: SessionReportModal?,
+    onEvent: (SessionReportUiEvent) -> Unit,
 ) {
-    val scrollState = rememberScrollState()
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxHeight()
-                .verticalScroll(scrollState)
-        ) {
-            // Task Title Badge
-            Surface(
-                color = Color(0xFFE6DAFF),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.padding(vertical = 16.dp),
-            ) {
-                Text(
-                    text = uiState.name,
-                    color = MaterialTheme.colorScheme.secondary,
-                    // possible autosizing needed
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(0.004f))
-
-            // Circular Progress
-            if (uiState.estimate != null) {
-                val estimateText = uiState.estimate.toHourMinuteString()
-                val totalTimeFloat = uiState.totalTime.seconds.toFloat()
-                val estimateFloat = uiState.estimate.seconds.toFloat()
-
-                Box(
-                    modifier = Modifier
-                        .size(300.dp)
-                        .padding(bottom = 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        progress = { totalTimeFloat / estimateFloat },
-                        modifier = Modifier.size(270.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        strokeWidth = 18.dp,
-                        trackColor = MaterialTheme.colorScheme.primaryContainer,
-                        strokeCap = StrokeCap.Round
-                    )
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = uiState.totalTime.toHourMinuteString(),
-                            fontSize = 36.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "of $estimateText estimated",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(300.dp)
-                        .padding(bottom = 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        progress = { 1f / 1f },
-                        modifier = Modifier.size(270.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        strokeWidth = 18.dp,
-                        trackColor = MaterialTheme.colorScheme.primaryContainer,
-                        strokeCap = StrokeCap.Round,
-                    )
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = uiState.totalTime.toHourMinuteString(),
-                            fontSize = 36.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "spent on this task",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(0.03f))
-
-            // Stats Grid
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp, top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                StatCard(
-                    modifier = Modifier.weight(1f),
-                    title = "Work Time",
-                    value = uiState.workTime.toHourMinuteString(),
-                    icon = painterResource(id = R.drawable.running),
-                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                    iconColor = MaterialTheme.colorScheme.secondary
-                )
-
-                StatCard(
-                    modifier = Modifier.weight(1f),
-                    title = "Break Time",
-                    value = uiState.breakTime.toHourMinuteString(),
-                    icon = painterResource(id = R.drawable.mug),
-                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    iconColor = MaterialTheme.colorScheme.tertiary
-                )
-            }
-
-            // Accuracy Card
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                color = Color(0xFF8EC1FF),
-                shape = RoundedCornerShape(16.dp),
-                shadowElevation = 8.dp
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    color = Color(0xFF3B65D7),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.bullseye),
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Column {
-                            Text(
-                                text = "Your Accuracy",
-                                fontSize = 14.sp,
-                                color = Color(0xFF262A31),
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text =
-                                    if (uiState.totalTimeAccuracy != null)
-                                        "${uiState.totalTimeAccuracy.roundToInt()}%"
-                                    else
-                                        "N/A",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1F2937)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.weight(0.03f))
-
-//            AccentRectangleTextButton(
-//                onClick = { /* TODO: Handle View Details */ },
-//                maxHeight = 58.dp,
-//            ) {
-//                Text(
-//                    text = "View Details",
-//                    fontFamily = LATO,
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 36.sp
-//                )
-//            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Buttons
-            TextButton(
-                onClick = onContinueClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                ),
-            ) {
-                Text(
-                    text = "Continue",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun StatCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    value: String,
-    icon: Painter,
-    backgroundColor: Color,
-    iconColor: Color
-) {
-    Surface(
-        modifier = modifier,
-        color = backgroundColor,
-        shape = RoundedCornerShape(16.dp),
-        shadowElevation = 8.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(color = iconColor, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = icon,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                Text(
-                    text = title,
-                    fontSize = 14.sp,
-                    color = Color(0xFF262A31),
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Text(
-                text = value,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1F2937)
+    when (currentModal) {
+        SessionReportModal.DeleteConfirmation -> {
+            DeleteSessionConfirmationModal(
+                onDismiss = { onEvent(SessionReportUiEvent.ModalDismissed) },
+                onConfirm = { onEvent(SessionReportUiEvent.DeleteConfirmed) }
             )
         }
+        null -> {}
     }
 }
 
-@Preview
-@Composable
-private fun TaskCompletionPagePreview() {
-    ClockWorkTheme {
-        TaskCompletionPage(
-            uiState = TaskCompletionUiState.Retrieved(
-                name = "Preview Task",
-                estimate = Duration.ofMinutes(10).plusHours(1),
-                workTime = Duration.ofMinutes(30),
-                breakTime = Duration.ofMinutes(20),
-                totalTime = Duration.ofMinutes(50),
-                totalTimeAccuracy = 80.0,
-            ),
-            onBackClick = {},
-            onContinueClick = {},
-            onEditClick = {},
-            onDeleteClick = {},
-        )
-    }
+
+class UiStateProvider : PreviewParameterProvider<TaskCompletionUiState> {
+    override val values = sequenceOf(
+        TaskCompletionUiState.Retrieving,
+        TaskCompletionUiState.Error(
+            header = "Whoops!",
+            message = "You need to put the CD..."
+        ),
+        TaskCompletionUiState.Retrieved(
+            name = "Preview",
+            estimate = Duration.ofHours(1).plusMinutes(27),
+            workTime = Duration.ofHours(1).plusMinutes(27),
+            breakTime = Duration.ofHours(1).plusMinutes(27),
+            totalTime = Duration.ofHours(1).plusMinutes(27),
+            totalTimeAccuracy = 0.5,
+            isMenuOpen = true,
+            currentModal = null,
+        ),
+        TaskCompletionUiState.Deleting
+    )
 }
 
-@PreviewLightDark
+@AspectRatioPreviews
 @Composable
-private fun TaskCompletionPagePreviewNoEstimate() {
+fun PreviewFormScreen(
+    @PreviewParameter(UiStateProvider::class) state: TaskCompletionUiState
+) {
     ClockWorkTheme {
-        TaskCompletionPage(
-            uiState = TaskCompletionUiState.Retrieved(
-                name = "Preview Task",
-                estimate = null, //Duration.ofMinutes(10).plusHours(1),
-                workTime = Duration.ofMinutes(30),
-                breakTime = Duration.ofMinutes(20),
-                totalTime = Duration.ofMinutes(50),
-                totalTimeAccuracy = null,
-            ),
-            onBackClick = {},
-            onContinueClick = {},
-            onEditClick = {},
-            onDeleteClick = {},
+        TaskCompletionPageContent(
+            uiState = state,
+            onEvent = {},
+            snackbarHostState = remember { SnackbarHostState() },
         )
     }
 }
