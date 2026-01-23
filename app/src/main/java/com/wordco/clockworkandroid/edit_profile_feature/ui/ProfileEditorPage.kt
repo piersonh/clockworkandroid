@@ -46,12 +46,12 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.edit_profile_feature.ui.elements.ProfileForm
-import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileFormModal
+import com.wordco.clockworkandroid.edit_profile_feature.ui.model.ProfileEditorModal
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileFormPage(
-    viewModel: ProfileFormViewModel,
+fun ProfileEditorPage(
+    viewModel: ProfileEditorViewModel,
     onBackClick: () -> Unit,
 ) {
 
@@ -68,8 +68,8 @@ fun ProfileFormPage(
             .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .collect { effect ->
                 when (effect) {
-                    ProfileFormUiEffect.NavigateBack -> onBackClick()
-                    is ProfileFormUiEffect.ShowSnackbar -> {
+                    ProfileEditorUiEffect.NavigateBack -> onBackClick()
+                    is ProfileEditorUiEffect.ShowSnackbar -> {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
                                 message = effect.message,
@@ -79,7 +79,7 @@ fun ProfileFormPage(
                         }
                     }
 
-                    is ProfileFormUiEffect.CopyToClipboard -> {
+                    is ProfileEditorUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
                             val clipData = ClipData.newPlainText(
                                 effect.content,
@@ -92,7 +92,7 @@ fun ProfileFormPage(
             }
     }
 
-    ProfileFormPageContent(
+    ProfileEditorPageContent(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onEvent = viewModel::onEvent,
@@ -102,10 +102,10 @@ fun ProfileFormPage(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileFormPageContent(
-    uiState: ProfileFormUiState,
+private fun ProfileEditorPageContent(
+    uiState: ProfileEditorUiState,
     snackbarHostState: SnackbarHostState,
-    onEvent: (ProfileFormUiEvent) -> Unit,
+    onEvent: (ProfileEditorUiEvent) -> Unit,
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.primary,
@@ -121,7 +121,7 @@ private fun ProfileFormPageContent(
                 navigationIcon = {
                     IconButton(
                         onClick = {
-                            onEvent(ProfileFormUiEvent.BackClicked)
+                            onEvent(ProfileEditorUiEvent.BackClicked)
                         }
                     ) {
                         BackImage()
@@ -134,7 +134,7 @@ private fun ProfileFormPageContent(
             )
         },
         bottomBar = {
-            if (uiState is ProfileFormUiState.Retrieved) {
+            if (uiState is ProfileEditorUiState.Retrieved) {
                 BottomAppBar(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 ) {
@@ -144,7 +144,7 @@ private fun ProfileFormPageContent(
                     ) {
                         AccentRectangleTextButton(
                             onClick = {
-                                onEvent(ProfileFormUiEvent.SaveClicked)
+                                onEvent(ProfileEditorUiEvent.SaveClicked)
                             },
                             maxHeight = 56.dp,
                             aspectRatio = 1.8f
@@ -167,12 +167,12 @@ private fun ProfileFormPageContent(
             modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
             when (uiState) {
-                is ProfileFormUiState.Retrieving -> {
+                is ProfileEditorUiState.Retrieving -> {
                     SpinningLoader()
                 }
-                is ProfileFormUiState.Retrieved -> {
+                is ProfileEditorUiState.Retrieved -> {
                     BackHandler(enabled = uiState.hasFormChanges) {
-                        onEvent(ProfileFormUiEvent.BackClicked)
+                        onEvent(ProfileEditorUiEvent.BackClicked)
                     }
 
                     val scrollState = rememberScrollState()
@@ -194,14 +194,14 @@ private fun ProfileFormPageContent(
                     )
                 }
 
-                is ProfileFormUiState.Error -> {
+                is ProfileEditorUiState.Error -> {
                     Box(
                         modifier = Modifier.padding(top = 40.dp)
                     ) {
                         ErrorReport(
                             uiState.header,
                             uiState.message,
-                            onCopyErrorInfoClick = { onEvent(ProfileFormUiEvent.CopyErrorClicked) },
+                            onCopyErrorInfoClick = { onEvent(ProfileEditorUiEvent.CopyErrorClicked) },
                             modifier = Modifier.fillMaxWidth()
                                 .padding(top = 30.dp)
                         )
@@ -215,25 +215,25 @@ private fun ProfileFormPageContent(
 
 @Composable
 private fun ModalManager(
-    currentModal: ProfileFormModal?,
-    onEvent: (ProfileFormUiEvent) -> Unit,
+    currentModal: ProfileEditorModal?,
+    onEvent: (ProfileEditorUiEvent) -> Unit,
 ) {
     when (currentModal) {
         null -> {}
-        ProfileFormModal.Discard -> {
+        ProfileEditorModal.Discard -> {
             DiscardAlert(
-                onDismiss = { onEvent(ProfileFormUiEvent.ModalDismissed) },
-                onConfirm = { onEvent(ProfileFormUiEvent.DiscardConfirmed) },
+                onDismiss = { onEvent(ProfileEditorUiEvent.ModalDismissed) },
+                onConfirm = { onEvent(ProfileEditorUiEvent.DiscardConfirmed) },
             )
         }
     }
 }
 
 
-private class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
+private class FormStateProvider : PreviewParameterProvider<ProfileEditorUiState> {
     override val values = sequenceOf(
-        ProfileFormUiState.Retrieving("Preview"),
-        ProfileFormUiState.Retrieved(
+        ProfileEditorUiState.Retrieving("Preview"),
+        ProfileEditorUiState.Retrieved(
             title = "Preview",
             name = "Preview",
             colorSliderPos = 0.5f,
@@ -241,7 +241,7 @@ private class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
             hasFormChanges = true,
             currentModal = null,
         ),
-        ProfileFormUiState.Error(
+        ProfileEditorUiState.Error(
             title = "Preview",
             header = "Failed to load",
             message = "message here",
@@ -251,11 +251,11 @@ private class FormStateProvider : PreviewParameterProvider<ProfileFormUiState> {
 
 @AspectRatioPreviews
 @Composable
-private fun PreviewFormScreen(
-    @PreviewParameter(FormStateProvider::class) state: ProfileFormUiState
+private fun PreviewEditorScreen(
+    @PreviewParameter(FormStateProvider::class) state: ProfileEditorUiState
 ) {
     ClockWorkTheme {
-        ProfileFormPageContent(
+        ProfileEditorPageContent(
             uiState = state,
             snackbarHostState = remember { SnackbarHostState() },
             onEvent = {}

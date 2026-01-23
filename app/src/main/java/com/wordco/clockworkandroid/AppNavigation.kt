@@ -12,7 +12,7 @@ import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.model.TopLevelDestination
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToCreateProfile
 import com.wordco.clockworkandroid.edit_profile_feature.ui.navigateToEditProfile
-import com.wordco.clockworkandroid.edit_profile_feature.ui.profileFormPage
+import com.wordco.clockworkandroid.edit_profile_feature.ui.profileEditorPage
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
@@ -142,7 +142,7 @@ fun NavHost(
             onCreateNewProfileClick = navController::navigateToCreateProfile,
         )
 
-        profileFormPage(
+        profileEditorPage(
             onBackClick = navController::popBackStack
         )
 

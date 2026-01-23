@@ -15,14 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.wordco.clockworkandroid.core.ui.composables.ColorSlider
 import com.wordco.clockworkandroid.core.ui.composables.DifficultySlider
-import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileFormUiEvent
-import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileFormUiState
+import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileEditorUiEvent
+import com.wordco.clockworkandroid.edit_profile_feature.ui.ProfileEditorUiState
 
 @Composable
 fun ProfileForm(
-    uiState: ProfileFormUiState.Retrieved,
+    uiState: ProfileEditorUiState.Retrieved,
     modifier: Modifier = Modifier,
-    onEvent: (ProfileFormUiEvent) -> Unit,
+    onEvent: (ProfileEditorUiEvent) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -41,7 +41,7 @@ fun ProfileForm(
             value = uiState.name,
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
-            onValueChange = { newName -> onEvent(ProfileFormUiEvent.NameChanged(newName)) },
+            onValueChange = { newName -> onEvent(ProfileEditorUiEvent.NameChanged(newName)) },
             label = {
                 Text(
                     "Template Name", style = TextStyle(
@@ -54,13 +54,13 @@ fun ProfileForm(
         ColorSlider(
             label = "Template Color",
             value = uiState.colorSliderPos,
-            onValueChange = { newVal -> onEvent(ProfileFormUiEvent.ColorSliderChanged(newVal)) },
+            onValueChange = { newVal -> onEvent(ProfileEditorUiEvent.ColorSliderChanged(newVal)) },
         )
 
         DifficultySlider(
             label = "Default Session Difficulty",
             value = uiState.difficulty,
-            onValueChange = { newVal -> onEvent(ProfileFormUiEvent.DifficultySliderChanged(newVal)) },
+            onValueChange = { newVal -> onEvent(ProfileEditorUiEvent.DifficultySliderChanged(newVal)) },
         )
     }
 }

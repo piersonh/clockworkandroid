@@ -15,10 +15,10 @@ import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object CreateProfileRoute
+private data object CreateProfileRoute
 
 @Serializable
-data class EditProfileRoute(val id: Long)
+private data class EditProfileRoute(val id: Long)
 
 
 fun NavController.navigateToCreateProfile(
@@ -43,7 +43,7 @@ fun NavController.navigateToEditProfile(
 }
 
 
-fun NavGraphBuilder.profileFormPage(
+fun NavGraphBuilder.profileEditorPage(
     onBackClick: () -> Unit
 ) {
     composable<EditProfileRoute>(
@@ -73,12 +73,12 @@ fun NavGraphBuilder.profileFormPage(
 
         val viewModel = createViewModel(
             entry = entry,
-            formMode = ProfileFormMode.Edit(
+            formMode = ProfileEditorMode.Edit(
                 profileId = profileId
             )
         )
 
-        ProfileFormPage(
+        ProfileEditorPage(
             viewModel = viewModel,
             onBackClick = onBackClick,
         )
@@ -109,10 +109,10 @@ fun NavGraphBuilder.profileFormPage(
 
         val viewModel = createViewModel(
             entry = entry,
-            formMode = ProfileFormMode.Create
+            formMode = ProfileEditorMode.Create
         )
 
-        ProfileFormPage(
+        ProfileEditorPage(
             viewModel = viewModel,
             onBackClick = onBackClick
         )
@@ -123,13 +123,13 @@ fun NavGraphBuilder.profileFormPage(
 @Composable
 private fun createViewModel(
     entry: NavBackStackEntry,
-    formMode: ProfileFormMode
-): ProfileFormViewModel {
+    formMode: ProfileEditorMode
+): ProfileEditorViewModel {
     return ViewModelProvider.create(
         store = entry.viewModelStore,
-        factory = ProfileFormViewModel.Factory,
+        factory = ProfileEditorViewModel.Factory,
         extras = MutableCreationExtras(entry.defaultViewModelCreationExtras).apply {
-            set(ProfileFormViewModel.FORM_MODE_KEY, formMode)
+            set(ProfileEditorViewModel.FORM_MODE_KEY, formMode)
         }
-    )[ProfileFormViewModel::class]
+    )[ProfileEditorViewModel::class]
 }

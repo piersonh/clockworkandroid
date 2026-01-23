@@ -1,9 +1,9 @@
 package com.wordco.clockworkandroid.edit_profile_feature.ui
 
-sealed interface ProfileFormUiEvent {
-    sealed interface LoadingEvent: ProfileFormUiEvent
-    sealed interface ErrorEvent: ProfileFormUiEvent
-    sealed interface FormEvent: ProfileFormUiEvent
+sealed interface ProfileEditorUiEvent {
+    sealed interface LoadingEvent: ProfileEditorUiEvent
+    sealed interface ErrorEvent: ProfileEditorUiEvent
+    sealed interface FormEvent: ProfileEditorUiEvent
 
 
     data object BackClicked: ErrorEvent, LoadingEvent, FormEvent
