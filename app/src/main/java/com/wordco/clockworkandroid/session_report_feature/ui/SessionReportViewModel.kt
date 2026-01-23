@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui
+package com.wordco.clockworkandroid.session_report_feature.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -12,8 +12,8 @@ import com.wordco.clockworkandroid.core.domain.model.CompletedTask
 import com.wordco.clockworkandroid.core.domain.use_case.CalculateEstimateAccuracyUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.DeleteSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
-import com.wordco.clockworkandroid.session_completion_feature.ui.model.SessionReportModal
-import com.wordco.clockworkandroid.session_completion_feature.ui.model.ViewModelManagedUiState
+import com.wordco.clockworkandroid.session_report_feature.ui.model.SessionReportModal
+import com.wordco.clockworkandroid.session_report_feature.ui.model.ViewModelManagedUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow

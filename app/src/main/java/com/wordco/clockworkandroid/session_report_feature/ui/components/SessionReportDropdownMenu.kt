@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui.components
+package com.wordco.clockworkandroid.session_report_feature.ui.components
 
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.theme.LATO
-import com.wordco.clockworkandroid.session_completion_feature.ui.SessionReportUiEvent
+import com.wordco.clockworkandroid.session_report_feature.ui.SessionReportUiEvent
 
 @Composable
 fun SessionReportDropdownMenu(

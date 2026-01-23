@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui
+package com.wordco.clockworkandroid.session_report_feature.ui
 
 sealed interface SessionReportUiEvent {
     sealed interface LoadingEvent: SessionReportUiEvent

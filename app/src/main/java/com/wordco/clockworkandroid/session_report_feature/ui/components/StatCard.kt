@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui.components
+package com.wordco.clockworkandroid.session_report_feature.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

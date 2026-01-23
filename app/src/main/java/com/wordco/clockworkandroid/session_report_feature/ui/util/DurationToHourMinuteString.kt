@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui.util
+package com.wordco.clockworkandroid.session_report_feature.ui.util
 
 import java.time.Duration
 

@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui
+package com.wordco.clockworkandroid.session_report_feature.ui
 
 import android.content.ClipData
 import androidx.compose.foundation.layout.Box
@@ -42,10 +42,10 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
-import com.wordco.clockworkandroid.session_completion_feature.ui.components.DeleteSessionConfirmationModal
-import com.wordco.clockworkandroid.session_completion_feature.ui.components.SessionReport
-import com.wordco.clockworkandroid.session_completion_feature.ui.components.SessionReportDropdownMenu
-import com.wordco.clockworkandroid.session_completion_feature.ui.model.SessionReportModal
+import com.wordco.clockworkandroid.session_report_feature.ui.components.DeleteSessionConfirmationModal
+import com.wordco.clockworkandroid.session_report_feature.ui.components.SessionReport
+import com.wordco.clockworkandroid.session_report_feature.ui.components.SessionReportDropdownMenu
+import com.wordco.clockworkandroid.session_report_feature.ui.model.SessionReportModal
 import kotlinx.coroutines.launch
 import java.time.Duration
 

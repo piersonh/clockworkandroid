@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui.model
+package com.wordco.clockworkandroid.session_report_feature.ui.model
 
 /**
  * Holds UI state variables that are managed by the viewmodel as opposed to collected from the database

@@ -17,14 +17,14 @@ import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileSessionList
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileSessionListPage
-import com.wordco.clockworkandroid.session_completion_feature.ui.navigateToSessionReport
-import com.wordco.clockworkandroid.session_completion_feature.ui.sessionReportPage
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSession
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSessionWithPicker
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToEditSession
 import com.wordco.clockworkandroid.session_editor_feature.ui.sessionEditorGraph
 import com.wordco.clockworkandroid.session_list_feature.ui.TaskListRoute
 import com.wordco.clockworkandroid.session_list_feature.ui.taskListPage
+import com.wordco.clockworkandroid.session_report_feature.ui.navigateToSessionReport
+import com.wordco.clockworkandroid.session_report_feature.ui.sessionReportPage
 import com.wordco.clockworkandroid.timer_feature.ui.TimerRoute
 import com.wordco.clockworkandroid.timer_feature.ui.navigateToTimer
 import com.wordco.clockworkandroid.timer_feature.ui.timerPage

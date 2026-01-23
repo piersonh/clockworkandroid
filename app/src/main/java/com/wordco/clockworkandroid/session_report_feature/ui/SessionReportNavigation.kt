@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.session_completion_feature.ui
+package com.wordco.clockworkandroid.session_report_feature.ui
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
