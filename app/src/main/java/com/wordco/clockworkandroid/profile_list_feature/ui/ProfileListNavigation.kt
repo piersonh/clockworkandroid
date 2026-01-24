@@ -30,12 +30,12 @@ fun NavGraphBuilder.profileListPage(
 
         val profileListViewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = ProfileListViewModel.Companion.Factory,
+            factory = ProfileListViewModel.Factory,
             extras = entry.defaultViewModelCreationExtras
         )[ProfileListViewModel::class]
 
         ProfileListPage(
-            profileListViewModel = profileListViewModel,
+            viewModel = profileListViewModel,
             navBar = navBar,
             onProfileClick = onProfileClick,
             onCreateNewProfileClick = onCreateNewProfileClick,

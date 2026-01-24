@@ -1,97 +1,140 @@
 package com.wordco.clockworkandroid.profile_list_feature.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import android.content.ClipData
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wordco.clockworkandroid.R
+import androidx.lifecycle.flowWithLifecycle
 import com.wordco.clockworkandroid.core.domain.util.DummyData
-import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
+import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
+import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
-import com.wordco.clockworkandroid.profile_list_feature.ui.elements.ProfileListItemUi
+import com.wordco.clockworkandroid.profile_list_feature.ui.elements.EmptyProfileList
+import com.wordco.clockworkandroid.profile_list_feature.ui.elements.ProfileList
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileListPage(
-    profileListViewModel: ProfileListViewModel,
+    viewModel: ProfileListViewModel,
     navBar: @Composable () -> Unit,
     onProfileClick: (Long) -> Unit,
     onCreateNewProfileClick: () -> Unit,
 ) {
-    val uiState by profileListViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    // see https://stackoverflow.com/questions/79692173/how-to-resolve-deprecated-clipboardmanager-in-jetpack-compose
+    val clipboard = LocalClipboard.current
 
-    ProfileListPage(
+    LaunchedEffect(viewModel.uiEffect, lifecycleOwner) {
+        // flowWithLifecycle ensures collection stops when app is in background
+        viewModel.uiEffect
+            .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .collect { effect ->
+                when (effect) {
+                    is ProfileListUiEffect.CopyToClipboard -> {
+                        coroutineScope.launch {
+                            val clipData = ClipData.newPlainText(
+                                effect.content,
+                                effect.content
+                            )
+                            clipboard.setClipEntry(clipData.toClipEntry())
+                        }
+                    }
+
+                    is ProfileListUiEffect.ShowSnackbar -> {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = effect.message,
+                                //actionLabel = effect.actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
+
+                    ProfileListUiEffect.NavigateToCreateProfile -> {
+                        onCreateNewProfileClick()
+                    }
+                    is ProfileListUiEffect.NavigateToProfile -> {
+                        onProfileClick(effect.id)
+                    }
+                }
+            }
+    }
+
+    ProfileListPageContent(
         uiState = uiState,
+        onEvent = viewModel::onEvent,
+        snackbarHostState = snackbarHostState,
         navBar = navBar,
-        onProfileClick = onProfileClick,
-        onCreateNewProfileClick = onCreateNewProfileClick,
     )
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileListPage (
+private fun ProfileListPageContent(
     uiState: ProfileListUiState,
+    onEvent: (ProfileListUiEvent) -> Unit,
+    snackbarHostState: SnackbarHostState,
     navBar: @Composable () -> Unit,
-    onProfileClick: (Long) -> Unit,
-    onCreateNewProfileClick: () -> Unit,
 ) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.primary,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "Task Templates",
                         fontFamily = LATO,
+                        fontWeight = FontWeight.Black,
                     )
                 },
                 actions = {
-                    IconButton(
-                        onClick = onCreateNewProfileClick
-                    ) {
-                        PlusImage(
-                            modifier = Modifier
-                                .aspectRatio(1f)
-                                .fillMaxSize()
-                        )
+                    if (uiState is ProfileListUiState.Retrieved) {
+                        IconButton(
+                            onClick = { onEvent(ProfileListUiEvent.CreateProfileClicked) }
+                        ) {
+                            PlusImage(
+                                modifier = Modifier
+                                    .aspectRatio(1f)
+                                    .fillMaxSize()
+                            )
+                        }
                     }
                 },
                 colors = topAppBarColors(
@@ -101,175 +144,73 @@ private fun ProfileListPage (
             )
         },
         bottomBar = navBar,
-        modifier = Modifier.fillMaxSize()
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
 
         Box(
-            modifier = Modifier
-                .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.primary)
+            modifier = Modifier.padding(paddingValues).fillMaxSize()
         ) {
             when (uiState) {
-                is ProfileListUiState.Retrieved if (uiState.profiles.isEmpty()) -> EmptyProfileList(
-                    onCreateProfileClick = onCreateNewProfileClick
-                )
-                is ProfileListUiState.Retrieved -> ProfileList(
-                    uiState = uiState,
-                    onProfileClick = onProfileClick
-                )
-
-                ProfileListUiState.Retrieving -> SpinningLoader()
+                is ProfileListUiState.Error -> {
+                    ErrorReport(
+                        header = uiState.header,
+                        message = uiState.message,
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 30.dp),
+                        onCopyErrorInfoClick = { onEvent(ProfileListUiEvent.CopyErrorClicked) }
+                    )
+                }
+                is ProfileListUiState.Retrieved -> {
+                    if (uiState.profiles.isEmpty()) {
+                        EmptyProfileList(
+                            onCreateProfileClick = { onEvent(ProfileListUiEvent.CreateProfileClicked) }
+                        )
+                    } else {
+                        ProfileList(
+                            uiState = uiState,
+                            onProfileClick = { id -> onEvent(ProfileListUiEvent.ProfileClicked(id)) }
+                        )
+                    }
+                }
+                ProfileListUiState.Retrieving -> {
+                    SpinningLoader()
+                }
             }
         }
     }
 }
 
-@Composable
-private fun EmptyProfileList(
-    onCreateProfileClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 15.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Box (
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.fanned_cards),
-                contentDescription = "Templates",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.height(100.dp),
-                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimaryContainer)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "You Don't Have Any Task Templates!",
-                fontFamily = LATO,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Keep similar tasks organized by creating a new template.",
-                fontFamily = LATO,
-                fontSize = 18.sp,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onPrimary,
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            AccentRectangleTextButton(
-                onClick = onCreateProfileClick,
-            ) {
-                Text(
-                    text = "Create Template",
-                    fontFamily = LATO,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-            }
-        }
-
-    }
+private class UiStateProvider : PreviewParameterProvider<ProfileListUiState> {
+    override val values = sequenceOf(
+        ProfileListUiState.Retrieving,
+        ProfileListUiState.Error(
+            header = "My head hurt",
+            message = "RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        ),
+        ProfileListUiState.Retrieved(
+            profiles = DummyData.PROFILES.map { it.toProfileListItem() }
+        ),
+        ProfileListUiState.Retrieved(
+            profiles = emptyList()
+        ),
+    )
 }
 
-
+@AspectRatioPreviews
 @Composable
-private fun ProfileList(
-    uiState: ProfileListUiState.Retrieved,
-    onProfileClick: (Long) -> Unit,
+private fun PreviewReportScreen(
+    @PreviewParameter(UiStateProvider::class) state: ProfileListUiState
 ) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier
-            .padding(5.dp)
-            .background(color = MaterialTheme.colorScheme.primary)
-            .fillMaxSize()
-    ) {
-        items(
-            uiState.profiles,
-            key = { it.id }
-        ) {
-            ProfileListItemUi(
-                profile = it,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape = RoundedCornerShape(10.dp))
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
-                    .height(100.dp)
-                    .clickable(onClick = { onProfileClick(it.id) })
-            )
-        }
-    }
-}
-
-
-@Preview
-@Composable
-private fun ProfileListPagePreview() {
     ClockWorkTheme {
-        ProfileListPage(
-            uiState = ProfileListUiState.Retrieved(
-                profiles = DummyData.PROFILES.map { it.toProfileListItem() }
-            ),
+        ProfileListPageContent(
+            uiState = state,
+            onEvent = {},
+            snackbarHostState = remember { SnackbarHostState() },
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit::class,
-                navigateTo = {}
-            ) },
-            onProfileClick = { },
-            onCreateNewProfileClick = { },
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun EmptyProfileListPagePreview() {
-    ClockWorkTheme {
-        ProfileListPage(
-            uiState = ProfileListUiState.Retrieved(
-                profiles = emptyList()
-            ),
-            navBar = { NavBar(
-                items = FAKE_TOP_LEVEL_DESTINATIONS,
-                currentDestination = Unit::class,
-                navigateTo = {}
-            ) },
-            onProfileClick = { },
-            onCreateNewProfileClick = { },
+                navigateTo = {},
+            ) }
         )
     }
 }

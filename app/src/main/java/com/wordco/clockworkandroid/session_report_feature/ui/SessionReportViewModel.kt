@@ -87,7 +87,7 @@ class SessionReportViewModel (
                         ErrorBehavior(
                             initialUiState = SessionReportUiState.Error(
                                 header = "Initialization Failed",
-                                message = e.message ?: "No Message"
+                                message = e.message ?: "No Message",
                             ),
                             stackTrace = e.stackTraceToString()
                         )
@@ -143,28 +143,28 @@ class SessionReportViewModel (
         override val uiState = combine(
             session,
             localState
-        ){ session, localState ->
+        ) { session, localState ->
             SessionReportUiState.Retrieved.from(
                 session = session,
                 viewModelManagedUiState = localState,
                 accuracyCalculator = calculateEstimateAccuracyUseCase::invoke
             )
         }.catch { e ->
-                currentBehavior.update {
-                    ErrorBehavior(
-                        initialUiState = SessionReportUiState.Error(
-                            header = "Session Lost",
-                            message = e.message ?: "Stream Interrupted"
-                        ),
-                        stackTrace = e.stackTraceToString()
-                    )
-                }
+            currentBehavior.update {
+                ErrorBehavior(
+                    initialUiState = SessionReportUiState.Error(
+                        header = "Session Lost",
+                        message = e.message ?: "Stream Interrupted"
+                    ),
+                    stackTrace = e.stackTraceToString()
+                )
             }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = initialUiState
-            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = initialUiState
+        )
 
         override suspend fun handle(event: SessionReportUiEvent) {
             when (event as? SessionReportUiEvent.ReportEvent) {
