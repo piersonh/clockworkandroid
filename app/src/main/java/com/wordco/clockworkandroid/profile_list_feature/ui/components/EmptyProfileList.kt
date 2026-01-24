@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.profile_list_feature.ui.elements
+package com.wordco.clockworkandroid.profile_list_feature.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

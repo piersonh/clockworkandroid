@@ -41,8 +41,8 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
-import com.wordco.clockworkandroid.profile_list_feature.ui.elements.EmptyProfileList
-import com.wordco.clockworkandroid.profile_list_feature.ui.elements.ProfileList
+import com.wordco.clockworkandroid.profile_list_feature.ui.components.EmptyProfileList
+import com.wordco.clockworkandroid.profile_list_feature.ui.components.ProfileList
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
 import kotlinx.coroutines.launch
 
