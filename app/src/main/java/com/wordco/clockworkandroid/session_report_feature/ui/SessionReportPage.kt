@@ -132,7 +132,7 @@ private fun SessionReportPageContent(
                 },
                 navigationIcon = {
                     if (uiState !is SessionReportUiState.Deleting) {
-                        IconButton(onClick = { onEvent(SessionReportUiEvent.DeleteClicked) }) {
+                        IconButton(onClick = { onEvent(SessionReportUiEvent.BackClicked) }) {
                             BackImage()
                         }
                     }
