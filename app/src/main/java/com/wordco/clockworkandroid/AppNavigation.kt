@@ -15,8 +15,8 @@ import com.wordco.clockworkandroid.profile_editor_feature.ui.navigateToEditProfi
 import com.wordco.clockworkandroid.profile_editor_feature.ui.profileEditorPage
 import com.wordco.clockworkandroid.profile_list_feature.ui.ProfileListRoute
 import com.wordco.clockworkandroid.profile_list_feature.ui.profileListPage
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.navigateToProfileDetails
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.profileDetailsPage
+import com.wordco.clockworkandroid.profile_details_feature.ui.navigateToProfileDetails
+import com.wordco.clockworkandroid.profile_details_feature.ui.profileDetailsPage
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSession
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToCreateSessionWithPicker
 import com.wordco.clockworkandroid.session_editor_feature.ui.navigateToEditSession

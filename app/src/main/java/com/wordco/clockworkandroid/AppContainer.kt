@@ -20,8 +20,8 @@ import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.ManageFirstLaunchUseCase
 import com.wordco.clockworkandroid.profile_editor_feature.domain.use_case.CreateProfileUseCase
 import com.wordco.clockworkandroid.profile_editor_feature.domain.use_case.UpdateProfileUseCase
-import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
-import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
+import com.wordco.clockworkandroid.profile_details_feature.domain.use_case.DeleteProfileUseCase
+import com.wordco.clockworkandroid.profile_details_feature.domain.use_case.GetAllSessionsForProfileUseCase
 import com.wordco.clockworkandroid.reminder.data.ReminderNotificationManagerImpl
 import com.wordco.clockworkandroid.reminder.data.SessionReminderSchedulerImpl
 import com.wordco.clockworkandroid.reminder.domain.use_case.ProcessScheduledReminderUseCase
