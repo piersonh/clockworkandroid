@@ -50,7 +50,6 @@ class UserStatsViewModel(
     val uiState: StateFlow<UserStatsUiState> = _uiState.asStateFlow()
 
 
-    // TODO: make a getCompletedTasks (?)
     private val _tasks = getAllCompletedSessionsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
 
