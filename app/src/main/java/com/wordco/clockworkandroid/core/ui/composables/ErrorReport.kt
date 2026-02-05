@@ -48,6 +48,7 @@ fun ErrorReport(
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
             textAlign = TextAlign.Center,
+            lineHeight = 36.sp,
         )
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -93,7 +94,7 @@ fun ErrorReport(
 private fun ErrorReportPreview() {
     ClockWorkTheme {
         ErrorReport(
-            header = "Failed to Load",
+            header = "Failed to Load Failed to Load",
             message = "Womp Womp, Calling the wambulance",
             onCopyErrorInfoClick = {}
         )

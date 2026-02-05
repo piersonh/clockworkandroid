@@ -9,57 +9,87 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.CompletedTask
+import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.DeleteProfileUseCase
-import com.wordco.clockworkandroid.profile_session_list_feature.domain.use_case.GetAllSessionsForProfileUseCase
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ProfileDetailsModal
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ViewModelManagedUiState
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toCompletedSessionListItem
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.mapper.toTodoSessionListItem
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileSessionListViewModel(
     private val profileId: Long,
-    getProfileUseCase: GetProfileUseCase,
-    getAllSessionsForProfileUseCase: GetAllSessionsForProfileUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<ProfileSessionListUiState>(
-        ProfileSessionListUiState.Retrieving
-    )
+    private val currentBehavior = MutableStateFlow<PageBehavior>(LoadingBehavior(
+        initialUiState = ProfileSessionListUiState.Retrieving
+    ))
 
-    val uiState = _uiState.asStateFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = currentBehavior
+        .flatMapLatest { it.uiState }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = currentBehavior.value.uiState.value
+        )
 
-    private val _events = MutableSharedFlow<ProfileSessionListUiEvent>()
-    val events = _events.asSharedFlow()
+    private val _uiEffect = Channel<ProfileDetailsUiEffect>()
+    val uiEffect = _uiEffect.receiveAsFlow()
 
-    private val _profile = getProfileUseCase(profileId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
-
-    private val _sessions = getAllSessionsForProfileUseCase(profileId)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(),null)
-
-    init {
+    fun onEvent(event: ProfileDetailsUiEvent) {
         viewModelScope.launch {
-            combine(
-                _profile,
-                _sessions,
-            ) { profile, sessions ->
-                if (profile == null || sessions == null) {
-                    ProfileSessionListUiState.Retrieving
-                } else {
+            currentBehavior.value.handle(event)
+        }
+    }
 
-                    val (completeSessions, todoSessions) = sessions
+    private suspend fun sendEffect(effect: ProfileDetailsUiEffect){
+        _uiEffect.send(effect)
+    }
+
+    private interface PageBehavior {
+        val uiState: StateFlow<ProfileSessionListUiState>
+        suspend fun handle(event: ProfileDetailsUiEvent)
+    }
+
+    private inner class LoadingBehavior(
+        initialUiState: ProfileSessionListUiState.Retrieving
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialUiState)
+
+        init {
+            viewModelScope.launch {
+                try {
+                    val sharedProfileFlow = getProfileUseCase(profileId)
+                        .shareIn(
+                            scope = viewModelScope,
+                            started = SharingStarted.Lazily,
+                            replay = 1, // cache latest session
+                        )
+
+                    val profile = sharedProfileFlow.first() // get from cache
+
+                    val (completeSessions, todoSessions) = profile.sessions
                         .partition { it is CompletedTask }
 
-                    ProfileSessionListUiState.Retrieved(
+                    val initialDetailsState = ProfileSessionListUiState.Retrieved(
                         profileName = profile.name,
                         profileColor = profile.color,
                         todoSessions = todoSessions.map {
@@ -68,20 +98,183 @@ class ProfileSessionListViewModel(
                         completeSessions = completeSessions.map {
                             (it as CompletedTask).toCompletedSessionListItem()
                         },
+                        isMenuOpen = false,
+                        currentModal = null,
                     )
+
+                    currentBehavior.update {
+                        DetailsBehavior(
+                            initialUiState = initialDetailsState,
+                            profile = sharedProfileFlow,
+                        )
+                    }
+
+                } catch (e: Exception) {
+                    currentBehavior.update {
+                        ErrorBehavior(
+                            initialUiState = ProfileSessionListUiState.Error(
+                                header = "Initialization Failed",
+                                message = e.message ?: "No Message",
+                            ),
+                            stackTrace = e.stackTraceToString()
+                        )
+                    }
                 }
-            }.collect { state ->
-                _uiState.update { state }
+            }
+        }
+
+        override suspend fun handle(event: ProfileDetailsUiEvent) {
+            when (event as? ProfileDetailsUiEvent.LoadingEvent) {
+                ProfileDetailsUiEvent.BackClicked -> sendEffect(ProfileDetailsUiEffect.NavigateBack)
+                null -> {}
             }
         }
     }
 
-    fun onDeleteClick() {
-        viewModelScope.launch {
-            deleteProfileUseCase(profileId)
-            _events.emit(ProfileSessionListUiEvent.NavigateBack)
+    private inner class ErrorBehavior(
+        initialUiState: ProfileSessionListUiState.Error,
+        val stackTrace: String?,
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialUiState)
+
+        override suspend fun handle(event: ProfileDetailsUiEvent) {
+            when (event as? ProfileDetailsUiEvent.ErrorEvent) {
+                ProfileDetailsUiEvent.BackClicked -> sendEffect(ProfileDetailsUiEffect.NavigateBack)
+                ProfileDetailsUiEvent.CopyErrorClicked -> copyError()
+                null -> {}
+            }
+        }
+
+        suspend fun copyError() {
+            val clipboardContent = """
+                    Title: ${uiState.value.header}
+                    Message: ${uiState.value.message}
+                    --- StackTrace ---
+                    $stackTrace
+                """.trimIndent()
+
+            sendEffect(ProfileDetailsUiEffect.CopyToClipboard(clipboardContent))
+            sendEffect(ProfileDetailsUiEffect.ShowSnackbar("Error info copied"))
         }
     }
+
+    private inner class DetailsBehavior(
+        initialUiState: ProfileSessionListUiState.Retrieved,
+        profile: Flow<Profile>,
+    ) : PageBehavior {
+        private val localState = MutableStateFlow(ViewModelManagedUiState(
+                isMenuOpen = initialUiState.isMenuOpen,
+                currentModal = initialUiState.currentModal,
+            )
+        )
+
+        override val uiState = combine(
+            localState,
+            profile,
+        ) { localState, profile ->
+            val (completeSessions, todoSessions) = profile.sessions
+                .partition { it is CompletedTask }
+
+            ProfileSessionListUiState.Retrieved(
+                profileName = profile.name,
+                profileColor = profile.color,
+                todoSessions = todoSessions.map {
+                    it.toTodoSessionListItem()
+                },
+                completeSessions = completeSessions.map {
+                    (it as CompletedTask).toCompletedSessionListItem()
+                },
+                isMenuOpen = localState.isMenuOpen,
+                currentModal = localState.currentModal,
+            )
+        }.catch { e ->
+            currentBehavior.update {
+                ErrorBehavior(
+                    initialUiState = ProfileSessionListUiState.Error(
+                        header = "Session Lost",
+                        message = e.message ?: "Stream Interrupted"
+                    ),
+                    stackTrace = e.stackTraceToString()
+                )
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = initialUiState
+        )
+
+        override suspend fun handle(event: ProfileDetailsUiEvent) {
+            when (val e = event as? ProfileDetailsUiEvent.DetailsEvent) {
+                ProfileDetailsUiEvent.BackClicked -> sendEffect(ProfileDetailsUiEffect.NavigateBack)
+                is ProfileDetailsUiEvent.CompletedSessionClicked -> sendEffect(ProfileDetailsUiEffect.NavigateToCompletedSession(e.id))
+                ProfileDetailsUiEvent.CreateSessionClicked -> sendEffect(ProfileDetailsUiEffect.NavigateToCreateSession)
+                ProfileDetailsUiEvent.DeleteClicked -> showDeleteSessionConfirmationModal()
+                ProfileDetailsUiEvent.DeleteConfirmed -> triggerDeleteSession()
+                ProfileDetailsUiEvent.EditClicked -> sendEffect(ProfileDetailsUiEffect.NavigateToProfileEditor)
+                ProfileDetailsUiEvent.ModalDismissed -> dismissModals()
+                is ProfileDetailsUiEvent.TodoSessionClicked -> sendEffect(ProfileDetailsUiEffect.NavigateToTodoSession(e.id))
+                ProfileDetailsUiEvent.MenuOpened -> openMenu()
+                ProfileDetailsUiEvent.MenuClosed -> closeMenu()
+                null -> {}
+            }
+        }
+
+        fun showDeleteSessionConfirmationModal() {
+            localState.update { it.copy(currentModal = ProfileDetailsModal.DeleteConfirmation) }
+        }
+
+        fun dismissModals() {
+            localState.update { it.copy(currentModal = null) }
+        }
+
+        fun openMenu() {
+            localState.update { it.copy(isMenuOpen = true) }
+        }
+
+        fun closeMenu() {
+            localState.update { it.copy(isMenuOpen = false) }
+        }
+
+        fun triggerDeleteSession() {
+            currentBehavior.update { DeletingBehavior(
+                initialUiState = ProfileSessionListUiState.Deleting
+            ) }
+        }
+    }
+
+    private inner class DeletingBehavior(
+        initialUiState: ProfileSessionListUiState.Deleting
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialUiState)
+
+        init {
+            viewModelScope.launch {
+                try {
+                    deleteProfileUseCase(profileId)
+                    sendEffect(ProfileDetailsUiEffect.NavigateBack)
+
+                } catch (e: Exception) {
+                    currentBehavior.update {
+                        ErrorBehavior(
+                            initialUiState = ProfileSessionListUiState.Error(
+                                header = "Deletion Failed",
+                                message = e.message ?: "Could not delete task"
+                            ),
+                            stackTrace = e.stackTraceToString()
+                        )
+                    }
+                }
+            }
+        }
+
+        override suspend fun handle(event: ProfileDetailsUiEvent) {
+            when (event as? ProfileDetailsUiEvent.DeletingEvent) {
+                null -> { }
+            }
+        }
+
+    }
+
 
 
     companion object {
@@ -98,7 +291,6 @@ class ProfileSessionListViewModel(
                 ProfileSessionListViewModel(
                     profileId = profileId,
                     getProfileUseCase = appContainer.getProfileUseCase,
-                    getAllSessionsForProfileUseCase = appContainer.getAllSessionsForProfileUseCase,
                     deleteProfileUseCase = appContainer.deleteProfileUseCase,
                     //savedStateHandle = savedStateHandle
                 )
