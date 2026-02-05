@@ -32,14 +32,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProfileSessionListViewModel(
+class ProfileDetailsViewModel(
     private val profileId: Long,
     private val getProfileUseCase: GetProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
 ) : ViewModel() {
 
     private val currentBehavior = MutableStateFlow<PageBehavior>(LoadingBehavior(
-        initialUiState = ProfileSessionListUiState.Retrieving
+        initialUiState = ProfileDetailsUiState.Retrieving
     ))
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -65,12 +65,12 @@ class ProfileSessionListViewModel(
     }
 
     private interface PageBehavior {
-        val uiState: StateFlow<ProfileSessionListUiState>
+        val uiState: StateFlow<ProfileDetailsUiState>
         suspend fun handle(event: ProfileDetailsUiEvent)
     }
 
     private inner class LoadingBehavior(
-        initialUiState: ProfileSessionListUiState.Retrieving
+        initialUiState: ProfileDetailsUiState.Retrieving
     ) : PageBehavior {
         override val uiState = MutableStateFlow(initialUiState)
 
@@ -89,7 +89,7 @@ class ProfileSessionListViewModel(
                     val (completeSessions, todoSessions) = profile.sessions
                         .partition { it is CompletedTask }
 
-                    val initialDetailsState = ProfileSessionListUiState.Retrieved(
+                    val initialDetailsState = ProfileDetailsUiState.Retrieved(
                         profileName = profile.name,
                         profileColor = profile.color,
                         todoSessions = todoSessions.map {
@@ -112,7 +112,7 @@ class ProfileSessionListViewModel(
                 } catch (e: Exception) {
                     currentBehavior.update {
                         ErrorBehavior(
-                            initialUiState = ProfileSessionListUiState.Error(
+                            initialUiState = ProfileDetailsUiState.Error(
                                 header = "Initialization Failed",
                                 message = e.message ?: "No Message",
                             ),
@@ -132,7 +132,7 @@ class ProfileSessionListViewModel(
     }
 
     private inner class ErrorBehavior(
-        initialUiState: ProfileSessionListUiState.Error,
+        initialUiState: ProfileDetailsUiState.Error,
         val stackTrace: String?,
     ) : PageBehavior {
         override val uiState = MutableStateFlow(initialUiState)
@@ -159,7 +159,7 @@ class ProfileSessionListViewModel(
     }
 
     private inner class DetailsBehavior(
-        initialUiState: ProfileSessionListUiState.Retrieved,
+        initialUiState: ProfileDetailsUiState.Retrieved,
         profile: Flow<Profile>,
     ) : PageBehavior {
         private val localState = MutableStateFlow(ViewModelManagedUiState(
@@ -175,7 +175,7 @@ class ProfileSessionListViewModel(
             val (completeSessions, todoSessions) = profile.sessions
                 .partition { it is CompletedTask }
 
-            ProfileSessionListUiState.Retrieved(
+            ProfileDetailsUiState.Retrieved(
                 profileName = profile.name,
                 profileColor = profile.color,
                 todoSessions = todoSessions.map {
@@ -190,7 +190,7 @@ class ProfileSessionListViewModel(
         }.catch { e ->
             currentBehavior.update {
                 ErrorBehavior(
-                    initialUiState = ProfileSessionListUiState.Error(
+                    initialUiState = ProfileDetailsUiState.Error(
                         header = "Session Lost",
                         message = e.message ?: "Stream Interrupted"
                     ),
@@ -237,13 +237,13 @@ class ProfileSessionListViewModel(
 
         fun triggerDeleteSession() {
             currentBehavior.update { DeletingBehavior(
-                initialUiState = ProfileSessionListUiState.Deleting
+                initialUiState = ProfileDetailsUiState.Deleting
             ) }
         }
     }
 
     private inner class DeletingBehavior(
-        initialUiState: ProfileSessionListUiState.Deleting
+        initialUiState: ProfileDetailsUiState.Deleting
     ) : PageBehavior {
         override val uiState = MutableStateFlow(initialUiState)
 
@@ -256,7 +256,7 @@ class ProfileSessionListViewModel(
                 } catch (e: Exception) {
                     currentBehavior.update {
                         ErrorBehavior(
-                            initialUiState = ProfileSessionListUiState.Error(
+                            initialUiState = ProfileDetailsUiState.Error(
                                 header = "Deletion Failed",
                                 message = e.message ?: "Could not delete task"
                             ),
@@ -288,7 +288,7 @@ class ProfileSessionListViewModel(
                 val profileId = this[PROFILE_ID_KEY] as Long
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
 
-                ProfileSessionListViewModel(
+                ProfileDetailsViewModel(
                     profileId = profileId,
                     getProfileUseCase = appContainer.getProfileUseCase,
                     deleteProfileUseCase = appContainer.deleteProfileUseCase,

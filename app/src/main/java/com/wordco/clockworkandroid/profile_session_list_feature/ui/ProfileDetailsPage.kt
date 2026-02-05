@@ -45,17 +45,17 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.DeleteProfileConfirmationModal
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.ProfileDetails
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.elements.ProfileDetailsDropdownMenu
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.components.DeleteProfileConfirmationModal
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.components.ProfileDetails
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.components.ProfileDetailsDropdownMenu
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ProfileDetailsModal
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.util.contrastRatioWith
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileSessionListPage(
-    viewModel: ProfileSessionListViewModel,
+fun ProfileDetailsPage(
+    viewModel: ProfileDetailsViewModel,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onTodoSessionClick: (Long) -> Unit,
@@ -130,19 +130,19 @@ fun ProfileSessionListPage(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileDetailsPageContent(
-    uiState: ProfileSessionListUiState,
+    uiState: ProfileDetailsUiState,
     onEvent: (ProfileDetailsUiEvent) -> Unit,
     navBar: @Composable () -> Unit,
     coroutineScope: CoroutineScope,
 ) {
 
-    val accentColor = if (uiState is ProfileSessionListUiState.Retrieved) {
+    val accentColor = if (uiState is ProfileDetailsUiState.Retrieved) {
         uiState.profileColor
     } else {
         MaterialTheme.colorScheme.secondary
     }
 
-    val onAccentColor = if (uiState is ProfileSessionListUiState.Retrieved) {
+    val onAccentColor = if (uiState is ProfileDetailsUiState.Retrieved) {
         listOf(
             Color.White,
             Color.Black,
@@ -158,7 +158,7 @@ private fun ProfileDetailsPageContent(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    if (uiState !is ProfileSessionListUiState.Deleting) {
+                    if (uiState !is ProfileDetailsUiState.Deleting) {
                         IconButton(
                             onClick = { onEvent(ProfileDetailsUiEvent.BackClicked) },
                         ) {
@@ -186,7 +186,7 @@ private fun ProfileDetailsPageContent(
                     )
                 },
                 actions = {
-                    if (uiState is ProfileSessionListUiState.Retrieved) {
+                    if (uiState is ProfileDetailsUiState.Retrieved) {
                         Box {
                             IconButton(onClick = { onEvent(ProfileDetailsUiEvent.MenuOpened) }) {
                                 Icon(
@@ -214,13 +214,13 @@ private fun ProfileDetailsPageContent(
                 .fillMaxSize()
         ) {
             when(uiState) {
-                ProfileSessionListUiState.Retrieving -> {
+                ProfileDetailsUiState.Retrieving -> {
                     SpinningLoader()
                 }
-                ProfileSessionListUiState.Deleting -> {
+                ProfileDetailsUiState.Deleting -> {
                     SpinningLoader()
                 }
-                is ProfileSessionListUiState.Error -> {
+                is ProfileDetailsUiState.Error -> {
                     Box(
                         modifier = Modifier.padding(top = 40.dp).padding(horizontal = 5.dp)
                     ) {
@@ -233,7 +233,7 @@ private fun ProfileDetailsPageContent(
                         )
                     }
                 }
-                is ProfileSessionListUiState.Retrieved -> {
+                is ProfileDetailsUiState.Retrieved -> {
                     ProfileDetails(
                         uiState = uiState,
                         onEvent = onEvent,
@@ -269,14 +269,14 @@ private fun ModalManager(
     }
 }
 
-private class UiStateProvider : PreviewParameterProvider<ProfileSessionListUiState> {
+private class UiStateProvider : PreviewParameterProvider<ProfileDetailsUiState> {
     override val values = sequenceOf(
-        ProfileSessionListUiState.Retrieving,
-        ProfileSessionListUiState.Error(
+        ProfileDetailsUiState.Retrieving,
+        ProfileDetailsUiState.Error(
             header = "Encountered a Fatal Error!",
             message = "ClockWork encountered an error and could not recover..."
         ),
-        ProfileSessionListUiState.Retrieved(
+        ProfileDetailsUiState.Retrieved(
             profileName = "Preview",
             profileColor = Color.Yellow,
             todoSessions = emptyList(),
@@ -284,7 +284,7 @@ private class UiStateProvider : PreviewParameterProvider<ProfileSessionListUiSta
             isMenuOpen = false,
             currentModal = null,
         ),
-        ProfileSessionListUiState.Deleting
+        ProfileDetailsUiState.Deleting
     )
 }
 
@@ -292,7 +292,7 @@ private class UiStateProvider : PreviewParameterProvider<ProfileSessionListUiSta
 @AspectRatioPreviews
 @Composable
 private fun PreviewReportScreen(
-    @PreviewParameter(UiStateProvider::class) state: ProfileSessionListUiState
+    @PreviewParameter(UiStateProvider::class) state: ProfileDetailsUiState
 ) {
     ClockWorkTheme {
         ProfileDetailsPageContent(

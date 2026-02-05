@@ -11,19 +11,19 @@ import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ProfileSessionListRoute(val id: Long)
+data class ProfileDetailsRoute(val id: Long)
 
-fun NavController.navigateToProfileSessionList(
+fun NavController.navigateToProfileDetails(
     profileId: Long,
     navOptions: NavOptionsBuilder.() -> Unit = {}
 ) {
-    navigate(route = ProfileSessionListRoute(profileId)) {
+    navigate(route = ProfileDetailsRoute(profileId)) {
         navOptions()
     }
 }
 
 
-fun NavGraphBuilder.profileSessionListPage(
+fun NavGraphBuilder.profileDetailsPage(
     onBackClick: () -> Unit,
     onEditClick: (Long) -> Unit,
     onSessionClick: (Long) -> Unit,
@@ -31,22 +31,22 @@ fun NavGraphBuilder.profileSessionListPage(
     onCompletedSessionClick: (Long) -> Unit,
     navBar: @Composable () -> Unit,
 ) {
-    composable<ProfileSessionListRoute> { entry ->
+    composable<ProfileDetailsRoute> { entry ->
 
-        val profileId = entry.toRoute<ProfileSessionListRoute>().id
+        val profileId = entry.toRoute<ProfileDetailsRoute>().id
 
-        val profileSessionListViewModel = ViewModelProvider.create(
+        val viewModel = ViewModelProvider.create(
             store = entry.viewModelStore,
-            factory = ProfileSessionListViewModel.Companion.Factory,
+            factory = ProfileDetailsViewModel.Factory,
             extras = MutableCreationExtras(
                 entry.defaultViewModelCreationExtras
             ).apply {
-                set(ProfileSessionListViewModel.Companion.PROFILE_ID_KEY, profileId)
+                set(ProfileDetailsViewModel.PROFILE_ID_KEY, profileId)
             }
-        )[ProfileSessionListViewModel::class]
+        )[ProfileDetailsViewModel::class]
 
-        ProfileSessionListPage(
-            viewModel = profileSessionListViewModel,
+        ProfileDetailsPage(
+            viewModel = viewModel,
             onBackClick = onBackClick,
             onEditClick = { onEditClick(profileId) },
             onTodoSessionClick = onSessionClick,

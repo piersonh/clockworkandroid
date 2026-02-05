@@ -5,13 +5,13 @@ import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.Complet
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.ProfileDetailsModal
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.TodoSessionListItem
 
-sealed interface ProfileSessionListUiState {
-    data object Retrieving : ProfileSessionListUiState
+sealed interface ProfileDetailsUiState {
+    data object Retrieving : ProfileDetailsUiState
 
     data class Error(
         val header: String,
         val message: String,
-    ) : ProfileSessionListUiState
+    ) : ProfileDetailsUiState
 
     data class Retrieved(
         val profileName: String,
@@ -20,7 +20,7 @@ sealed interface ProfileSessionListUiState {
         val completeSessions: List<CompletedSessionListItem>,
         val isMenuOpen: Boolean,
         val currentModal: ProfileDetailsModal?
-    ) : ProfileSessionListUiState
+    ) : ProfileDetailsUiState
 
-    data object Deleting : ProfileSessionListUiState
+    data object Deleting : ProfileDetailsUiState
 }

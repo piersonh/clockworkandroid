@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.profile_session_list_feature.ui.elements
+package com.wordco.clockworkandroid.profile_session_list_feature.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme

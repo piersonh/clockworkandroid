@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.profile_session_list_feature.ui.elements
+package com.wordco.clockworkandroid.profile_session_list_feature.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.pager.HorizontalPager

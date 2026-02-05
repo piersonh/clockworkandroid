@@ -1,4 +1,4 @@
-package com.wordco.clockworkandroid.profile_session_list_feature.ui.elements
+package com.wordco.clockworkandroid.profile_session_list_feature.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,13 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.ProfileDetailsUiEvent
-import com.wordco.clockworkandroid.profile_session_list_feature.ui.ProfileSessionListUiState
+import com.wordco.clockworkandroid.profile_session_list_feature.ui.ProfileDetailsUiState
 import com.wordco.clockworkandroid.profile_session_list_feature.ui.model.TabbedScreenItem
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun ProfileDetails(
-    uiState: ProfileSessionListUiState.Retrieved,
+    uiState: ProfileDetailsUiState.Retrieved,
     onEvent: (ProfileDetailsUiEvent.DetailsEvent) -> Unit,
     coroutineScope: CoroutineScope,
     accentColor: Color,
