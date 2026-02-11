@@ -45,6 +45,7 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.core.ui.util.newEntry
 import com.wordco.clockworkandroid.profile_editor_feature.ui.components.ProfileForm
 import com.wordco.clockworkandroid.profile_editor_feature.ui.model.ProfileEditorModal
 import kotlinx.coroutines.launch
@@ -81,11 +82,10 @@ fun ProfileEditorPage(
 
                     is ProfileEditorUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
-                            val clipData = ClipData.newPlainText(
-                                effect.content,
-                                effect.content
+                            clipboard.newEntry(
+                                label = effect.content,
+                                text = effect.content,
                             )
-                            clipboard.setClipEntry(clipData.toClipEntry())
                         }
                     }
                 }

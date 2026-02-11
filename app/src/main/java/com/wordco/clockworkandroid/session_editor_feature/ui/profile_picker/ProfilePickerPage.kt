@@ -38,6 +38,7 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.core.ui.util.newEntry
 import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.components.ProfilePicker
 import com.wordco.clockworkandroid.session_editor_feature.ui.profile_picker.model.mapper.toProfilePickerItem
 import kotlinx.coroutines.launch
@@ -70,11 +71,10 @@ fun ProfilePickerPage(
                     ProfilePickerUiEffect.NavigateToCreateProfile -> onNavigateToCreateProfile()
                     is ProfilePickerUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
-                            val clipData = ClipData.newPlainText(
-                                effect.content,
-                                effect.content
+                            clipboard.newEntry(
+                                label = effect.content,
+                                text = effect.content,
                             )
-                            clipboard.setClipEntry(clipData.toClipEntry())
                         }
                     }
                     is ProfilePickerUiEffect.ShowSnackbar -> {

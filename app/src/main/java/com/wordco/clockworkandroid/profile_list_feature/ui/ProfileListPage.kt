@@ -41,6 +41,7 @@ import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
+import com.wordco.clockworkandroid.core.ui.util.newEntry
 import com.wordco.clockworkandroid.profile_list_feature.ui.components.EmptyProfileList
 import com.wordco.clockworkandroid.profile_list_feature.ui.components.ProfileList
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
@@ -68,11 +69,10 @@ fun ProfileListPage(
                 when (effect) {
                     is ProfileListUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
-                            val clipData = ClipData.newPlainText(
-                                effect.content,
-                                effect.content
+                            clipboard.newEntry(
+                                label = effect.content,
+                                text = effect.content,
                             )
-                            clipboard.setClipEntry(clipData.toClipEntry())
                         }
                     }
 

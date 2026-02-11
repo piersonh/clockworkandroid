@@ -42,6 +42,7 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.core.ui.util.newEntry
 import com.wordco.clockworkandroid.session_report_feature.ui.components.DeleteSessionConfirmationModal
 import com.wordco.clockworkandroid.session_report_feature.ui.components.SessionReport
 import com.wordco.clockworkandroid.session_report_feature.ui.components.SessionReportDropdownMenu
@@ -83,11 +84,10 @@ fun SessionReportPage(
 
                     is SessionReportUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
-                            val clipData = ClipData.newPlainText(
-                                effect.content,
-                                effect.content
+                            clipboard.newEntry(
+                                label = effect.content,
+                                text = effect.content,
                             )
-                            clipboard.setClipEntry(clipData.toClipEntry())
                         }
                     }
 

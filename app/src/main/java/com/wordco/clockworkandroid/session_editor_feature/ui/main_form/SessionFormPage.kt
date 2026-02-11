@@ -48,6 +48,7 @@ import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
 import com.wordco.clockworkandroid.core.ui.theme.ClockWorkTheme
 import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
+import com.wordco.clockworkandroid.core.ui.util.newEntry
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.DueDateTime
 import com.wordco.clockworkandroid.session_editor_feature.domain.model.UserEstimate
 import com.wordco.clockworkandroid.session_editor_feature.domain.util.toEstimate
@@ -96,11 +97,10 @@ fun SessionFormPage(
 
                     is SessionFormUiEffect.CopyToClipboard -> {
                         coroutineScope.launch {
-                            val clipData = ClipData.newPlainText(
-                                effect.content,
-                                effect.content
+                            clipboard.newEntry(
+                                label = effect.content,
+                                text = effect.content,
                             )
-                            clipboard.setClipEntry(clipData.toClipEntry())
                         }
                     }
 
