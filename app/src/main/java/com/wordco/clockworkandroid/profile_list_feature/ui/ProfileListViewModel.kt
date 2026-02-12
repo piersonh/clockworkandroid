@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
+import com.wordco.clockworkandroid.profile_list_feature.ui.model.ProfileListItem
 import com.wordco.clockworkandroid.profile_list_feature.ui.model.mapper.toProfileListItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -30,27 +30,21 @@ class ProfileListViewModel(
     private val getAllProfilesUseCase: GetAllProfilesUseCase,
 ) : ViewModel() {
 
-    private interface PageBehavior {
-        val uiState: StateFlow<ProfileListUiState>
-        suspend fun handle(event: ProfileListUiEvent)
-    }
-
-
     private val currentBehavior = MutableStateFlow<PageBehavior>(LoadingBehavior(
         initialUiState = ProfileListUiState.Retrieving
     ))
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState = currentBehavior.flatMapLatest { behavior -> behavior.uiState }
+    val uiState = currentBehavior
+        .flatMapLatest { behavior -> behavior.uiState }
         .stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            currentBehavior.value.uiState.value
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = currentBehavior.value.uiState.value
         )
 
     private val _uiEffect = Channel<ProfileListUiEffect>()
     val uiEffect = _uiEffect.receiveAsFlow()
-
 
     fun onEvent(event: ProfileListUiEvent) {
         viewModelScope.launch {
@@ -62,6 +56,11 @@ class ProfileListViewModel(
         _uiEffect.send(effect)
     }
 
+    private interface PageBehavior {
+        val uiState: StateFlow<ProfileListUiState>
+        suspend fun handle(event: ProfileListUiEvent)
+    }
+
     private inner class LoadingBehavior(
         initialUiState: ProfileListUiState.Retrieving,
     ) : PageBehavior {
@@ -71,13 +70,14 @@ class ProfileListViewModel(
             viewModelScope.launch {
                 try {
                     val profileListFlow = getAllProfilesUseCase()
+                        .map { list -> list.map { it.toProfileListItem() } }
                         .shareIn(
                             scope = viewModelScope,
-                            started = SharingStarted.Lazily,
+                            started = SharingStarted.WhileSubscribed(5000),
                             replay = 1, // cache latest session
                         )
 
-                    val profiles = profileListFlow.first().map { it.toProfileListItem() }
+                    val profiles = profileListFlow.first()
 
                     val initialListUiState = ProfileListUiState.Retrieved(
                         profiles = profiles
@@ -138,10 +138,9 @@ class ProfileListViewModel(
 
     private inner class ListBehavior(
         initialUiState: ProfileListUiState.Retrieved,
-        profiles: Flow<List<Profile>>
+        profiles: Flow<List<ProfileListItem>>
     ) : PageBehavior {
-        override val uiState = profiles.map { profiles ->
-            val listItems = profiles.map { it.toProfileListItem() }
+        override val uiState = profiles.map { listItems ->
             ProfileListUiState.Retrieved(listItems)
         }.catch { e ->
             currentBehavior.update {

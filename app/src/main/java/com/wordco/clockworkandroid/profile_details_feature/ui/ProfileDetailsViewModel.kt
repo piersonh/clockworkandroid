@@ -8,14 +8,12 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.wordco.clockworkandroid.MainApplication
-import com.wordco.clockworkandroid.core.domain.model.CompletedTask
-import com.wordco.clockworkandroid.core.domain.model.Profile
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.profile_details_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_details_feature.ui.model.ProfileDetailsModal
+import com.wordco.clockworkandroid.profile_details_feature.ui.model.ProfileDisplayData
 import com.wordco.clockworkandroid.profile_details_feature.ui.model.ViewModelManagedUiState
-import com.wordco.clockworkandroid.profile_details_feature.ui.model.mapper.toCompletedSessionListItem
-import com.wordco.clockworkandroid.profile_details_feature.ui.model.mapper.toTodoSessionListItem
+import com.wordco.clockworkandroid.profile_details_feature.ui.model.mapper.toProfileDisplayData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +24,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -78,34 +77,34 @@ class ProfileDetailsViewModel(
             viewModelScope.launch {
                 try {
                     val sharedProfileFlow = getProfileUseCase(profileId)
+                        .map { it.toProfileDisplayData() }
                         .shareIn(
                             scope = viewModelScope,
-                            started = SharingStarted.Lazily,
+                            started = SharingStarted.WhileSubscribed(5000),
                             replay = 1, // cache latest session
                         )
 
                     val profile = sharedProfileFlow.first() // get from cache
 
-                    val (completeSessions, todoSessions) = profile.sessions
-                        .partition { it is CompletedTask }
+                    val initialLocalState = ViewModelManagedUiState(
+                        isMenuOpen = false,
+                        currentModal = null,
+                    )
 
                     val initialDetailsState = ProfileDetailsUiState.Retrieved(
                         profileName = profile.name,
                         profileColor = profile.color,
-                        todoSessions = todoSessions.map {
-                            it.toTodoSessionListItem()
-                        },
-                        completeSessions = completeSessions.map {
-                            (it as CompletedTask).toCompletedSessionListItem()
-                        },
-                        isMenuOpen = false,
-                        currentModal = null,
+                        todoSessions = profile.todoSessions,
+                        completeSessions = profile.completeSessions,
+                        isMenuOpen = initialLocalState.isMenuOpen,
+                        currentModal = initialLocalState.currentModal,
                     )
 
                     currentBehavior.update {
                         DetailsBehavior(
                             initialUiState = initialDetailsState,
                             profile = sharedProfileFlow,
+                            initialLocalState = initialLocalState,
                         )
                     }
 
@@ -160,30 +159,20 @@ class ProfileDetailsViewModel(
 
     private inner class DetailsBehavior(
         initialUiState: ProfileDetailsUiState.Retrieved,
-        profile: Flow<Profile>,
+        profile: Flow<ProfileDisplayData>,
+        initialLocalState: ViewModelManagedUiState,
     ) : PageBehavior {
-        private val localState = MutableStateFlow(ViewModelManagedUiState(
-                isMenuOpen = initialUiState.isMenuOpen,
-                currentModal = initialUiState.currentModal,
-            )
-        )
+        private val localState = MutableStateFlow(initialLocalState)
 
         override val uiState = combine(
             localState,
             profile,
         ) { localState, profile ->
-            val (completeSessions, todoSessions) = profile.sessions
-                .partition { it is CompletedTask }
-
             ProfileDetailsUiState.Retrieved(
                 profileName = profile.name,
                 profileColor = profile.color,
-                todoSessions = todoSessions.map {
-                    it.toTodoSessionListItem()
-                },
-                completeSessions = completeSessions.map {
-                    (it as CompletedTask).toCompletedSessionListItem()
-                },
+                todoSessions = profile.todoSessions,
+                completeSessions = profile.completeSessions,
                 isMenuOpen = localState.isMenuOpen,
                 currentModal = localState.currentModal,
             )

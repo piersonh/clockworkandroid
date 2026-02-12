@@ -59,7 +59,7 @@ class SessionReportViewModel (
                         .filterIsInstance<CompletedTask>()
                         .shareIn(
                             scope = viewModelScope,
-                            started = SharingStarted.Lazily, // wait for validation check below
+                            started = SharingStarted.WhileSubscribed(5000), // wait for validation check below
                             replay = 1, // cache latest session that was just validated
                         )
 
