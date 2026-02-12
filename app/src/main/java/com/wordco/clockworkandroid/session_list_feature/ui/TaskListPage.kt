@@ -22,30 +22,43 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.flowWithLifecycle
 import com.wordco.clockworkandroid.R
 import com.wordco.clockworkandroid.core.domain.model.AppEstimate
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.util.DummyData
 import com.wordco.clockworkandroid.core.ui.composables.AccentRectangleTextButton
+import com.wordco.clockworkandroid.core.ui.composables.ErrorReport
 import com.wordco.clockworkandroid.core.ui.composables.NavBar
 import com.wordco.clockworkandroid.core.ui.composables.PlusImage
 import com.wordco.clockworkandroid.core.ui.composables.SpinningLoader
@@ -54,60 +67,106 @@ import com.wordco.clockworkandroid.core.ui.theme.LATO
 import com.wordco.clockworkandroid.core.ui.util.AspectRatioPreviews
 import com.wordco.clockworkandroid.core.ui.util.FAKE_TOP_LEVEL_DESTINATIONS
 import com.wordco.clockworkandroid.core.ui.util.dpScaledWith
+import com.wordco.clockworkandroid.core.ui.util.newEntry
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.ActiveTaskUiItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.StartedListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.composables.UpcomingTaskUIListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.SuspendedTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 
 @Composable
 fun TaskListPage(
-    taskListViewModel: TaskListViewModel,
+    viewModel: TaskListViewModel,
     navBar: @Composable () -> Unit,
-    onTaskClick: (Long) -> Unit,
-    onCreateNewTaskClick: () -> Unit,
+    onSessionClick: (Long) -> Unit,
+    onCreateNewSessionClick: () -> Unit,
 ) {
-    val uiState by taskListViewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    // see https://stackoverflow.com/questions/79692173/how-to-resolve-deprecated-clipboardmanager-in-jetpack-compose
+    val clipboard = LocalClipboard.current
 
-    TaskListPage(
+
+    LaunchedEffect(viewModel.uiEffect, lifecycleOwner) {
+        viewModel.uiEffect
+            .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .collect { effect ->
+                when (effect) {
+                    is TodoListUiEffect.CopyToClipboard -> {
+                        coroutineScope.launch {
+                            clipboard.newEntry(
+                                label = effect.content,
+                                text = effect.content,
+                            )
+                        }
+                    }
+
+                    is TodoListUiEffect.ShowSnackbar -> {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = effect.message,
+                                //actionLabel = effect.actionLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
+
+                    is TodoListUiEffect.NavigateToSessionDetails -> {
+                        onSessionClick(effect.id)
+                    }
+
+                    TodoListUiEffect.NavigateToCreateSession -> {
+                        onCreateNewSessionClick()
+                    }
+                }
+            }
+    }
+
+    TaskListPageContent(
         uiState = uiState,
         navBar = navBar,
-        onTaskClick = onTaskClick,
-        onCreateNewTaskClick = onCreateNewTaskClick,
+        snackbarHostState = snackbarHostState,
+        onEvent = viewModel::onEvent,
     )
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TaskListPage(
+private fun TaskListPageContent(
     uiState: TaskListUiState,
     navBar: @Composable () -> Unit,
-    onTaskClick: (Long) -> Unit,
-    onCreateNewTaskClick: () -> Unit,
+    snackbarHostState: SnackbarHostState,
+    onEvent: (TodoListUiEvent) -> Unit,
 ) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.primary,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Task Sessions",
+                        "Todo List",
                         fontFamily = LATO,
                         fontWeight = FontWeight.Black,
                     )
                 },
                 actions = {
-                    IconButton(
-                        onClick = onCreateNewTaskClick
-                    ) {
-                        PlusImage(
-                            modifier = Modifier
-                                .aspectRatio(1f)
-                                .fillMaxSize()
-                        )
+                    if (uiState is TaskListUiState.Retrieved) {
+                        IconButton(
+                            onClick = { onEvent(TodoListUiEvent.CreateSessionClicked) }
+                        ) {
+                            PlusImage(
+                                modifier = Modifier
+                                    .aspectRatio(1f)
+                                    .fillMaxSize()
+                            )
+                        }
                     }
                 },
                 colors = topAppBarColors(
@@ -117,31 +176,45 @@ private fun TaskListPage(
             )
         },
         bottomBar = navBar,
-        modifier = Modifier.fillMaxSize()
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
 
         Box(
             modifier = Modifier
                 .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.primary)
                 .fillMaxSize()
-        )
-        {
+        ) {
             when (uiState) {
-                is TaskListUiState.Retrieved if (
+                is TaskListUiState.Retrieved -> {
+                    if (
                         uiState.newTasks.isEmpty()
-                                && uiState.suspendedTasks.isEmpty()
-                                && uiState is TaskListUiState.TimerDormant
-                    ) -> EmptyTaskList(
-                    onCreateNewTaskClick = onCreateNewTaskClick
-                )
+                        && uiState.suspendedTasks.isEmpty()
+                        && uiState is TaskListUiState.TimerDormant
+                    ) {
+                        EmptyTaskList(
+                            onCreateNewTaskClick = { onEvent(TodoListUiEvent.CreateSessionClicked) }
+                        )
+                    } else {
+                        TaskList(
+                            uiState,
+                            onTaskClick = { id -> onEvent(TodoListUiEvent.SessionClicked(id)) },
+                        )
+                    }
+                }
 
-                is TaskListUiState.Retrieved -> TaskList(
-                    uiState,
-                    onTaskClick = onTaskClick,
-                )
-
-                TaskListUiState.Retrieving -> SpinningLoader()
+                TaskListUiState.Retrieving -> {
+                    SpinningLoader()
+                }
+                is TaskListUiState.Error -> {
+                    ErrorReport(
+                        header = uiState.header,
+                        message = uiState.message,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 30.dp),
+                        onCopyErrorInfoClick = { onEvent(TodoListUiEvent.CopyErrorClicked) }
+                    )
+                }
             }
         }
     }
@@ -160,7 +233,9 @@ private fun EmptyTaskList(
         //Spacer(modifier = Modifier.weight(0.04f))
 
         Box (
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -387,140 +462,83 @@ private fun TaskList(
 }
 
 
-@AspectRatioPreviews
-@Composable
-private fun TaskListPagePreview() {
-    ClockWorkTheme {
-        TaskListPage(
-            uiState = TaskListUiState.TimerDormant(
-                newTasks = DummyData.SESSIONS
-                    .filter { it is NewTask }
-                    .map { (it as NewTask).toNewTaskListItem() },
-                suspendedTasks = listOf(
-                    SuspendedTaskListItem(
-                        taskId = 0,
-                        name = "Awooga",
-                        color = Color(40, 50, 160),
-                        elapsedSeconds = 12345,
-                        progressToEstimate = 0.5f,
-                    )
-                ),
-            ),
-            navBar = { NavBar(
-                items = FAKE_TOP_LEVEL_DESTINATIONS,
-                currentDestination = Unit::class,
-                navigateTo = {},
-            ) },
-            onTaskClick = {},
-            onCreateNewTaskClick = {}
-        )
-    }
-}
-
-
-@AspectRatioPreviews
-@Composable
-private fun EmptyTaskListPagePreview() {
-    ClockWorkTheme {
-        TaskListPage(
-            uiState = TaskListUiState.TimerDormant(
-                newTasks = emptyList(),
-                suspendedTasks = emptyList(),
-            ),
-            navBar = { NavBar(
-                items = FAKE_TOP_LEVEL_DESTINATIONS,
-                currentDestination = Unit::class,
-                navigateTo = {},
-            ) },
-            onTaskClick = {},
-            onCreateNewTaskClick = {}
-        )
-    }
-}
-
-@AspectRatioPreviews
-@Composable
-private fun NoNewTasksListPagePreview() {
-    ClockWorkTheme {
-        TaskListPage(
-            uiState = TaskListUiState.TimerDormant(
-                newTasks = emptyList(),
-                suspendedTasks = listOf(
-                    SuspendedTaskListItem(
-                        taskId = 1,
-                        name = "Awooga",
-                        color = Color(40, 50, 160),
-                        elapsedSeconds = 12345,
-                        progressToEstimate = 0.5f,
-                    )
-                ),
-            ),
-            navBar = { NavBar(
-                items = FAKE_TOP_LEVEL_DESTINATIONS,
-                currentDestination = Unit::class,
-                navigateTo = {},
-            ) },
-            onTaskClick = {},
-            onCreateNewTaskClick = {}
-        )
-    }
-}
-
-
-@AspectRatioPreviews
-@Composable
-private fun NoStartedTasksListPagePreview() {
-    ClockWorkTheme {
-        TaskListPage(
-            uiState = TaskListUiState.TimerDormant(
-                newTasks = DummyData.SESSIONS
-                    .filter { it is NewTask }
-                    .map { (it as NewTask).toNewTaskListItem() },
-                suspendedTasks = emptyList(),
-            ),
-            navBar = { NavBar(
-                items = FAKE_TOP_LEVEL_DESTINATIONS,
-                currentDestination = Unit::class,
-                navigateTo = {},
-            ) },
-            onTaskClick = {},
-            onCreateNewTaskClick = {}
-        )
-    }
-}
-
-@Preview(name = "2. 37:18", showBackground = true, device = "spec:width=360dp,height=740dp,dpi=420")
-@Composable
-private fun PosterScreenShot() {
-    ClockWorkTheme {
-        TaskListPage(
-            uiState = TaskListUiState.TimerActive(
-                newTasks = listOf(
-                    NewTask(taskId=26, name="Implement Hash Table in C++", dueDate= Instant.parse("2025-10-30T03:59:00Z"), difficulty=4, color=Color(1.0f, 0.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H30M"), profileId=5, appEstimate= AppEstimate(low = Duration.parse("PT1H41M15.193S"), high = Duration.parse("PT4H26M41.942S"))),
-                    NewTask(taskId=27, name="Review Databases Ch4-8", dueDate=Instant.parse("2025-10-28T03:59:00Z"), difficulty=1, color=Color(0.0f, 0.0f, 1.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H"), profileId=4, appEstimate=AppEstimate(low=Duration.parse("PT1H23M39.664S"), high=Duration.parse("PT3H28M4.395S"))),
-                    NewTask(taskId=28, name="Read Database Ch8", dueDate=Instant.parse("2025-10-25T03:59:00Z"), difficulty=0, color=Color(1.0f, 1.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT45M"), profileId=3, appEstimate=AppEstimate(low=Duration.parse("PT31M44.227S"), high=Duration.parse("PT1H18M58.212S"))),
-                    NewTask(taskId=29, name="Update Portfolio Website", dueDate=null, difficulty=3, color=Color(0.0f, 1.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H15M"), profileId=6, appEstimate=AppEstimate(low=Duration.parse("PT1H28M23.686S"), high=Duration.parse("PT3H58M49.817S"))),
-                    NewTask(taskId=30, name="Calc HW5", dueDate=Instant.parse("2025-10-30T03:59:00Z"), difficulty=3, color=Color(0.0f, 1.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H"), profileId=1, appEstimate=AppEstimate(low=Duration.parse("PT1H23M19.012S"), high=Duration.parse("PT3H26M45.394S"))),
-                    NewTask(taskId=31, name="DSA Term Project Deliverable 2", dueDate=Instant.parse("2025-11-13T04:59:00Z"), difficulty=2, color=Color(1.0f, 0.0f, 1.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT5H45M"), profileId=2, appEstimate=AppEstimate(low=Duration.parse("PT3H32M29.525S"), high=Duration.parse("PT11H42M13.613S"))),
-                ).map { it.toNewTaskListItem() },
-                suspendedTasks = emptyList(),
-                activeTask = ActiveTaskListItem(
-                    name = "Implement Linked List in Rust",
-                    taskId = 32,
-                    status = ActiveTaskListItem.Status.RUNNING,
-                    color = Color(1.0f, 0.0f, 0.0f, 1.0f, ColorSpaces.Srgb),
-                    elapsedSeconds = 1234,
-                    currentSegmentElapsedSeconds = 321,
-                    progressToEstimate = 0.38f,
+private class UiStateProvider : PreviewParameterProvider<TaskListUiState> {
+    override val values = sequenceOf(
+        TaskListUiState.TimerDormant(
+            newTasks = DummyData.SESSIONS
+                .filterIsInstance<NewTask>()
+                .map { it.toNewTaskListItem() },
+            suspendedTasks = listOf(
+                SuspendedTaskListItem(
+                    taskId = 0,
+                    name = "Awooga",
+                    color = Color(40, 50, 160),
+                    elapsedSeconds = 12345,
+                    progressToEstimate = 0.5f,
                 )
             ),
+        ),
+        TaskListUiState.TimerDormant(
+            newTasks = emptyList(),
+            suspendedTasks = emptyList(),
+        ),
+        TaskListUiState.TimerDormant(
+            newTasks = emptyList(),
+            suspendedTasks = listOf(
+                SuspendedTaskListItem(
+                    taskId = 1,
+                    name = "Awooga",
+                    color = Color(40, 50, 160),
+                    elapsedSeconds = 12345,
+                    progressToEstimate = 0.5f,
+                )
+            ),
+        ),
+        TaskListUiState.TimerDormant(
+            newTasks = DummyData.SESSIONS
+                .filterIsInstance<NewTask>()
+                .map { it.toNewTaskListItem() },
+            suspendedTasks = emptyList(),
+        ),
+        TaskListUiState.TimerActive(
+            newTasks = listOf(
+                NewTask(taskId=26, name="Implement Hash Table in C++", dueDate= Instant.parse("2025-10-30T03:59:00Z"), difficulty=4, color=Color(1.0f, 0.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H30M"), profileId=5, appEstimate= AppEstimate(low = Duration.parse("PT1H41M15.193S"), high = Duration.parse("PT4H26M41.942S"))),
+                NewTask(taskId=27, name="Review Databases Ch4-8", dueDate=Instant.parse("2025-10-28T03:59:00Z"), difficulty=1, color=Color(0.0f, 0.0f, 1.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H"), profileId=4, appEstimate=AppEstimate(low=Duration.parse("PT1H23M39.664S"), high=Duration.parse("PT3H28M4.395S"))),
+                NewTask(taskId=28, name="Read Database Ch8", dueDate=Instant.parse("2025-10-25T03:59:00Z"), difficulty=0, color=Color(1.0f, 1.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT45M"), profileId=3, appEstimate=AppEstimate(low=Duration.parse("PT31M44.227S"), high=Duration.parse("PT1H18M58.212S"))),
+                NewTask(taskId=29, name="Update Portfolio Website", dueDate=null, difficulty=3, color=Color(0.0f, 1.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H15M"), profileId=6, appEstimate=AppEstimate(low=Duration.parse("PT1H28M23.686S"), high=Duration.parse("PT3H58M49.817S"))),
+                NewTask(taskId=30, name="Calc HW5", dueDate=Instant.parse("2025-10-30T03:59:00Z"), difficulty=3, color=Color(0.0f, 1.0f, 0.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT2H"), profileId=1, appEstimate=AppEstimate(low=Duration.parse("PT1H23M19.012S"), high=Duration.parse("PT3H26M45.394S"))),
+                NewTask(taskId=31, name="DSA Term Project Deliverable 2", dueDate=Instant.parse("2025-11-13T04:59:00Z"), difficulty=2, color=Color(1.0f, 0.0f, 1.0f, 1.0f, ColorSpaces.Srgb), userEstimate=Duration.parse("PT5H45M"), profileId=2, appEstimate=AppEstimate(low=Duration.parse("PT3H32M29.525S"), high=Duration.parse("PT11H42M13.613S"))),
+            ).map { it.toNewTaskListItem() },
+            suspendedTasks = emptyList(),
+            activeTask = ActiveTaskListItem(
+                name = "Implement Linked List in Rust",
+                taskId = 32,
+                status = ActiveTaskListItem.Status.RUNNING,
+                color = Color(1.0f, 0.0f, 0.0f, 1.0f, ColorSpaces.Srgb),
+                elapsedSeconds = 1234,
+                currentSegmentElapsedSeconds = 321,
+                progressToEstimate = 0.38f,
+            )
+        ),
+    )
+}
+
+@PreviewLightDark
+@AspectRatioPreviews
+@Composable
+private fun PreviewReportScreen(
+    @PreviewParameter(UiStateProvider::class) state: TaskListUiState
+) {
+    ClockWorkTheme {
+        TaskListPageContent(
+            uiState = state,
             navBar = { NavBar(
                 items = FAKE_TOP_LEVEL_DESTINATIONS,
                 currentDestination = Unit::class,
                 navigateTo = {},
             ) },
-            onTaskClick = {},
-            onCreateNewTaskClick = {}
+            snackbarHostState = remember { SnackbarHostState() },
+            onEvent = {}
         )
     }
 }

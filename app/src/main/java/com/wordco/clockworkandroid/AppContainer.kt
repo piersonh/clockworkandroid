@@ -18,10 +18,9 @@ import com.wordco.clockworkandroid.core.domain.use_case.GetAllProfilesUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetProfileUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.GetSessionUseCase
 import com.wordco.clockworkandroid.core.domain.use_case.ManageFirstLaunchUseCase
+import com.wordco.clockworkandroid.profile_details_feature.domain.use_case.DeleteProfileUseCase
 import com.wordco.clockworkandroid.profile_editor_feature.domain.use_case.CreateProfileUseCase
 import com.wordco.clockworkandroid.profile_editor_feature.domain.use_case.UpdateProfileUseCase
-import com.wordco.clockworkandroid.profile_details_feature.domain.use_case.DeleteProfileUseCase
-import com.wordco.clockworkandroid.profile_details_feature.domain.use_case.GetAllSessionsForProfileUseCase
 import com.wordco.clockworkandroid.reminder.data.ReminderNotificationManagerImpl
 import com.wordco.clockworkandroid.reminder.data.SessionReminderSchedulerImpl
 import com.wordco.clockworkandroid.reminder.domain.use_case.ProcessScheduledReminderUseCase
@@ -32,6 +31,9 @@ import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetAve
 import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.GetRemindersForSessionUseCase
 import com.wordco.clockworkandroid.session_editor_feature.domain.use_case.UpdateSessionUseCase
 import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetAllTodoSessionsUseCase
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetNewSessionComparatorUseCase
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetSuspendedSessionComparatorUseCase
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetTimerStateUseCase
 import com.wordco.clockworkandroid.timer_feature.data.factory.TimerServiceIntentFactory
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerNotificationActionProviderImpl
 import com.wordco.clockworkandroid.timer_feature.data.repository.TimerRepositoryImpl
@@ -144,12 +146,6 @@ class AppContainer(
 
     val getAllTodoSessionsUseCase: GetAllTodoSessionsUseCase by lazy {
         GetAllTodoSessionsUseCase(
-            sessionRepository = sessionRepository
-        )
-    }
-
-    val getAllSessionsForProfileUseCase: GetAllSessionsForProfileUseCase by lazy {
-        GetAllSessionsForProfileUseCase(
             sessionRepository = sessionRepository
         )
     }
@@ -270,5 +266,17 @@ class AppContainer(
 
     val manageFirstLaunchUseCase: ManageFirstLaunchUseCase by lazy {
         ManageFirstLaunchUseCase(appPreferencesRepository)
+    }
+
+    val getTimerStateUseCase: GetTimerStateUseCase by lazy {
+        GetTimerStateUseCase(timerRepository)
+    }
+
+    val getNewSessionComparatorUseCase: GetNewSessionComparatorUseCase by lazy {
+        GetNewSessionComparatorUseCase()
+    }
+
+    val getSuspendedSessionComparatorUseCase: GetSuspendedSessionComparatorUseCase by lazy {
+        GetSuspendedSessionComparatorUseCase()
     }
 }

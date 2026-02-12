@@ -10,94 +10,223 @@ import com.wordco.clockworkandroid.MainApplication
 import com.wordco.clockworkandroid.core.domain.model.NewTask
 import com.wordco.clockworkandroid.core.domain.model.StartedTask
 import com.wordco.clockworkandroid.core.domain.model.TimerState
-import com.wordco.clockworkandroid.core.domain.repository.TimerRepository
 import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetAllTodoSessionsUseCase
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetNewSessionComparatorUseCase
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetSuspendedSessionComparatorUseCase
+import com.wordco.clockworkandroid.session_list_feature.domain.use_case.GetTimerStateUseCase
 import com.wordco.clockworkandroid.session_list_feature.ui.model.ActiveTaskListItem
+import com.wordco.clockworkandroid.session_list_feature.ui.model.TodoListData
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toNewTaskListItem
 import com.wordco.clockworkandroid.session_list_feature.ui.model.mapper.toSuspendedTaskListItem
-import com.wordco.clockworkandroid.session_list_feature.ui.util.NewTaskListItemComparator
-import com.wordco.clockworkandroid.session_list_feature.ui.util.toActiveSessionStatus
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
 class TaskListViewModel(
-    private val timerRepository: TimerRepository,
-    getAllTodoSessionsUseCase: GetAllTodoSessionsUseCase,
+    private val getTimerStateUseCase: GetTimerStateUseCase,
+    private val getAllTodoSessionsUseCase: GetAllTodoSessionsUseCase,
+    private val getNewSessionComparatorUseCase: GetNewSessionComparatorUseCase,
+    private val getSuspendedSessionComparatorUseCase: GetSuspendedSessionComparatorUseCase,
 ) : ViewModel() {
 
+    private val currentBehavior = MutableStateFlow<PageBehavior>(LoadingBehavior(
+        initialUiState = TaskListUiState.Retrieving
+    ))
 
-    private val _uiState = MutableStateFlow<TaskListUiState>(TaskListUiState.Retrieving)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = currentBehavior
+        .flatMapLatest { behavior -> behavior.uiState }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = currentBehavior.value.uiState.value
+        )
 
-    val uiState: StateFlow<TaskListUiState> = _uiState.asStateFlow()
+    private val _uiEffect = Channel<TodoListUiEffect>()
+    val uiEffect = _uiEffect.receiveAsFlow()
 
-    private val timerState = timerRepository.state
-
-    private val tasks = getAllTodoSessionsUseCase()
-
-    init {
+    fun onEvent(event: TodoListUiEvent) {
         viewModelScope.launch {
-            combine(
-                timerState,
-                tasks,
-            ) { timerState, tasks ->
+            currentBehavior.value.handle(event)
+        }
+    }
 
-                val newTasks = tasks
-                    .filter { it is NewTask }
-                    .map { (it as NewTask).toNewTaskListItem() }
-                    .sortedWith(NewTaskListItemComparator())
+    suspend fun sendEffect(effect: TodoListUiEffect) {
+        _uiEffect.send(effect)
+    }
 
+    private interface PageBehavior {
+        val uiState: StateFlow<TaskListUiState>
+        suspend fun handle(event: TodoListUiEvent)
+    }
 
-                val suspendedTasks = tasks
-                    .filter { it is StartedTask && it.status() == StartedTask.Status.SUSPENDED }
-                    .map { (it as StartedTask).toSuspendedTaskListItem() }
+    private inner class LoadingBehavior(
+        initialUiState: TaskListUiState.Retrieving,
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialUiState)
 
-                when (timerState) {
-                    TimerState.Closing,
-                    TimerState.Dormant,
-                    is TimerState.Preparing -> {
+        init {
+            viewModelScope.launch {
+                try {
+                    val dataFlow = combine(
+                        getAllTodoSessionsUseCase(),
+                        getTimerStateUseCase(),
+                        getNewSessionComparatorUseCase(),
+                        getSuspendedSessionComparatorUseCase()
+                    ) { sessions, timerState, newComparator, suspendedComparator ->
+
+                        val activeSession = (timerState as? TimerState.Active)?.let { activeTimer ->
+                            sessions.firstOrNull { it.taskId == activeTimer.taskId }?.let { session ->
+                                ActiveTaskListItem.from(session, activeTimer)
+                            } ?: throw RuntimeException("Active session does not exist")
+                        }
+
+                        val newSessions = sessions
+                            .filterIsInstance<NewTask>()
+                            .sortedWith(newComparator)
+                            .map { it.toNewTaskListItem() }
+
+                        val suspendedSessions = sessions
+                            .filterIsInstance<StartedTask>()
+                            .filter { it.taskId != activeSession?.taskId }
+                            .sortedWith(suspendedComparator)
+                            .map { it.toSuspendedTaskListItem() }
+
+                        TodoListData(
+                            activeSession = activeSession,
+                            newSessions = newSessions,
+                            suspendedSessions = suspendedSessions
+                        )
+                    }.shareIn(
+                        scope = viewModelScope,
+                        started = SharingStarted.WhileSubscribed(5000),
+                        replay = 1
+                    )
+
+                    val initialData = dataFlow.first()
+
+                    val initialUiState = if (initialData.activeSession != null) {
+                        TaskListUiState.TimerActive(
+                            newTasks = initialData.newSessions,
+                            suspendedTasks = initialData.suspendedSessions,
+                            activeTask = initialData.activeSession
+                        )
+                    } else {
                         TaskListUiState.TimerDormant(
-                            newTasks = newTasks,
-                            suspendedTasks = suspendedTasks,
+                            newTasks = initialData.newSessions,
+                            suspendedTasks = initialData.suspendedSessions,
                         )
                     }
 
-                    is TimerState.Active -> {
-                        val activeTask = tasks.first { it.taskId == timerState.taskId }
-                            .let {
-                                val estimate = it.userEstimate
-                                val progress = if (estimate != null) {
-                                    timerState.totalElapsedSeconds / estimate.seconds.toFloat()
-                                } else null
-                                ActiveTaskListItem(
-                                    name = it.name,
-                                    taskId = timerState.taskId,
-                                    status = timerState.toActiveSessionStatus(),
-                                    color = it.color,
-                                    elapsedSeconds = timerState.totalElapsedSeconds,
-                                    currentSegmentElapsedSeconds = timerState.currentSegmentElapsedSeconds,
-                                    progressToEstimate = progress,
-                                )
-                            }
-
-                        TaskListUiState.TimerActive(
-                            newTasks = newTasks,
-                            suspendedTasks = suspendedTasks,
-                            activeTask = activeTask,
+                    currentBehavior.update {
+                        ListBehavior(
+                            initialUiState = initialUiState,
+                            todoListData = dataFlow,
+                        )
+                    }
+                } catch (e: Exception) {
+                    currentBehavior.update {
+                        ErrorBehavior(
+                            initialUiState = TaskListUiState.Error(
+                                header = "Initialization Failed",
+                                message = e.message ?: "No Message",
+                            ),
+                            stackTrace = e.stackTraceToString(),
                         )
                     }
                 }
             }
-            .collect { uiState ->
-                _uiState.update { uiState }
+        }
+
+        override suspend fun handle(event: TodoListUiEvent) {
+            when (event as? TodoListUiEvent.LoadingEvent) {
+                null -> {}
             }
         }
     }
 
+    private inner class ErrorBehavior(
+        initialUiState: TaskListUiState.Error,
+        val stackTrace: String?,
+    ) : PageBehavior {
+        override val uiState = MutableStateFlow(initialUiState)
+
+        override suspend fun handle(event: TodoListUiEvent) {
+            when(event as? TodoListUiEvent.ErrorEvent) {
+                TodoListUiEvent.CopyErrorClicked -> copyError()
+                null -> { }
+            }
+        }
+
+        suspend fun copyError() {
+            val clipboardContent = """
+                    Title: ${uiState.value.header}
+                    Message: ${uiState.value.message}
+                    --- StackTrace ---
+                    $stackTrace
+                """.trimIndent()
+
+            sendEffect(TodoListUiEffect.CopyToClipboard(clipboardContent))
+            sendEffect(TodoListUiEffect.ShowSnackbar("Error info copied"))
+        }
+    }
+
+    private inner class ListBehavior(
+        initialUiState: TaskListUiState.Retrieved,
+        todoListData: Flow<TodoListData>,
+    ) : PageBehavior {
+        override val uiState = todoListData.map { data ->
+            if (data.activeSession != null) {
+                TaskListUiState.TimerActive(
+                    newTasks = data.newSessions,
+                    suspendedTasks = data.suspendedSessions,
+                    activeTask = data.activeSession
+                )
+            } else {
+                TaskListUiState.TimerDormant(
+                    newTasks = data.newSessions,
+                    suspendedTasks = data.suspendedSessions,
+                )
+            }
+        }.catch { e ->
+            currentBehavior.update {
+                ErrorBehavior(
+                    initialUiState = TaskListUiState.Error(
+                        header = "Loading Failed",
+                        message = e.message ?: "Encountered Loading Error"
+                    ),
+                    stackTrace = e.stackTraceToString()
+                )
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = initialUiState
+        )
+
+        override suspend fun handle(event: TodoListUiEvent) {
+            when (val e = event as? TodoListUiEvent.ListEvent) {
+                null -> { }
+                TodoListUiEvent.CreateSessionClicked -> sendEffect(TodoListUiEffect.NavigateToCreateSession)
+                is TodoListUiEvent.SessionClicked -> sendEffect(TodoListUiEffect.NavigateToSessionDetails(e.id))
+            }
+        }
+
+    }
 
 
     companion object {
@@ -108,12 +237,12 @@ class TaskListViewModel(
             initializer {
                 //val savedStateHandle = createSavedStateHandle()
                 val appContainer = (this[APPLICATION_KEY] as MainApplication).appContainer
-                val timer = appContainer.timerRepository
 
                 TaskListViewModel(
-                    timerRepository = timer,
+                    getTimerStateUseCase = appContainer.getTimerStateUseCase,
                     getAllTodoSessionsUseCase = appContainer.getAllTodoSessionsUseCase,
-                    //savedStateHandle = savedStateHandle
+                    getNewSessionComparatorUseCase = appContainer.getNewSessionComparatorUseCase,
+                    getSuspendedSessionComparatorUseCase = appContainer.getSuspendedSessionComparatorUseCase
                 )
             }
         }
